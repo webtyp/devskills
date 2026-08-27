@@ -44,6 +44,7 @@ cd devskills && go install ./cmd/devskills && devskills -f
 - `devskills` — self (how to sync)
 
 See `docs/DEVSKILLS.md` for full docs.
+See `docs/SKILL_INSTRUCTIONS.md` for writing new skills by anthropics guide.
 
 ## License
 
