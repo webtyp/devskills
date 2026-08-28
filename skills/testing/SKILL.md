@@ -15,6 +15,8 @@ description: Testing workflow with gotest CLI, gopush publishing, mocking patter
 - **Standard Library Only:** **NEVER** use external assertion libraries (e.g., `testify`, `gomega`). Use only the standard `testing`, `net/http/httptest`, and `reflect` APIs.
 - **Mocking (No I/O):** Tests MUST use Mocks for all external interfaces to remain fast, deterministic, and side-effect free.
 
+- **Automated tests own correctness; manual review is ONLY for look & feel.** Every functional behaviour — auth gates, validation, error codes, state transitions, data isolation, secret/token verification — MUST be covered by an automated test, exercised with the same severity locally and in the deployed target. The **only** thing a developer verifies by hand is the visual result and the user experience (layout, spacing, copy, flow), because taste cannot be automated. This forbids the tempting shortcuts: no `if dev` branch that skips a check, no seeded fixtures that production lacks, no behaviour that differs between local and deployed "to make local testing easier". If something is awkward to test locally, the answer is an injectable fake or a test seam — never a divergent code path.
+
 - **WASM/Stlib Dual Testing Pattern:**
     - **Separation:** Use build tags for isomorphic code (`frontWasm_test.go` -> `//go:build wasm`, `backStlib_test.go` -> `//go:build !wasm`).
     - **Shared Logic:** Both files MUST call a shared test runner (e.g., `RunAPITests(t)`) to avoid duplication.
