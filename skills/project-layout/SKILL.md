@@ -25,6 +25,7 @@ Everything else below is fixed.
 │   ├── server.go            // (!wasm)  ServerConfig, ServerDeps, BuildServer(), RunServer()
 │   ├── client.go            // neutral: ClientConfig, ClientDeps, BuildClient() → *platformd.Platform
 │   ├── css.go               // (!wasm)  RootCSS() global theme — MUST be an importable package (ssr imports it)
+│   ├── lang.go              // neutral: init() registers the app's lang.RegisterWords dictionary + lang.OutLang(...)
 │   └── layouts/             // leaf package for design presets (avoids import cycles)
 │       └── crud.go          // neutral: the app's standard preset over crudview
 ├── modules/
@@ -128,6 +129,24 @@ in stdlib tests *and* wasm. `!wasm` files (`svg.go`, `css.go`, `server.go`)
 may import SSR types. A neutral file that imports an SSR-only package breaks
 the view test rail.
 
+### 7. `config/lang.go` is the app's one translation dictionary
+
+A tinywasm library never hardcodes a human language for its own chrome text
+(dialog titles, confirmation messages, calendar month/weekday names, …) —
+it renders the English canonical word through `lang.Translate(...)`
+(`github.com/tinywasm/fmt/lang`) and registers nothing itself. `config/lang.go`
+is where the APP decides: an `init()` calling `lang.RegisterWords([]lang.DictEntry{...})`
+for every word a library it uses actually renders, plus `lang.OutLang(...)`
+to activate the target language. Neutral (no build tag) — translated text
+can render on either the server or the client side. It has no effect unless
+something imports `config` (an `init()` in an unimported package never
+runs) — `web/client.go` (and `web/server.go`, if present) must import
+`config`, even if only blank (`_`), same as any other composition-root
+side-effect import. Adding a module that pulls in a new component with its
+own translatable chrome adds words to this SAME file — never a second
+dictionary file. Full rationale and the consumer-side contract:
+`https://github.com/tinywasm/layout/blob/main/docs/DICTIONARY.md`.
+
 ## Transport variants
 
 The canonical transport is **MCP** (`mcp.HarvestOps` on the server,
@@ -166,6 +185,7 @@ tests in `tests/`, views in `view.go`, no subdirs in a module — is unchanged.
 - [ ] `config/` imports nothing from the repo's own module tree.
 - [ ] `web/*.go` are `package main`, contain only env/origin resolution + a call into `config`.
 - [ ] `RootCSS()` is in `config/css.go` (`!wasm`), not `web/`.
+- [ ] `config/lang.go` holds the app's only `lang.RegisterWords` call; no library registers its own dictionary; `web/client.go` (and `web/server.go`) import `config`.
 - [ ] Every `modules/<m>/` has flat files only; its view is in `view.go`.
 - [ ] No `_test.go` outside `tests/`.
 - [ ] `config.Config` does not exist — types are `ServerConfig`/`ClientConfig`.
