@@ -1,18 +1,18 @@
 ---
 name: devskills
-description: Sync skills from tinywasm/devskills/skills to all installed LLM agents (Claude, Gemini). Run after creating or modifying any SKILL.md file in devskills/skills/.
+description: Sync skills from webtyp/devskills/skills to all installed LLM agents (Claude, Gemini). Run after creating or modifying any SKILL.md file in devskills/skills/.
 ---
 
 # devskills
 
-`devskills` is a CLI tool in `tinywasm/devskills` that synchronizes skill files from the devskills repository to all installed LLM agent configurations.
+`devskills` is a CLI tool in `webtyp/devskills` that synchronizes skill files from the devskills repository to all installed LLM agent configurations.
 
 ## When to Run
 
-After creating or modifying any `SKILL.md` in `tinywasm/devskills/skills/<name>/`:
+After creating or modifying any `SKILL.md` in `webtyp/devskills/skills/<name>/`:
 
 ```bash
-cd tinywasm/devskills && go install ./cmd/devskills && devskills -f
+cd webtyp/devskills && go install ./cmd/devskills && devskills -f
 ```
 
 **The rebuild step is mandatory**: skills are EMBEDDED in the binary at
@@ -27,7 +27,7 @@ grep -c "<some new phrase>" ~/.claude/skills/<name>/SKILL.md
 
 ## How It Works
 
-1. Skills live in `tinywasm/devskills/skills/` (source of truth) and are
+1. Skills live in `webtyp/devskills/skills/` (source of truth) and are
    embedded into the `devskills` binary when it is built.
 2. `devskills` installs the embedded skills to `~/skills/`.
 3. It then symlinks `~/skills/` from each detected LLM config dir
@@ -36,25 +36,25 @@ grep -c "<some new phrase>" ~/.claude/skills/<name>/SKILL.md
 
 ## Installation
 
-`devskills` is part of `github.com/tinywasm/devskills`.
+`devskills` is part of `webtyp.com/devskills`.
 
 **Step 1 — Install the binary:**
 
 ```bash
-go install github.com/tinywasm/devskills/cmd/devskills@latest
+go install webtyp.com/devskills/cmd/devskills@latest
 ```
 
 Or install all devskills binaries at once (requires the repo to be cloned first):
 
 ```bash
-go install github.com/tinywasm/devskills/cmd/devskills@latest && devskills
+go install webtyp.com/devskills/cmd/devskills@latest && devskills
 ```
 
 **Step 2 — Clone the devskills repo** (required to EDIT skills — the binary
 carries an embedded copy from build time):
 
 ```bash
-git clone https://github.com/tinywasm/devskills
+git clone https://github.com/webtyp/devskills
 cd devskills
 devskills
 ```
@@ -79,7 +79,7 @@ devskills -f
 Each skill is a folder with a single `SKILL.md`:
 
 ```
-tinywasm/devskills/skills/
+webtyp/devskills/skills/
 └── myskill/
     └── SKILL.md
 ```
@@ -96,7 +96,7 @@ description: One-line description used by the agent to decide when to apply this
 
 ## After Creating a New Skill
 
-1. Write `SKILL.md` in `tinywasm/devskills/skills/<skillname>/`
+1. Write `SKILL.md` in `webtyp/devskills/skills/<skillname>/`
 2. Run `devskills` from the shell
 3. The skill is immediately active in all installed agents
 

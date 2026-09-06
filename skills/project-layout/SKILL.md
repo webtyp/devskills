@@ -1,17 +1,17 @@
 ---
 name: project-layout
-description: The canonical directory distribution every tinywasm-framework application uses — config/ as the single composition root, modules/<m>/ capability bags, tests/ at the root, thin web/ mains, plus the additive edge/ and cmd/migrate/ dirs. Use when creating a new app, adding a module, placing a file, or reviewing project structure.
+description: The canonical directory distribution every webtyp-framework application uses — config/ as the single composition root, modules/<m>/ capability bags, tests/ at the root, thin web/ mains, plus the additive edge/ and cmd/migrate/ dirs. Use when creating a new app, adding a module, placing a file, or reviewing project structure.
 ---
 
 # Project Layout — the one directory distribution
 
-Every application built on the tinywasm framework (`veltylabs/*`,
+Every application built on the webtyp framework (`veltylabs/*`,
 `mjosefa-cms`, `iam`, `misitio`, …) uses **this** directory distribution — not
 another. The only things that vary between projects are two **additive**
 directories:
 
 - **`edge/main.go`** — added for a cloud project deployed as a Cloudflare
-  Worker via `tinywasm/goflare`.
+  Worker via `webtyp/goflare`.
 - **`cmd/migrate/main.go`** — added when the schema is reconciled from CI/CD
   or run manually (never inside the Worker's `main()` — that costs seconds of
   cold start).
@@ -131,10 +131,10 @@ the view test rail.
 
 ### 7. `config/lang.go` is the app's one translation dictionary
 
-A tinywasm library never hardcodes a human language for its own chrome text
+A webtyp library never hardcodes a human language for its own chrome text
 (dialog titles, confirmation messages, calendar month/weekday names, …) —
 it renders the English canonical word through `lang.Translate(...)`
-(`github.com/tinywasm/fmt/lang`) and registers nothing itself. `config/lang.go`
+(`webtyp.com/fmt/lang`) and registers nothing itself. `config/lang.go`
 is where the APP decides: an `init()` calling `lang.RegisterWords([]lang.DictEntry{...})`
 for every word a library it uses actually renders, plus `lang.OutLang(...)`
 to activate the target language. Neutral (no build tag) — translated text
@@ -145,7 +145,7 @@ runs) — `web/client.go` (and `web/server.go`, if present) must import
 side-effect import. Adding a module that pulls in a new component with its
 own translatable chrome adds words to this SAME file — never a second
 dictionary file. Full rationale and the consumer-side contract:
-`https://github.com/tinywasm/layout/blob/main/docs/DICTIONARY.md`.
+`https://github.com/webtyp/layout/blob/main/docs/DICTIONARY.md`.
 
 ## Transport variants
 

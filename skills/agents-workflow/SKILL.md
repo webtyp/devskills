@@ -6,7 +6,7 @@ description: Multi-agent planning workflow with PLAN.md as master orchestrator, 
 # CodeJob Agent Workflow
 
 > How to write the actual content of a `PLAN.md` (structure, precision level,
-> quality checklist, TinyWasm-specific rules) is a separate domain: see skill
+> quality checklist, WebTyp-specific rules) is a separate domain: see skill
 > **plan-authoring**. This skill covers the process around it — when to
 > create one, the Q&A gate, dispatch, review, and local execution.
 

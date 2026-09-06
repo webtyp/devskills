@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/tinywasm/devskills"
+	"webtyp.com/devskills"
 )
 
 func main() {
 	fs := flag.NewFlagSet("devskills", flag.ExitOnError)
 
 	fs.Usage = func() {
-		fmt.Fprintf(os.Stderr, `devskills - Sync TinyWasm skills to LLMs
+		fmt.Fprintf(os.Stderr, `devskills - Sync WebTyp skills to LLMs
 
 Usage:
     devskills              Sync all installed LLMs
@@ -24,7 +24,7 @@ Detects LLMs by directory:
     ~/.claude/CLAUDE.md
     ~/.gemini/GEMINI.md
 
-Skills source: github.com/tinywasm/devskills/skills
+Skills source: webtyp.com/devskills/skills
 Installed to: ~/skills -> symlinked from ~/.claude/skills etc.
 `)
 	}

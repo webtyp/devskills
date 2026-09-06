@@ -1,17 +1,17 @@
 ---
-name: tinywasm-app
-description: Global MCP daemon for tinywasm/app — how to start the server, available tools, IDE auto-config, SSE logs, and diagnostics. Use when working with the tinywasm development environment.
+name: webtyp-app
+description: Global MCP daemon for webtyp/app — how to start the server, available tools, IDE auto-config, SSE logs, and diagnostics. Use when working with the webtyp development environment.
 ---
 
-# tinywasm/app — MCP Integration
+# webtyp/app — MCP Integration
 
-`tinywasm/app` es el orquestador central del entorno de desarrollo. Expone un servidor MCP global persistente en el puerto `6060`.
+`webtyp/app` es el orquestador central del entorno de desarrollo. Expone un servidor MCP global persistente en el puerto `6060`.
 
 ## Cómo iniciar el MCP
 
 ```bash
-tinywasm -mcp          # inicia el daemon global (MCP + SSE en :6060)
-tinywasm               # abre el TUI cliente (se conecta al daemon en :6060)
+webtyp -mcp          # inicia el daemon global (MCP + SSE en :6060)
+webtyp               # abre el TUI cliente (se conecta al daemon en :6060)
 ```
 
 El daemon persiste entre proyectos. El TUI solo es un visor SSE — Ctrl+C lo cierra sin detener el servidor.
@@ -30,7 +30,7 @@ Formato Claude Code (`~/.claude.json`):
 ```json
 {
   "mcpServers": {
-    "tinywasm": {
+    "webtyp": {
       "url": "http://localhost:6060/mcp",
       "type": "http"
     }
@@ -100,31 +100,31 @@ start_development RPC
 ## Flujo daemon/cliente
 
 ```
-tinywasm -mcp  →  runDaemon()
+webtyp -mcp  →  runDaemon()
     ├── crea mcp.Server (Auth + SSE)
     ├── registra daemonToolProvider + BrowserAdapter (estático)
     └── HTTP :6060
           ├── POST /mcp                → srv.HandleMessage (JSON-RPC 2.0)
           ├── GET  /logs              → SSE log stream
-          ├── GET  /tinywasm/state    → estado del proyecto activo
-          └── POST /tinywasm/action   → keyboard webhooks (q, r, start, stop, restart)
+          ├── GET  /webtyp/state    → estado del proyecto activo
+          └── POST /webtyp/action   → keyboard webhooks (q, r, start, stop, restart)
 
-tinywasm (sin flags)  →  clientMode
+webtyp (sin flags)  →  clientMode
     ├── detecta daemon en :6060
     ├── conecta GET /logs (SSE)
     └── TUI viewer (Bubble Tea)
           ├── Ctrl+C → detach (daemon sigue corriendo)
-          └── q      → POST /tinywasm/action {key:"q"} → detiene proyecto
+          └── q      → POST /webtyp/action {key:"q"} → detiene proyecto
 ```
 
 ## Endpoints HTTP
 
 | Método | Ruta | Auth | Descripción |
 |--------|------|------|-------------|
-| POST | `/mcp` | Bearer | JSON-RPC 2.0 MCP + métodos `tinywasm/*` |
+| POST | `/mcp` | Bearer | JSON-RPC 2.0 MCP + métodos `webtyp/*` |
 | GET | `/logs` | — | SSE stream de logs del proyecto activo |
-| GET | `/tinywasm/state` | Bearer | Estado JSON del TUI activo |
-| POST | `/tinywasm/action` | Bearer | Dispatch de acciones: `{key, value}` |
+| GET | `/webtyp/state` | Bearer | Estado JSON del TUI activo |
+| POST | `/webtyp/action` | Bearer | Dispatch de acciones: `{key, value}` |
 | GET | `/version` | — | Versión del daemon |
 
 ## SSE (streaming de notificaciones)
@@ -152,14 +152,14 @@ curl http://localhost:6060/mcp \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","method":"initialize","id":"1","params":{"protocolVersion":"2024-11-05","clientInfo":{"name":"test","version":"0"}}}'
 
-# 2. Ver tools disponibles (reemplaza <TOKEN> con TINYWASM_API_KEY del .env)
+# 2. Ver tools disponibles (reemplaza <TOKEN> con WEBTYP_API_KEY del .env)
 curl http://localhost:6060/mcp \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <TOKEN>" \
   -d '{"jsonrpc":"2.0","method":"tools/list","id":"1","params":{}}'
 
 # 3. Si no responde, iniciar el daemon
-tinywasm -mcp
+webtyp -mcp
 
 # 4. Verificar configuración en Claude Code
 cat ~/.claude.json | grep -A5 mcpServers

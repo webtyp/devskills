@@ -1,6 +1,6 @@
 ---
 name: plan-authoring
-description: How to write the content of a docs/PLAN.md so a less-capable execution agent implements it without design judgment — structure, precision level, quality checklist, master plans, modular stage files, TinyWasm-specific rules. Use when drafting or reviewing the body of a PLAN.md.
+description: How to write the content of a docs/PLAN.md so a less-capable execution agent implements it without design judgment — structure, precision level, quality checklist, master plans, modular stage files, WebTyp-specific rules. Use when drafting or reviewing the body of a PLAN.md.
 ---
 
 # Plan Authoring
@@ -57,7 +57,7 @@ Without the opening `---`, `codejob` aborts with `plan frontmatter: file must st
 - Acts as the entry point for an **external agent with zero context** about this project.
 - Must be fully self-contained: include all relevant constraints, interfaces, conventions, and examples inline.
 - Link to relevant docs (`README.md`, `ARCHITECTURE.md`) but repeat critical rules inline — do not assume the agent will read them.
-- **Cross-repo references MUST be GitHub web URLs** (e.g. `https://github.com/tinywasm/<repo>/blob/main/docs/X.md`), never local relative paths (`../../other-repo/...`) — the executing agent only has the repo being dispatched. In-repo relative links are fine. Either way the critical content is restated inline; external links are optional reading.
+- **Cross-repo references MUST be GitHub web URLs** (e.g. `https://github.com/webtyp/<repo>/blob/main/docs/X.md`), never local relative paths (`../../other-repo/...`) — the executing agent only has the repo being dispatched. In-repo relative links are fine. Either way the critical content is restated inline; external links are optional reading.
 - Structure into clear, sequential execution steps with a stages table at the end.
 - Never include `gopush` or `codejob` inside the plan — both are local developer tools managed outside the agent. `codejob` calls `gopush` internally when closing the loop; the agent must not call either.
 - Every `PLAN.md` MUST include a header line referencing the workflow skill, so the agent understands the context it operates in. Example:
@@ -161,11 +161,11 @@ Each stage file MUST include navigation at the top:
 
 When porting established logic, append snippets of the original code at the bottom of the relevant stage file. Explicitly tell the agent which logic to recycle and which dependencies to replace.
 
-## TinyWasm-Specific Rules
+## WebTyp-Specific Rules
 
-Apply to all plans within the `tinywasm/*` ecosystem:
+Apply to all plans within the `webtyp/*` ecosystem:
 
-- **No standard library** in WASM-compiled packages: use `tinywasm/fmt` instead of `errors`, `strconv`, `strings`.
+- **No standard library** in WASM-compiled packages: use `webtyp/fmt` instead of `errors`, `strconv`, `strings`.
 - **Value embedding only**: embed `dom.Element` as a value, never as a pointer (`*dom.Element`). Pointer embeds cause double heap allocation and GC pressure in TinyGo.
 - **SSR split by extension**: CSS, SVG, JS, and heavy HTML strings MUST live in extension-named files with `//go:build !wasm`: `css.go` (RootCSS/RenderCSS), `js.go` (RenderJS), `html.go` (RenderHTML), `svg.go` (IconSvg). Never in `ssr.go` (convention eliminated). These files must never reach the WASM binary.
 - **No `front.go`**: WASM interactivity goes in the main component file via `OnMount()`. TinyGo eliminates it as dead code on SSR builds.

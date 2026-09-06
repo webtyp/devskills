@@ -1,11 +1,11 @@
 # devskills - LLM Skills Sync
 
-Synchronizes TinyWasm Agent Skills to all installed LLM configuration directories.
+Synchronizes WebTyp Agent Skills to all installed LLM configuration directories.
 
 ## Installation
 
 ```bash
-go install github.com/tinywasm/devskills/cmd/devskills@latest
+go install webtyp.com/devskills/cmd/devskills@latest
 ```
 
 ## Usage
@@ -41,19 +41,19 @@ The skills are divided by domain to minimize context usage:
 - `core-principles`: SRP, DI, Framework-less development.
 - `testing`: gotest, gopush, WASM dual testing.
 - `documentation`: doc standards, diagrams, readme indexing.
-- `wasm`: tinywasm MCP, frontend Go compatibility.
+- `wasm`: webtyp MCP, frontend Go compatibility.
 - `agents-workflow`: PLAN.md orchestrator, stage-driven execution.
 - `dev-protocols`: Language rules, justification, Claude plan mirroring.
 - `devskills`: Self - how to sync skills after editing SKILL.md
-- `components`: TinyWasm component standards.
+- `components`: WebTyp component standards.
 - `form-codegen`: Model/form generation.
 - `plan-authoring`: PLAN.md authoring.
-- `tinywasm-app`: MCP daemon.
+- `webtyp-app`: MCP daemon.
 
 ## Library Usage
 
 ```go
-import "github.com/tinywasm/devskills"
+import "webtyp.com/devskills"
 
 llm := devskills.NewLLM()
 
@@ -80,12 +80,12 @@ Ensure the LLM directory exists (`~/.claude` or `~/.gemini`). If symlinks are br
 
 ## Migration from devflow/llmskill
 
-Previously this tool lived as `llmskill` in `github.com/tinywasm/devflow`:
+Previously this tool lived as `llmskill` in `webtyp.com/devflow`:
 
 ```bash
 # Old
-go install github.com/tinywasm/devflow/cmd/llmskill@latest && llmskill
+go install webtyp.com/devflow/cmd/llmskill@latest && llmskill
 
 # New
-go install github.com/tinywasm/devskills/cmd/devskills@latest && devskills
+go install webtyp.com/devskills/cmd/devskills@latest && devskills
 ```

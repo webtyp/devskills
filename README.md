@@ -1,11 +1,11 @@
 # devskills
 
-Agent Skills for the TinyWasm ecosystem — source of truth for all `SKILL.md`, synced via `devskills` CLI to `~/.claude`, `~/.gemini`, etc.
+Agent Skills for the WebTyp ecosystem — source of truth for all `SKILL.md`, synced via `devskills` CLI to `~/.claude`, `~/.gemini`, etc.
 
 ## Installation
 
 ```bash
-go install github.com/tinywasm/devskills/cmd/devskills@latest
+go install webtyp.com/devskills/cmd/devskills@latest
 ```
 
 ## Usage
@@ -40,7 +40,7 @@ cd devskills && go install ./cmd/devskills && devskills -f
 - `components` — component standards
 - `form-codegen` — model/form generation
 - `plan-authoring` — PLAN.md authoring
-- `tinywasm-app` — MCP daemon
+- `webtyp-app` — MCP daemon
 - `devskills` — self (how to sync)
 
 See `docs/DEVSKILLS.md` for full docs.

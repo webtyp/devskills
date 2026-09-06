@@ -1,6 +1,6 @@
 package devskills_test
 
-import "github.com/tinywasm/devskills"
+import "webtyp.com/devskills"
 
 import (
 	"os"
