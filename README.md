@@ -1,4 +1,5 @@
 # devskills
+<img src="docs/img/badges.svg">
 
 Agent Skills for the WebTyp ecosystem — source of truth for all `SKILL.md`, synced via `devskills` CLI to `~/.claude`, `~/.gemini`, etc.
 
