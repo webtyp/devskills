@@ -5,6 +5,11 @@ description: Go development principles including SRP, dependency injection, fram
 
 # Core Principles
 
+> **Designing or changing a public API, a CLI surface, or a file convention?**
+> Skill **api-design** is the gate that must pass first — prior art, the
+> novice-name test, the complexity ledger, the harness, and the zero-debt rules.
+> This document covers how code is organised; that one covers what may be added.
+
 - **Single Responsibility Principle (SRP):** Every file (CSS, Go, JS) must have a single, well-defined purpose. This must be reflected in both the file's content and its naming convention.
 
 - **Mandatory Dependency Injection (DI):**

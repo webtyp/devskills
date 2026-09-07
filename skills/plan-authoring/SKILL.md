@@ -76,6 +76,22 @@ The litmus test: **the executing agent must need zero design judgment** — ever
 - **Risky mechanics need a specified fallback and a test seam**: any toolchain execution or environment-dependent behavior states what to do when it fails (e.g. probe file rejected outside the module tree → write it under a throwaway subdir of the module root) and requires an injectable runner so unit tests need no real toolchain.
 - **Be type-precise in wording**: a cache key is a typed struct, not a "typed constant"; identify packages by import path resolved through the file's import block, never by literal selector text (aliases break text matching).
 
+## API changes — the design gate comes first
+
+If the plan adds or changes **any** public API (an exported symbol, a signature,
+a CLI subcommand or flag, a file/directory convention, a declaration format), it
+MUST carry the five answers from skill **api-design** in a section named
+`## Design gate`, before the stages:
+
+1. **Prior art** — at least three established frameworks, what each does, why we differ.
+2. **Novice-name test** — every new name read as a sentence a junior would say.
+3. **Complexity ledger** — concepts / files / call-site lines / ways-to-do-it, each `+N / −M`. The last row must never end positive.
+4. **Where it belongs** — the concern it owns, and why it is not a second concern in an existing package.
+5. **What it deletes.**
+
+A plan that changes public API without that section is incomplete: the executing
+agent would be implementing a decision nobody made. Send it back to Q&A.
+
 ## Code Quality Checklist (include inline in every code PLAN)
 
 Every `PLAN.md` that touches Go code MUST state these constraints explicitly. Agents have zero context — if a rule is not in the plan, it will be violated.
