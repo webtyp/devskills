@@ -30,9 +30,28 @@ devskills --force
 ## How it works
 
 1. **Installs Modular Skills**: Copies embedded Agent Skills to `~/skills/`.
-2. **Detects installed LLMs**: Checks for `~/.claude/` and `~/.gemini/` directories.
-3. **Creates Symlinks**: Creates a symlink from `~/.claude/skills/` (and others) to the shared `~/skills/` directory.
-   This allows LLMs to natively discover and use all domain-specific skills without any text-based configuration.
+2. **Detects installed LLMs**: Checks for `~/.claude/`, `~/.gemini/`, `~/.codex/`,
+   `~/.qwen/`, `~/.config/opencode/`, and `~/.agents/` directories.
+3. **Creates Symlinks**: Symlinks each skill individually from `~/skills/<name>` into
+   `~/.claude/skills/<name>` (and the same for the other detected dirs). Linking
+   per-skill, rather than the whole directory, lets an agent's own skills dir also
+   hold vendor-bundled skills (e.g. Codex's `~/.codex/skills/.system/`) without
+   devskills overwriting them. This allows LLMs to natively discover and use all
+   domain-specific skills without any text-based configuration.
+
+### Why `~/.agents` and opencode
+
+- `~/.agents/skills/` is a vendor-neutral convention that opencode (and other
+  agents) auto-load from, independent of any single tool's own config dir — it
+  covers future agents without new code.
+- `~/.config/opencode/skills/` is opencode's own dedicated skills dir. opencode
+  already auto-discovers `~/.claude/skills/` and `~/.agents/skills/`, so this is
+  mostly a hedge in case that auto-discovery is disabled (`disableClaudeCodeSkills`
+  / `disableExternalSkills` in opencode's config).
+- Cursor, GitHub Copilot, and Windsurf are intentionally **not** targeted: they
+  don't discover `SKILL.md` files at all — they read their own formats
+  (`.cursor/rules/*.mdc`, `.github/copilot-instructions.md`, `CONVENTIONS.md`).
+  Supporting them would mean writing a format converter, not adding a sync path.
 
 ## Supported Skills
 
@@ -71,7 +90,9 @@ fmt.Println(summary)
 Skills are installed in `~/skills/` even if no specific LLM config is found.
 
 ### Skills not appearing in LLM
-Ensure the LLM directory exists (`~/.claude` or `~/.gemini`). If symlinks are broken, run `devskills -f` to force a refresh.
+Ensure the LLM directory exists (`~/.claude`, `~/.gemini`, `~/.codex`, `~/.qwen`,
+`~/.config/opencode`, or `~/.agents`). If symlinks are broken, run `devskills -f`
+to force a refresh.
 
 ## See Also
 

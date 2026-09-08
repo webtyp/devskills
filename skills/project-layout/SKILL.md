@@ -1,6 +1,6 @@
 ---
 name: project-layout
-description: The canonical directory distribution every webtyp-framework application uses — config/ as the single composition root, modules/<m>/ capability bags, tests/ at the root, thin web/ mains, plus the additive edge/ and cmd/migrate/ dirs. Use when creating a new app, adding a module, placing a file, or reviewing project structure.
+description: The canonical directory distribution every webtyp-framework application uses — config/ as the single composition root, routes/routes.go as the server entry point (the main is GENERATED; do not write web/server.go), modules/<m>/ capability bags, tests/ at the root, a thin web/client.go, plus the additive edge/ and cmd/migrate/ dirs. Use when creating a new app, adding a module, placing a file, wiring a backend, or reviewing project structure.
 ---
 
 # Project Layout — the one directory distribution
@@ -22,7 +22,8 @@ Everything else below is fixed.
 /
 ├── config/                  // NÚCLEO: the single composition root (merges app/ + client/)
 │   ├── config.go            // neutral: AppName, DefaultModuleID, Modules() — shared symbols
-│   ├── server.go            // (!wasm)  ServerConfig, ServerDeps, BuildServer(), RunServer()
+│   ├── server.go            // (!wasm)  ServerConfig/ServerDeps + server-side composition
+│                            //          that routes.Register mounts (see §3b)
 │   ├── client.go            // neutral: ClientConfig, ClientDeps, BuildClient() → *platformd.Platform
 │   ├── css.go               // (!wasm)  RootCSS() global theme — MUST be an importable package (ssr imports it)
 │   ├── lang.go              // neutral: init() registers the app's lang.RegisterWords dictionary + lang.OutLang(...)
@@ -43,9 +44,13 @@ Everything else below is fixed.
 │   ├── <m>_view_mock_test.go    // mock caller for the view
 │   ├── <m>_view_test.go         // view: neutral (no tag)
 │   └── <m>_view_wasm_test.go    // view: //go:build wasm — real DOM, activates the browser suite
+├── routes/routes.go         // Register(r router.Router) — THE server entry point.
+│                            // Declaring it is what makes webtyp build a server
+│                            // process; the main is GENERATED. See "The server main".
 ├── web/                     // ONLY thin main() — no logic, no theme, no wiring
 │   ├── client.go            // (wasm)  main(): origin → config.BuildClient
-│   ├── server.go            // (!wasm) main(): env    → config.RunServer
+│   ├── server.go            // (!wasm, OPTIONAL — the escape hatch) hand-written
+│   │                        //   main; only when the generated one cannot serve
 │   └── public/              // static assets (index.html, generated CSS, wasm, JS runtime)
 │
 ├── edge/main.go             // (wasm, OPTIONAL) Cloudflare Worker entrypoint — goflare projects only
@@ -62,9 +67,12 @@ inventing a third. `config/` defines them **once** in a neutral file; both
 targets see it. Each file is a **configuration layer**:
 
 - `config.go` — neutral (no build tag): shared constants + `Modules()`.
-- `server.go` — `//go:build !wasm`: `ServerConfig`, `ServerDeps`,
-  `BuildServer() (*httpd.Server, error)` (pure, doesn't listen — testable
-  with `httptest`), `RunServer()` = Build + ListenAndServe.
+- `server.go` — `//go:build !wasm`: `ServerConfig`, `ServerDeps`, and the
+  server-side composition (`db`, ids, publisher, the domain modules) that
+  `routes.Register` mounts. **`BuildServer()`/`RunServer()` only exist when the
+  project writes its own `web/server.go`** (the escape hatch of §3b) — with the
+  generated main, `httpd.New` and `ListenAndServe` are already written for you,
+  and this file supplies dependencies, not a listener.
 - `client.go` — **neutral** (so the view rail runs in stdlib tests):
   `ClientConfig`, `ClientDeps`, `BuildClient() → *platformd.Platform`.
 - `css.go` — `//go:build !wasm`: `RootCSS()` global theme.
@@ -84,12 +92,65 @@ imports `config/layouts/` (a leaf that imports neither `modules` nor
 
 ### 3. `web/` is thin `main()` only
 
-`web/server.go` / `web/client.go` are `package main` — **not importable from
-`tests/`**. They only resolve config from the environment/origin and call
-`config.RunServer` / `config.BuildClient`. No logic, no theme, no wiring
-lives here. (This is why `RootCSS()` is in `config/css.go`, not `web/`: the
-`ssr` extractor *imports* the package exposing `RootCSS()`, and a `package
-main` is not importable.)
+`web/client.go` (and `web/server.go`, when it exists) are `package main` —
+**not importable from `tests/`**. They only resolve config from the
+environment/origin and call into `config`. No logic, no theme, no wiring lives
+here. (This is why `RootCSS()` is in `config/css.go`, not `web/`: the `ssr`
+extractor *imports* the package exposing `RootCSS()`, and a `package main` is
+not importable.)
+
+### 3b. The server main is GENERATED — do not write `web/server.go`
+
+**Declaring `routes/routes.go` is the whole requirement.** `webtyp.com/server`
+decides the mode at startup (`server/main_decision.go`):
+
+```go
+usesGeneratedMain() = HasRoutes(rootDir) && !hasHandWrittenMain()
+needsExternalProcess() = hasHandWrittenMain() || usesGeneratedMain()
+```
+
+and logs which branch it took, with the path that drove it:
+
+| Log line | Condition |
+|---|---|
+| `External mode: routes/routes.go present, generated main from …` | `routes/routes.go` exists, no hand-written main → **the normal case** |
+| `External mode: user-written server main at …` | `web/server.go` exists → the escape hatch |
+| `Internal mode: no routes/routes.go and no server main, checked …` | neither → assets served from memory, **no backend at all** |
+
+The generated main is written to **`.build/server/main.go`** (`.build/` is added
+to `.gitignore` automatically) and is `// Code generated … DO NOT EDIT`. It
+already builds the server for you:
+
+```go
+s := httpd.New(httpd.Config{Port: …, PublicDir: …, Gzip: true, Health: true,
+    TLS: httpd.TLSConfig{DevTLS: …}})
+routes.Register(s.Router())
+s.Router().PublicAsset(httpd.CAPath, …)  // dev CA download
+s.ListenAndServe()
+```
+
+So `httpd.New`, the port, the public dir, gzip, health and dev TLS are **not
+yours to write**. A hand-written `web/server.go` re-implements all of it and
+takes over responsibility for keeping it in step.
+
+**`Register` must take exactly one parameter.** `detectRegisterArgs` reads its
+arity from the AST and renders `nil` for **every parameter after the router**:
+
+```go
+func Register(r router.Router)                       // → routes.Register(s.Router())        ✅
+func Register(r router.Router, m ...router.APIModule) // → routes.Register(s.Router(), nil)   ❌ nil deps
+```
+
+With more than one parameter the generated call passes `nil` and the app boots
+with no modules mounted. If `Register` needs composed dependencies, it calls
+into `config/` itself — the composition root stays `config/`, and `routes/` is
+the mount table that invokes it.
+
+**Write `web/server.go` only when the generated main genuinely cannot serve**
+— a hand-rolled listener, a non-`httpd` server, an entrypoint that must run DDL
+or read secrets before listening (e.g. `mjosefa-cms`, which opens Postgres and
+gates schema sync). Adding it silently switches the branch and your generated
+main stops being used.
 
 ### 4. A module is a capability bag; its VIEW lives in `view.go`
 
@@ -156,10 +217,11 @@ binary uploads, static SSR, and auth flows.
 A project may instead use **plain REST** for its own API (e.g. a Cloudflare
 Worker where MCP-over-goflare is unproven). Then:
 
-- A `routes/` folder appears with **`routes/routes.go` as a single mount
-  table** — every `r.Get/r.Post/...` with its `.Public()`/`.Authenticated()`,
-  and nothing else. It is the REST equivalent of `modules/init.go`'s
-  op-registration.
+- `routes/routes.go` carries the **explicit mount table** — every
+  `r.Get/r.Post/...` with its `.Public()`/`.Authenticated()`, and nothing else.
+  It is the REST equivalent of `modules/init.go`'s op-registration. (The file
+  itself is not REST-specific: **any** project with a backend declares it — see
+  §3b. What REST changes is what goes *inside* it.)
 - The renderer-touching half of the modules moves to a `modules/panel/`
   package (`//go:build wasm`) that `routes/` **never** imports — that missing
   import is the package boundary keeping `dom`/`layout`/`crudview` out of
@@ -184,8 +246,11 @@ tests in `tests/`, views in `view.go`, no subdirs in a module — is unchanged.
 
 - [ ] `config/` imports nothing from the repo's own module tree.
 - [ ] `web/*.go` are `package main`, contain only env/origin resolution + a call into `config`.
+- [ ] **A project with a backend declares `routes/routes.go`, and `Register` takes exactly one parameter (`router.Router`).** More parameters make the generated main pass `nil`.
+- [ ] **No `web/server.go` unless the generated main genuinely cannot serve** — check the startup log says `External mode: routes/routes.go present, generated main from …`, not `user-written server main at …`.
+- [ ] `.build/` is in `.gitignore` (the daemon adds it; verify it survived).
 - [ ] `RootCSS()` is in `config/css.go` (`!wasm`), not `web/`.
-- [ ] `config/lang.go` holds the app's only `lang.RegisterWords` call; no library registers its own dictionary; `web/client.go` (and `web/server.go`) import `config`.
+- [ ] `config/lang.go` holds the app's only `lang.RegisterWords` call; no library registers its own dictionary; `web/client.go` (and `web/server.go`, if present) import `config`.
 - [ ] Every `modules/<m>/` has flat files only; its view is in `view.go`.
 - [ ] No `_test.go` outside `tests/`.
 - [ ] `config.Config` does not exist — types are `ServerConfig`/`ClientConfig`.

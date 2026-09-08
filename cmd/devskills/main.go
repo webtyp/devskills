@@ -21,15 +21,15 @@ Usage:
     devskills -h           Show this help
 
 Detects LLMs by directory:
-    ~/.claude/CLAUDE.md
-    ~/.gemini/GEMINI.md
+    ~/.claude, ~/.gemini, ~/.codex, ~/.qwen, ~/.config/opencode, ~/.agents
 
 Skills source: webtyp.com/devskills/skills
-Installed to: ~/skills -> symlinked from ~/.claude/skills etc.
+Installed to: ~/skills, then symlinked per-skill into each detected
+dir's skills/ subfolder (~/.claude/skills/<name>, ~/.codex/skills/<name>, etc.)
 `)
 	}
 
-	llmFlag := fs.String("l", "", "Sync specific LLM (claude, gemini)")
+	llmFlag := fs.String("l", "", "Sync specific LLM (claude, gemini, codex, qwen, opencode, agents)")
 	fs.StringVar(llmFlag, "llm", "", "Sync specific LLM (alias)")
 	forceFlag := fs.Bool("f", false, "Force overwrite with backup")
 	fs.BoolVar(forceFlag, "force", false, "Force overwrite with backup (alias)")

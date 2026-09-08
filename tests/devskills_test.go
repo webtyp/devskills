@@ -69,6 +69,23 @@ func TestLLM_DetectInstalledLLMs(t *testing.T) {
 	}
 }
 
+// TestLLM_GetSupportedLLMs_IncludesNewTargets locks in the additional agent
+// dirs devskills now syncs to: codex, opencode, qwen, and the vendor-neutral
+// ~/.agents convention (opencode and others auto-load skills from there too).
+func TestLLM_GetSupportedLLMs_IncludesNewTargets(t *testing.T) {
+	llm := devskills.NewLLM()
+	names := map[string]bool{}
+	for _, cfg := range llm.GetSupportedLLMs() {
+		names[cfg.Name] = true
+	}
+
+	for _, want := range []string{"claude", "gemini", "codex", "qwen", "opencode", "agents"} {
+		if !names[want] {
+			t.Errorf("expected %q in GetSupportedLLMs(), got %v", want, names)
+		}
+	}
+}
+
 func TestLLM_Sync(t *testing.T) {
 	tmpDir := t.TempDir()
 	oldHome := os.Getenv("HOME")
@@ -95,14 +112,24 @@ func TestLLM_Sync(t *testing.T) {
 		t.Error("skills dir not created during Sync")
 	}
 
-	// Verificar que se creó el symlink
+	// El dir de skills del LLM debe ser un directorio real (no un symlink al
+	// completo ~/skills), conteniendo un symlink por cada skill individual.
 	claudeSkills := filepath.Join(claudeDir, "skills")
-	dest, err := os.Readlink(claudeSkills)
+	info, err := os.Lstat(claudeSkills)
 	if err != nil {
-		t.Fatalf("failed to read symlink: %v", err)
+		t.Fatalf("failed to stat claude skills dir: %v", err)
 	}
-	if dest != skillsRoot {
-		t.Errorf("expected symlink to %s, got %s", skillsRoot, dest)
+	if info.Mode()&os.ModeSymlink != 0 {
+		t.Fatal("expected claude skills dir to be a real directory, not a whole-dir symlink")
+	}
+
+	link := filepath.Join(claudeSkills, "core-principles")
+	dest, err := os.Readlink(link)
+	if err != nil {
+		t.Fatalf("failed to read per-skill symlink: %v", err)
+	}
+	if dest != filepath.Join(skillsRoot, "core-principles") {
+		t.Errorf("expected per-skill symlink to %s, got %s", filepath.Join(skillsRoot, "core-principles"), dest)
 	}
 
 	// Segunda ejecución: debe skipear
@@ -140,6 +167,110 @@ func TestLLM_Sync_SpecificLLM(t *testing.T) {
 	}
 }
 
+// TestLLM_LinkSkills_PreservesVendorContent verifies that per-skill linking
+// leaves vendor-owned entries in an LLM's skills dir untouched, e.g. codex's
+// ~/.codex/skills/.system/ bundled skills.
+func TestLLM_LinkSkills_PreservesVendorContent(t *testing.T) {
+	tmpDir := t.TempDir()
+	oldHome := os.Getenv("HOME")
+	os.Setenv("HOME", tmpDir)
+	defer os.Setenv("HOME", oldHome)
+
+	codexDir := filepath.Join(tmpDir, ".codex")
+	vendorSkill := filepath.Join(codexDir, "skills", ".system", "skill-creator")
+	os.MkdirAll(vendorSkill, 0755)
+	os.WriteFile(filepath.Join(vendorSkill, "SKILL.md"), []byte("vendor content"), 0644)
+
+	llm := devskills.NewLLM()
+	if _, err := llm.Sync("codex", false); err != nil {
+		t.Fatalf("Sync failed: %v", err)
+	}
+
+	// Vendor content must survive untouched.
+	data, err := os.ReadFile(filepath.Join(vendorSkill, "SKILL.md"))
+	if err != nil {
+		t.Fatalf("vendor skill file missing after sync: %v", err)
+	}
+	if string(data) != "vendor content" {
+		t.Errorf("vendor skill content was modified: %q", data)
+	}
+
+	// Our own skills must also be present, alongside it.
+	link := filepath.Join(codexDir, "skills", "core-principles")
+	if _, err := os.Lstat(link); err != nil {
+		t.Errorf("expected core-principles symlink in codex skills dir: %v", err)
+	}
+}
+
+// TestLLM_LinkSkills_ReplacesStaleSkillCopy reproduces the real bug that
+// motivated per-skill linking: an LLM's skills dir held a real (non-symlink)
+// directory for one of our own skills — leftover from an older devskills
+// version's copy fallback — with outdated content. Since the name belongs to
+// one of our skills, sync must replace it with a fresh symlink rather than
+// silently deferring to the stale copy forever.
+func TestLLM_LinkSkills_ReplacesStaleSkillCopy(t *testing.T) {
+	tmpDir := t.TempDir()
+	oldHome := os.Getenv("HOME")
+	os.Setenv("HOME", tmpDir)
+	defer os.Setenv("HOME", oldHome)
+
+	agentsDir := filepath.Join(tmpDir, ".agents")
+	staleSkill := filepath.Join(agentsDir, "skills", "core-principles")
+	os.MkdirAll(staleSkill, 0755)
+	os.WriteFile(filepath.Join(staleSkill, "SKILL.md"), []byte("outdated content"), 0644)
+
+	llm := devskills.NewLLM()
+	if _, err := llm.Sync("agents", false); err != nil {
+		t.Fatalf("Sync failed: %v", err)
+	}
+
+	link := filepath.Join(agentsDir, "skills", "core-principles")
+	info, err := os.Lstat(link)
+	if err != nil {
+		t.Fatalf("failed to stat core-principles after sync: %v", err)
+	}
+	if info.Mode()&os.ModeSymlink == 0 {
+		t.Error("expected stale core-principles copy to be replaced with a symlink")
+	}
+	dest, err := os.Readlink(link)
+	if err != nil {
+		t.Fatalf("failed to read symlink: %v", err)
+	}
+	if dest != filepath.Join(tmpDir, "skills", "core-principles") {
+		t.Errorf("expected symlink to current skills source, got %s", dest)
+	}
+}
+
+// TestLLM_LinkSkills_PrunesStaleSkillLinks verifies that a symlink devskills
+// previously created for a skill that no longer exists in the source gets
+// removed on the next sync, without touching unrelated entries.
+func TestLLM_LinkSkills_PrunesStaleSkillLinks(t *testing.T) {
+	tmpDir := t.TempDir()
+	oldHome := os.Getenv("HOME")
+	os.Setenv("HOME", tmpDir)
+	defer os.Setenv("HOME", oldHome)
+
+	claudeDir := filepath.Join(tmpDir, ".claude")
+	claudeSkills := filepath.Join(claudeDir, "skills")
+	os.MkdirAll(claudeSkills, 0755)
+
+	skillsRoot := filepath.Join(tmpDir, "skills")
+	os.MkdirAll(skillsRoot, 0755)
+
+	// Simulate a symlink left over from a removed/renamed skill.
+	staleTarget := filepath.Join(skillsRoot, "removed-skill")
+	os.Symlink(staleTarget, filepath.Join(claudeSkills, "removed-skill"))
+
+	llm := devskills.NewLLM()
+	if _, err := llm.Sync("claude", false); err != nil {
+		t.Fatalf("Sync failed: %v", err)
+	}
+
+	if _, err := os.Lstat(filepath.Join(claudeSkills, "removed-skill")); !os.IsNotExist(err) {
+		t.Error("expected stale skill symlink to be pruned")
+	}
+}
+
 func TestLLM_LinkSkills_Fallback(t *testing.T) {
 	tmpDir := t.TempDir()
 	oldHome := os.Getenv("HOME")
@@ -148,30 +279,35 @@ func TestLLM_LinkSkills_Fallback(t *testing.T) {
 
 	skillsSource := filepath.Join(tmpDir, "skills")
 	os.MkdirAll(skillsSource, 0755)
-	os.WriteFile(filepath.Join(skillsSource, "test.txt"), []byte("test"), 0644)
 
 	llmDir := filepath.Join(tmpDir, ".claude")
 	os.MkdirAll(llmDir, 0755)
 
 	target := filepath.Join(llmDir, "skills")
-	os.MkdirAll(target, 0755) // Directorio preexistente (debería ser borrado)
+	os.MkdirAll(target, 0755) // Directorio preexistente (debe conservarse)
+	os.WriteFile(filepath.Join(target, "unrelated.txt"), []byte("keep me"), 0644)
 
 	llm := devskills.NewLLM()
 
-	changed, err := llm.Sync("", false) // Esto usará linkSkills internamente
+	summary, err := llm.Sync("", false)
 	if err != nil {
 		t.Fatalf("Sync failed: %v", err)
 	}
-	if !strings.Contains(changed, "Config updated") {
-		t.Errorf("expected config updated, got %s", changed)
+	if !strings.Contains(summary, "Config updated") {
+		t.Errorf("expected config updated, got %s", summary)
 	}
 
 	info, err := os.Lstat(target)
 	if err != nil {
 		t.Fatalf("failed to stat target: %v", err)
 	}
-	if info.Mode()&os.ModeSymlink == 0 {
-		t.Error("expected symlink, got regular directory/file (fallback might have triggered or cleanup failed)")
+	if info.Mode()&os.ModeSymlink != 0 {
+		t.Error("expected target to remain a real directory")
+	}
+
+	// Unrelated preexisting content must not be removed.
+	if _, err := os.Stat(filepath.Join(target, "unrelated.txt")); err != nil {
+		t.Errorf("expected unrelated preexisting file to survive: %v", err)
 	}
 }
 

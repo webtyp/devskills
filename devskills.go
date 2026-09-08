@@ -13,9 +13,8 @@ var embeddedSkills embed.FS
 
 // LLMConfig representa la configuración de un LLM específico
 type LLMConfig struct {
-	Name       string // "claude", "gemini"
-	Dir        string // "~/.claude", "~/.gemini"
-	ConfigFile string // "CLAUDE.md", "GEMINI.md"
+	Name string // "claude", "gemini", "codex", "opencode", "qwen", "agents"
+	Dir  string // "~/.claude", "~/.gemini" — skills are linked at Dir/skills
 }
 
 // LLM handles synchronization of LLM configuration files and Agent Skills
@@ -41,8 +40,14 @@ func (l *LLM) SetLog(fn func(...any)) {
 func (l *LLM) GetSupportedLLMs() []LLMConfig {
 	home, _ := os.UserHomeDir()
 	return []LLMConfig{
-		{Name: "claude", Dir: filepath.Join(home, ".claude"), ConfigFile: "CLAUDE.md"},
-		{Name: "gemini", Dir: filepath.Join(home, ".gemini"), ConfigFile: "GEMINI.md"},
+		{Name: "claude", Dir: filepath.Join(home, ".claude")},
+		{Name: "gemini", Dir: filepath.Join(home, ".gemini")},
+		{Name: "codex", Dir: filepath.Join(home, ".codex")},
+		{Name: "qwen", Dir: filepath.Join(home, ".qwen")},
+		{Name: "opencode", Dir: filepath.Join(home, ".config", "opencode")},
+		// ~/.agents/skills is the vendor-neutral convention opencode (and
+		// others) also auto-load, independent of any single LLM's own dir.
+		{Name: "agents", Dir: filepath.Join(home, ".agents")},
 	}
 }
 
@@ -161,31 +166,94 @@ func CopyFile(src, dst string) error {
 	return os.WriteFile(dst, data, 0644)
 }
 
-// linkSkills creates a symlink from the LLM's skills dir to the shared skills location.
-// Falls back to copying if symlink fails (Windows without Developer Mode).
+// linkSkills links each skill under skillsSource into llmDir/skills individually
+// (skillsSource/<name> -> llmDir/skills/<name>), rather than symlinking the whole
+// directory. Per-skill linking lets an LLM's skills dir also hold vendor-owned
+// skills (e.g. ~/.codex/skills/.system, opencode's bundled skills) without
+// devskills clobbering them. Falls back to copying a skill's files if
+// symlinking fails (Windows without Developer Mode).
 func (l *LLM) linkSkills(llmDir, skillsSource string) (bool, error) {
 	target := filepath.Join(llmDir, "skills")
 
-	// Already correct symlink?
-	if dest, err := os.Readlink(target); err == nil {
-		if dest == skillsSource {
-			return false, nil // already linked
+	// Migrate away from the old whole-directory symlink approach.
+	if info, err := os.Lstat(target); err == nil && info.Mode()&os.ModeSymlink != 0 {
+		os.Remove(target)
+	}
+
+	if err := os.MkdirAll(target, 0755); err != nil {
+		return false, err
+	}
+
+	entries, err := os.ReadDir(skillsSource)
+	if err != nil {
+		return false, err
+	}
+
+	changed := false
+	present := make(map[string]bool, len(entries))
+
+	for _, e := range entries {
+		if !e.IsDir() {
+			continue
 		}
-		os.Remove(target) // stale symlink
+		name := e.Name()
+		present[name] = true
+		src := filepath.Join(skillsSource, name)
+		link := filepath.Join(target, name)
+
+		if dest, err := os.Readlink(link); err == nil {
+			if dest == src {
+				continue // already linked
+			}
+			os.Remove(link) // stale symlink pointing elsewhere; relink below
+		} else if _, err := os.Lstat(link); err == nil {
+			// A real file/dir already sits at this name. Since the name
+			// belongs to one of our own skills, this can only be stale
+			// output from an older devskills version (e.g. its pre-symlink
+			// copy fallback, or the old whole-directory copy approach) —
+			// never a third-party vendor skill, since our skill names
+			// (dev-protocols, tinywasm-app, form-codegen, ...) don't
+			// collide with any vendor's own. Replace it so the agent picks
+			// up the current skill. Names that aren't one of ours are
+			// never visited by this loop, so genuine vendor skills living
+			// under different names are untouched.
+			if err := os.RemoveAll(link); err != nil {
+				return changed, err
+			}
+		}
+
+		if err := os.Symlink(src, link); err != nil {
+			if err := copyDir(src, link); err != nil {
+				return changed, err
+			}
+		}
+		changed = true
 	}
 
-	// Remove if regular dir exists (leftover from old copy approach)
-	if info, err := os.Lstat(target); err == nil && info.IsDir() {
-		os.RemoveAll(target)
+	// Prune symlinks devskills previously created for skills that no longer
+	// exist in the source (renamed/removed skill). Never touch anything that
+	// isn't our own symlink.
+	stale, err := os.ReadDir(target)
+	if err != nil {
+		return changed, err
+	}
+	for _, e := range stale {
+		name := e.Name()
+		if present[name] {
+			continue
+		}
+		link := filepath.Join(target, name)
+		dest, err := os.Readlink(link)
+		if err != nil || filepath.Dir(dest) != skillsSource {
+			continue // not a symlink, or not one of ours
+		}
+		if err := os.Remove(link); err != nil {
+			return changed, err
+		}
+		changed = true
 	}
 
-	// Try symlink
-	if err := os.Symlink(skillsSource, target); err == nil {
-		return true, nil
-	}
-
-	// Fallback: copy only our own skills (not the whole dir)
-	return true, copyDir(skillsSource, target)
+	return changed, nil
 }
 
 func copyDir(src, dst string) error {
