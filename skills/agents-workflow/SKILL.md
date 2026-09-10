@@ -90,6 +90,28 @@ will be executed **locally** (immediately, in-session, instead of via codejob):
 
 Multi-repo orchestrators at the monorepo root use a **descriptive name consistent with the task**: `docs/<TOPIC>_MASTER_PLAN.md` (e.g. `SIZE_OPTIMIZATION_MASTER_PLAN.md`, `MCP_DAEMON_HARDENING_MASTER_PLAN.md`). A bare `docs/MASTER_PLAN.md` likely already exists from a previous wave — never overwrite or reuse it for a new topic.
 
+### Master plans are indexed, and declare their own status
+
+The phase/gate order lives **inside** a master plan. The order **between** master
+plans lives in `docs/MASTER_PLANS.md`. Without it nobody can answer "which wave
+is running, and where do I start?" except from memory — and a repo that answers
+that from memory has the same defect as a library that answers a contract from
+memory.
+
+So a new master plan is not finished until:
+
+1. Its **second line** is the greppable status, so the index can be regenerated
+   rather than remembered:
+   `> **Status:** <PENDING | IN PROGRESS | SHIPPED | CLOSED> · <YYYY-MM-DD> · <one line>`
+2. It links to `docs/MASTER_PLANS.md` and is **added as a row there**.
+3. It states its **relation to prior waves** whose surface it touches — extends,
+   supersedes, or independent — naming them. A wave that changes the behaviour of
+   something a shipped wave published says so; silence there is how two plans end
+   up disagreeing about the same symbol.
+
+Before writing a new master plan, read the index: the wave may already exist, or
+may be blocked by one that has not shipped.
+
 ## Planning Process (Q&A First)
 
 The planning agent MUST perform a conversational Q&A with the user before writing any `PLAN.md`:

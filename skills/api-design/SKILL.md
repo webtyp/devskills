@@ -178,6 +178,15 @@ exist:
 - Two documents stating the same rule.
 - A test that only exercises doubles, with no consumer-shaped case.
 - An exported symbol nothing outside the package calls.
+- A workaround for a defect that belongs to a library one layer down. **Fix at the root, never
+  at the leaf.** A defect in a base piece compounds through every piece built on it: each new
+  consumer inherits it, works around it, or encodes the workaround into its own contract and
+  passes it on. So a defect found in a base piece **blocks this plan** — the plan declares the
+  dependency on the base's fix and waits for its published tag, exactly like every gate/phase
+  master plan in this repo. It never becomes a "known issue" or a local patch with a comment.
+- A promise the code cannot keep because a contract is missing downstream (an ARIA role whose
+  keyboard behaviour is unimplementable, a documented option with no effect). Narrow the claim
+  or fix the contract — never ship the claim.
 
 Run before closing: `grep -rn "TODO\|FIXME\|Deprecated" --include='*.go' .` on
 the touched packages, and confirm every hit predates the change.

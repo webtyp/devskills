@@ -5,6 +5,11 @@ description: The canonical directory distribution every webtyp-framework applica
 
 # Project Layout — the one directory distribution
 
+> **Proposing a new directory, file convention, or declaration format?** That is
+> public API in this ecosystem: skill **api-design** is the gate that must pass
+> first — it applies to "a new file/directory convention, a new declaration
+> format" as much as to an exported symbol.
+
 Every application built on the webtyp framework (`veltylabs/*`,
 `mjosefa-cms`, `iam`, `misitio`, …) uses **this** directory distribution — not
 another. The only things that vary between projects are two **additive**

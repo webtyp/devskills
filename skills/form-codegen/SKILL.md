@@ -5,6 +5,11 @@ description: Model authoring and form generation across webtyp/model, webtyp/orm
 
 # Models + Forms: typed `model.Definition` → ormc → everything else
 
+> **Designing or changing the form API, a widget contract, or any exported
+> symbol across `model`/`orm`/`form`/`json`/`dom`?** Skill **api-design** is the
+> gate that must pass first, and its five answers belong in the `docs/PLAN.md`
+> before code.
+
 ## The ONE pattern (source of truth)
 
 A model is authored as a **typed `model.Definition` literal**. The var name

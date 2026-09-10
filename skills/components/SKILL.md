@@ -5,6 +5,16 @@ description: WebTyp component creation standards for webtyp/components. Use when
 
 # WebTyp Component Creation
 
+> **Adding or changing a `widget.Part`, a `style` Option, an exported field, or
+> any symbol outside this package?** Skill **api-design** is the gate that must
+> pass first, and its five answers belong in the `docs/PLAN.md` before code.
+> This document covers how a component is assembled; that one covers what may be
+> added to the vocabulary it assembles from.
+>
+> When a component needs a recipe that `widget/style` does not have, it has
+> found a defect **in `widget/style`** — not a licence to hand-compose one
+> locally. See api-design's "fix at the root, never at the leaf".
+
 ## Module
 
 `webtyp.com/components` — located at `webtyp/components/`.
