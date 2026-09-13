@@ -5,14 +5,58 @@ description: Documentation standards for ARCHITECTURE.md, PLAN.md, DESIGN.md, SP
 
 # Documentation
 
+## Who every document is written for
+
+**This applies to every file in `docs/` and to `README.md` — not only to the
+README.**
+
+The reader is someone with **little to no context**: a junior developer, a new
+hire, or the original author six months later. They did not attend the
+conversation that produced the document. They do not know the vocabulary of this
+project yet. Assume nothing beyond general programming knowledge.
+
+The goal for WebTyp is that **any person can understand the framework**, so
+documentation is written closer to a tutorial than to a set of meeting minutes.
+A document that is only legible to whoever was in the room has failed, however
+correct its content is.
+
+### Every document and every section opens with context, before its content
+
+Before the first claim, table, decision, or API listing, the reader must be told,
+in plain sentences:
+
+1. **What this is about** — name the thing being discussed and say what it *is*,
+   even when the name looks self-explanatory to you. "`truststore` is a Go
+   library that installs a certificate into the operating system's list of
+   trusted authorities."
+2. **When the reader will run into it** — the concrete situation that makes this
+   page relevant. "You ran `webtyp dev`, the browser opened on `https://` and did
+   not warn you about the certificate. This is the piece that made that happen."
+3. **Why the document exists** — what question it settles, or what would go wrong
+   without it.
+
+Only then the detail. A section that opens with **"Question."** or with a
+comparison table, and leaves the reader to infer the subject from the title, is
+exactly the failure this rule exists to close.
+
+### Introduce the vocabulary you use
+
+The first time a document uses a term the reader may not own — trust store, CA,
+leaf certificate, SAN, SPKI, RBAC, adapter, strategy — define it in one short
+clause on the spot, or link to the place that does. Never let the explanation of
+a decision depend on jargon the reader was never given.
+
+### Prefer the concrete over the abstract
+
+Show the command the reader would type, the error they would see, the file that
+would appear. An abstract statement of a rule plus one concrete example beats two
+paragraphs of abstraction.
+
 ## README — a newcomer's entry point, not just an index
 
-The audience is someone with **little to no context** on this specific
-project — a junior developer, a new hire, or the original author six months
-later. A README that only indexes `docs/` files (see "Readme Indexing" below)
-answers "where is everything," never "what do I actually do." Both are
-required — the index is not optional, but it is not the first thing a reader
-needs either.
+A README that only indexes `docs/` files (see "Readme Indexing" below) answers
+"where is everything," never "what do I actually do." Both are required — the
+index is not optional, but it is not the first thing a reader needs either.
 
 ### Getting Started, staged by what the reader wants to do
 
@@ -66,7 +110,7 @@ complicated one sound simpler than it is.
 - **Standard Documents:**
     - **`docs/ARCHITECTURE.md`:** Defines WHAT & WHY (abstract design, constraints). NO implementation code.
     - **`docs/PLAN.md`:** Defines HOW (steps, reference code, test strategy). It is the master orchestrator for execution. **Ephemeral**: `codejob` renames it to `CHECK_PLAN.md` and deletes it when the loop closes (see skill agents-workflow).
-    - **`docs/DESIGN.md`:** (On demand) Justifies technical decisions and explores alternatives. Must NOT duplicate `ARCHITECTURE.md`. Heavily linked by `ARCHITECTURE.md` to keep the main document clean and focused on abstract structure rather than debate.
+    - **`docs/DESIGN.md`:** (On demand) Justifies technical decisions and explores alternatives. Must NOT duplicate `ARCHITECTURE.md`. Heavily linked by `ARCHITECTURE.md` to keep the main document clean and focused on abstract structure rather than debate. Every decision entry MUST open with the background a reader needs to care about it — what problem the code was solving, what the candidates even are — before naming the choice. A decision entry that starts at the comparison has skipped the only part a newcomer needed.
     - **`docs/SPECS.md`:** (On demand) Strict functional requirements, exact inputs/outputs, and data logic. Must NOT duplicate `ARCHITECTURE.md`. `PLAN.md` consumes it to derive exact test cases and assertions (link direction: plan → specs, never the reverse).
     - **`docs/SKILL.md`:** (On demand) Provides an LLM-friendly, highly condensed summary of the library's context and constraints.
     - **Modular Docs:** If `ARCHITECTURE.md` or `PLAN.md` become too large, they must be divided into domain-specific, uppercase, underscore-separated files (e.g., `docs/BUS_ARCHITECTURE.md`, `docs/CHART_BAR_PLAN.md`).
