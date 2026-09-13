@@ -159,17 +159,37 @@ flowchart TD
     L --> N[codejob --ci publish:<br/>gopush tag-only<br/>delete docs/PLAN.md]
 ```
 
-### Key rules for the planning agent when reviewing an open PR
+### Pulling an open PR — bare `codejob`, never `gh clone`/`gh pr checkout`
+
+**The repo is already local — it is the same one the plan was dispatched
+from.** Do not `gh repo clone` it elsewhere, and do not `gh pr checkout <n>` by
+hand. `cd` into that existing local repo and run bare `codejob` (no
+arguments): it detects the agent's PR, moves `STATUS` to `review` (or
+`reviewing` if a `REVIEWER` ran), and **checks out the PR branch in that same
+working tree** — one command, no manual git/gh plumbing, no second clone to
+keep track of or clean up.
+
+```bash
+cd <the local repo you dispatched from>
+codejob            # STATUS: running -> review; PR branch checked out in place
+git status --short docs/PLAN.md   # STATUS: review, PR: <url> — confirm before reading
+```
+
+⚠️ Re-read the "Never run bare `codejob` to check something" warning below —
+it is about *inspecting* state without advancing it (reading `docs/PLAN.md`
+instead of guessing). It does not conflict with this: **advancing past
+`running` once the PR exists is exactly what bare `codejob` is for**, and it is
+the *only* supported way to get that PR's diff into a local working tree.
 
 There is no `CHECK_PLAN.md` anymore. While a plan is in flight, `docs/PLAN.md`
 stays under that exact name — only its `STATUS` frontmatter changes — so the
-spec of what was supposed to be implemented is the same file, read from the PR
-branch (`gh pr checkout <n>` or `gh pr diff <n>`).
+spec of what was supposed to be implemented is the same file, now on the PR
+branch codejob just checked out.
 
 When the user asks the planning agent to review a plan's PR (`STATUS: review`,
 or `reviewing` if a `REVIEWER` already ran):
 
-1. **Read `docs/PLAN.md` on the PR branch** to understand what was planned (stages, expected outputs, criteria).
+1. **Read `docs/PLAN.md` on the PR branch** (already checked out by the bare `codejob` above) to understand what was planned (stages, expected outputs, criteria).
 2. **Inspect the actual code** in the diff to verify each stage was executed correctly.
 3. **Verify documentation** — this is mandatory, agents frequently skip it:
    - `docs/API.md` updated if public API changed (new functions, types, signatures).
