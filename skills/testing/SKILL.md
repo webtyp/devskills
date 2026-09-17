@@ -5,6 +5,13 @@ description: Testing workflow with gotest CLI, gopush publishing, mocking patter
 
 # Testing
 
+> **Which test an API owes before it may ship** is not here: skill
+> **api-design** («Publication») requires a **consumer-shaped test inside the
+> library itself**, through the real stack a consumer will use, with a fake only
+> at the edge — plus a **conformance suite** in the repo owning the contract once
+> a second implementation exists. This skill covers HOW tests are written and
+> run; that one covers WHICH test an API owes.
+
 - **Testing Runner (`gotest`):** For Go tests, ALWAYS use the globally installed `gotest` CLI command. **DO NOT** use `go test` directly, and **DO NOT** invoke it via `go run webtyp.com/devflow/cmd/gotest`. Simply type `gotest` (no arguments) for the full suite, or `gotest -run TestName`. It automatically handles `-vet`, `-race`, `-cover`, WASM tests, and README badges.
 - **`gotest` in Agent Plans:** When writing a `PLAN.md` destined for an external agent (e.g., Jules), you MUST include the following installation step as the **first prerequisite** in the plan, because external agents run in isolated environments where `gotest` is not globally available:
     ```bash

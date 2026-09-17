@@ -123,6 +123,15 @@ The planning agent MUST perform a conversational Q&A with the user before writin
 
 **The Q&A stays in chat. `PLAN.md` contains only final resolutions.**
 
+> **If the task adds or changes any public API** (an exported symbol, a
+> signature, a CLI flag, a file convention, a declaration format), the Q&A is not
+> resolved until the five answers of skill **api-design** exist, and `PLAN.md`
+> carries them in a `## Design gate` section. **A plan without it must not be
+> dispatched** — the executing agent would be implementing a decision nobody
+> made. Note that step 2's *internal* prior art (git history, decision records)
+> does **not** satisfy that gate's first answer, which asks for at least three
+> **external** frameworks.
+
 ## Plans Are Ephemeral — Rationale Lives in Permanent Docs
 
 `docs/PLAN.md` is deleted by `codejob` the moment a human merges the PR (the

@@ -32,20 +32,19 @@ cd devskills && go install ./cmd/devskills && devskills -f
 
 ## Skills
 
-- `core-principles` — SRP, DI, framework-less web
-- `testing` — gotest, gopush, WASM dual testing
-- `documentation` — ARCHITECTURE.md, PLAN.md, etc.
-- `wasm` — WASM env rules
-- `agents-workflow` — PLAN.md orchestrator
-- `dev-protocols` — dev protocols
-- `components` — component standards
-- `form-codegen` — model/form generation
-- `plan-authoring` — PLAN.md authoring
-- `webtyp-app` — MCP daemon
-- `devskills` — self (how to sync)
+Browse them here — the directory **is** the index:
+**[github.com/webtyp/devskills/skills](https://github.com/webtyp/devskills/tree/main/skills)**
 
-See `docs/DEVSKILLS.md` for full docs.
-See `docs/SKILL_INSTRUCTIONS.md` for writing new skills by anthropics guide.
+Each folder is one skill; what it covers and when an agent should load it are
+the `name:` and `description:` in the frontmatter of its `SKILL.md`. To read
+them all at once from a clone:
+
+```bash
+grep -h -A1 '^name:' skills/*/SKILL.md
+```
+
+Full docs: [docs/DEVSKILLS.md](docs/DEVSKILLS.md) ·
+Writing a new skill (Anthropic's guide): [docs/SKILL_INSTRUC.md](docs/SKILL_INSTRUC.md)
 
 ## License
 

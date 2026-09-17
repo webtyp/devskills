@@ -80,17 +80,14 @@ The litmus test: **the executing agent must need zero design judgment** — ever
 
 If the plan adds or changes **any** public API (an exported symbol, a signature,
 a CLI subcommand or flag, a file/directory convention, a declaration format), it
-MUST carry the five answers from skill **api-design** in a section named
-`## Design gate`, before the stages:
+MUST carry, in a section named `## Design gate` placed before the stages, the
+five answers of skill **api-design**: **prior art · novice-name test ·
+complexity ledger · where it belongs · what it deletes**.
 
-1. **Prior art** — at least three established frameworks, what each does, why we differ.
-2. **Novice-name test** — every new name read as a sentence a junior would say.
-3. **Complexity ledger** — concepts / files / call-site lines / ways-to-do-it, each `+N / −M`. The last row must never end positive.
-4. **Where it belongs** — the concern it owns, and why it is not a second concern in an existing package.
-5. **What it deletes.**
-
-A plan that changes public API without that section is incomplete: the executing
-agent would be implementing a decision nobody made. Send it back to Q&A.
+Read that skill for what each answer must contain — do not work from this list,
+and do not restate its criteria here. A plan that changes public API without
+that section is incomplete: the executing agent would be implementing a decision
+nobody made. Send it back to Q&A.
 
 ## Code Quality Checklist (include inline in every code PLAN)
 

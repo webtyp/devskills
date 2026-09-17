@@ -115,6 +115,13 @@ complicated one sound simpler than it is.
     - **`docs/SKILL.md`:** (On demand) Provides an LLM-friendly, highly condensed summary of the library's context and constraints.
     - **Modular Docs:** If `ARCHITECTURE.md` or `PLAN.md` become too large, they must be divided into domain-specific, uppercase, underscore-separated files (e.g., `docs/BUS_ARCHITECTURE.md`, `docs/CHART_BAR_PLAN.md`).
 
+- **API changes carry a `## Design gate` section:** when a `PLAN.md` adds or
+  changes any public API, that section holds the five answers of skill
+  **api-design** (prior art, novice-name test, complexity ledger, where it
+  belongs, what it deletes). Do not restate those rules in the document — link
+  to the skill; two copies of a rule drift, and the stale one is the one someone
+  follows.
+
 - **Diagram Standards:**
     - **Format & Location:** Markdown files (`*.md`) containing Mermaid code, stored in `docs/diagrams/` and linked from the architecture documents.
     - **Simplicity:** Use simple, vertical, linear flowcharts (`flowchart TD`). **NEVER** use the `subgraph` directive (ruins TUI rendering). Use `<br/>` for line breaks inside standard nodes instead of quoting text strings.
