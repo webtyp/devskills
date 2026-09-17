@@ -1,6 +1,6 @@
 ---
 name: api-design
-description: The gate every new or changed public API must pass BEFORE it is written — prior-art comparison, the novice-name test, the complexity ledger, harness/DRY/SRP, and the zero-technical-debt rules. Use when designing, adding, renaming, or reviewing any exported symbol, CLI surface, file convention, or declaration format — and when starting a library from scratch.
+description: The gate every new or changed public API must pass BEFORE it is written — SOLID as the core, then prior-art comparison, the novice-name test, the complexity ledger, harness/DRY, and the zero-technical-debt rules. Use when designing, adding, renaming, or reviewing any exported symbol, CLI surface, file convention, or declaration format — and when starting a library from scratch.
 ---
 
 # API Design — the gate
@@ -14,8 +14,95 @@ first line is written.
 subcommand or flag, a new file/directory convention, a new declaration format,
 a new library. It does **not** apply to unexported code or to a bug fix that
 changes no signature.
-
 ---
+
+## SOLID — the core the rest of this skill implements
+
+The five gates below, the DRY checks and the harness rules are not independent
+rules to memorise. They are **how this ecosystem enforces SOLID**. When a gate
+and a principle seem to disagree, the principle decides.
+
+Three of the five already had machinery here and were never named. Two did not,
+and their absence is where this ecosystem has actually made mistakes.
+
+### S — Single responsibility · *one concern per library*
+
+Already the gate (§4). A library answers one question; if the new thing is a
+second concern it is a new package or a new repo, not another file.
+
+The unit is the **repository**, not the file. A repo that exposes a contract and
+also ships one concrete implementation of it has two responsibilities — the
+contract will be pulled in by every consumer, the implementation by none of them
+who chose a different one. Check the `go.mod`, not the file list: a dependency
+that most consumers never instantiate is the symptom.
+
+### O — Open for extension, closed for modification · *lego pieces, never forks*
+
+Already harness rule 9 and «never wrap a library to fix its behaviour». A new
+capability arrives as a **new implementation of an existing contract**, not as
+an edit to the piece that consumes it.
+
+The test: adding the second backend, the second driver, the second adapter must
+touch **zero lines** of the consumer. If it touches one, the contract was
+incomplete — fix the contract, do not add a branch.
+
+### L — Liskov substitution · *conformance is the proof, not the promise*
+
+**This ecosystem already enforces it and never named it.** `storage/conformance`
+and `ddl/conformance` exist precisely so that every backend is provably
+substitutable for every other: one suite, run against `mem`, `sqlt`, `postgres`
+and `indexdb`.
+
+The normative rule: **a contract with more than one implementation must ship a
+conformance suite in the repository that owns the contract**, and every
+implementation must pass it. A contract with two implementations and no shared
+suite is a contract whose substitutability is a claim, not a fact — and the
+divergence will be found by a consumer, in production, on the second backend.
+
+A conformance suite is also what makes §4's "fix upstream, never locally" cheap:
+the fix lands once and every implementation is re-proved.
+
+### I — Interface segregation · *no implementation is forced to stub*
+
+**This is the one with no machinery here, and the gap is real.** A wide
+interface makes every implementation carry every method, so the implementation
+that only needs half writes stubs for the other half — and a stub returning
+`nil` is exactly the silent failure the harness forbids (rule 6) and the debt
+"zero technical debt" refuses.
+
+The normative rule: **an interface is as wide as its narrowest caller needs.**
+When one implementation would have to stub a method to satisfy the contract, the
+contract is two contracts.
+
+Segregate, then compose — the composed name stays, so no call site changes and
+the ledger's "ways to do the same thing" row stays at zero:
+
+```go
+type Reader interface { Read(...) }
+type Writer interface { Write(...) }
+// The composed contract keeps the name consumers already use.
+type ReadWriter interface { Reader; Writer }
+```
+
+Prior art is `io.Reader`/`Writer`/`Closer`, and `fs.FS` + `fs.ReadDirFS` +
+`fs.StatFS`, where optional capability is a separate interface found by type
+assertion rather than a method everyone must implement.
+
+Counting test: for each method of an interface, name an implementation that
+would return a stub. One such method is a warning; two in the same domain means
+the split is already overdue.
+
+### D — Dependency inversion · *the composition root wires, nothing else*
+
+Already harness rules 1–3 and the DI rule every repo's `DEFAULT_LLM_SKILL.md`
+restates: business logic depends on contracts, and exactly one place — the
+constructor, the composition root — knows a concrete type.
+
+The check that catches what code review misses: **read the `go.mod`.** If the
+library that defines the abstraction also requires the concrete thing the
+abstraction was invented to hide, the inversion exists in the prose and not in
+the build graph.
+
 
 ## The gate — answer all five in writing, in the `docs/PLAN.md`, before coding
 
@@ -81,6 +168,9 @@ Be honest when a row gets worse. A design with one row worse and four better is
 a good design; a design reported as all-better is an unreviewed design.
 
 ### 4. Where does it belong — SRP and lego pieces
+
+This gate is how **S** and **O** get checked on a concrete change; the principles
+themselves are above.
 
 - **One concern per library.** If the new thing is a second concern, it is a new
   package or a new repo, not another file in the existing one.
@@ -157,7 +247,9 @@ The normative rules:
    contract. Consumers assemble; they do not re-implement, wrap, or copy.
 
 **The publication rule:** an API is not published until a **consumer-shaped
-test, inside the library itself**, proves it — through the real stack a consumer
+test, inside the library itself**, proves it — and, once a second implementation
+of the same contract exists, until a conformance suite proves them substitutable
+(**L**, above) — through the real stack a consumer
 will use, with real collaborators and a fake only at the edge. If that test is
 awkward to write, the API is awkward to use, and the defect was found before
 shipping instead of after.
