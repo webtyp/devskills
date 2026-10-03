@@ -16,7 +16,7 @@ The agent reading this skill (Claude, Gemini, or any other installed LLM) acts *
 
 - Only edits `.md` files. Never executes code, shell commands, or compilers unless the user explicitly requests it.
 - Never renames, moves, or deletes `docs/PLAN.md`. Its lifecycle (dispatch → running → reviewing → review → published+deleted) is managed automatically by `codejob`, driven entirely by the `STATUS` key in its own frontmatter — there is no `.env` state and no `CHECK_PLAN.md` anymore. **Single exception:** when the user decides a plan runs LOCALLY, it is renamed to `docs/LAST_PLAN_EXECUTED.md` — see "Local Execution Flow" below.
-- Never applies a code fix directly when it affects more than 1 file: write a new `PLAN.md` and let codejob dispatch it.
+- Never applies a code fix directly when it affects more than 1 file: write a new `PLAN.md` and let codejob dispatch it. **Exception:** the second review round of a dispatched PR — see "Review rounds".
 
 ## When to Create `PLAN.md` vs Edit Directly
 
@@ -163,8 +163,10 @@ flowchart TD
     F --> J[Planning agent or user<br/>reviews the PR diff]
     J --> K{Implementation<br/>correct?}
     K -->|yes| L[Human merges the PR]
-    K -->|errors| M[Planning agent writes<br/>new docs/PLAN.md with the fix]
-    M --> B
+    K -->|errors, round 1| M[Planning agent comments<br/>the errors on the same PR]
+    M --> C
+    K -->|errors, round 2| O[Planning agent fixes<br/>on the PR branch]
+    O --> L
     L --> N[codejob --ci publish:<br/>gopush tag-only<br/>delete docs/PLAN.md]
 ```
 
@@ -209,12 +211,57 @@ or `reviewing` if a `REVIEWER` already ran):
    - If documentation is missing or stale → write a new `docs/PLAN.md` with only the doc fixes.
 4. **Run or instruct tests** if needed (`gotest ./...`).
 5. **If everything is correct (code + docs):** tell the user to merge the PR (cloud) — the merge itself publishes — or run `codejob 'commit message'` locally to merge + `gopush` + delete `docs/PLAN.md` in one step.
-6. **If something is missing or broken:** write a new `docs/PLAN.md` with the specific fix (on `main`, once the broken PR's branch is abandoned or corrected via the `REVIEWER`/`CORRECTOR` round). Do NOT edit code directly.
+6. **If something is missing or broken:** it depends on the review round — see "Review rounds" right below.
+
+### Review rounds — comment first, fix second
+
+- **Round 1 (first review of the PR): comment, do not fix.** Post every defect as a
+  comment **on the same PR** so the executor corrects it on its own branch:
+  `gh pr comment <PR-url> --body-file <file>` (one comment listing every finding:
+  file:line, what is wrong, what the plan required, how to verify). Do not edit the
+  code, do not write a new `docs/PLAN.md`. Then wait for the executor's next push.
+- **Small fix exception (any round): fix it yourself right away.** If the correction is
+  small — one file, one test, a few lines — apply it directly on the PR branch instead of
+  commenting: the instruction to the executor would cost more tokens than the fix. The
+  goal is the fewest tokens spent across agents.
+- **Round 2 (the executor's correction is still wrong or incomplete): fix it
+  yourself.** The executor already failed to understand the request once; asking
+  again wastes time. Apply the fixes directly on the PR branch that bare `codejob`
+  checked out, verify (`gotest`), commit them to that branch, and close the loop with
+  `codejob 'message'`. This is the one case where the planning agent edits code in a
+  dispatched plan's loop, and it overrides the "never applies multi-file fixes" rule.
+- A design error (the plan itself was wrong) is not a review round: Q&A with the user
+  first.
+
+### Concurrency — at most 15 plans in flight
+
+- **Never more than 15 dispatched plans with `STATUS: running` at the same time** (Jules'
+  concurrent-session limit), one `codejob` call per repo, one after the other.
+- **One plan per repository at a time**: a repo whose `docs/PLAN.md` is running takes no second
+  dispatch; park the next one as `docs/PLAN_<TOPIC>.md` and dispatch it after the merge.
+- A plan whose PR is already delivered (`STATUS: review` or `reviewing`) **does not
+  count** toward the 15: while you review it, dispatch the next plan in the queue.
+- To wait for the executor, set a background timer (~15 min) and then run bare
+  `codejob` in each dispatched repo — never poll in a tight loop.
+
+### Source the executor cannot see — `_temp/`
+
+When a plan ports code from a repo the executor has no access to (a private app, a
+local archive), copy **only the files the plan needs** (the code being ported, its
+tests and their helpers) into `<target-repo>/_temp/<source-repo>/<same path>` before
+dispatching. **Never the whole repo**: no `.env`, `docs/`, `data/`, `config/` — the
+target repo may be public and the copy stays in its git history. Grep the copy for
+secrets before dispatch.
+
+- `_temp/`, not `temp/`: Go ignores directories starting with `_`, so copied files
+  that import the unreachable module do not break `go build ./...` or `gotest`.
+- The plan says where the source is and why, and its **last stage deletes `_temp/`**
+  in the same PR (verification: `test ! -e _temp`).
 
 The planning agent **never**:
 - Renames, moves, or deletes `docs/PLAN.md`, or edits its machine-owned frontmatter keys (`STATUS`, `SESSION`, `REVIEW_SESSION`, `ROUND`, `PR`) — all managed by `codejob` (sole exception: the rename to `LAST_PLAN_EXECUTED.md` when the user opts for local execution — see "Local Execution Flow").
 - Merges the PR or runs `gopush` **to close a dispatched plan's loop** — that's the human's call (cloud) or `codejob 'msg'` (local), which calls `gopush` internally. (Outside a plan loop, `gopush` is the normal publish path — see below.)
-- Applies multi-file code fixes directly — always via a new `PLAN.md`.
+- Applies multi-file code fixes directly — always via a PR comment first, or a new `PLAN.md` (sole exception: the second review round, see "Review rounds").
 
 ## Publishing: `gopush` vs `codejob` — do not confuse them
 
@@ -259,8 +306,9 @@ When `gotest` fails or the agent reports errors:
 
 | Scenario | Planning agent's action |
 |---|---|
-| Error in 1 file | Write new `PLAN.md` with the exact fix (include code) |
-| Error in 2+ files | Write new self-contained `PLAN.md` with all changes |
+| First review finds a small fix (1 file, 1 test) | Fix it yourself on the PR branch — cheaper than instructing the executor |
+| First review of the PR finds errors | Comment them on the same PR (`gh pr comment`); the executor fixes them on its branch |
+| The executor's correction is still wrong | Fix it yourself on the PR branch, verify, close with `codejob 'message'` |
+| PR already merged, error found later (1 file) | Write new `PLAN.md` with the exact fix (include code) |
+| PR already merged, error found later (2+ files) | Write new self-contained `PLAN.md` with all changes |
 | Design logic error | Q&A with user → new `PLAN.md` with resolved decision |
-
-In all cases: the planning agent **does not execute** the fix directly. It only writes the `PLAN.md`.

@@ -37,7 +37,9 @@ Everything else below is fixed.
 ├── modules/
 │   ├── server.go            // (!wasm)  Server(db, ids, pub, tenantID) ([]router.OperationModule, error) — typed registry
 │   ├── browser.go           // neutral  Browser(caller, ids, tenantID) ([]platformd.UIModule, error) — typed registry
-│   └── <module_name>/
+│   └── <module_name>/       // ONLY for an app-local capability. A reusable domain module
+│       │                    // (github.com/veltylabs/<m>) brings its own <m>/ui — the
+│       │                    // registries import it and NO modules/<m>/ dir exists (§4b)
 │       ├── module.go        // neutral: ID, Label — the module's identity, nothing else
 │       ├── server.go        // (!wasm)  Server(...) (router.OperationModule, error) — the domain library's *Module
 │       ├── browser.go       // neutral  Browser(...) (platformd.UIModule, error) — built via <domainlib>.NewView(caller)
@@ -229,6 +231,38 @@ tag symmetry, no `[]any` return, no test outside `tests/`) — see the checklist
 below to run it by hand today. Wiring it into the dev daemon so a violation is
 a build error automatically is tracked separately and not yet shipped.
 
+### 4b. A reusable module brings its own view — the app only lists it
+
+When the capability is a reusable domain module (`github.com/veltylabs/<m>`), the
+app writes **no** `modules/<m>/` directory. The module repo carries:
+
+- `<m>/ui` — `ID`, `Label`, `Browser(caller, ids, tenantID) (platformd.UIModule, error)`
+  plus its `css.go`/`svg.go`. The domain root package still never imports `layout`,
+  so a server binary never links the UI.
+- `<m>/seed` — `Load(...) (Data, error)`: demo data written through the module's own
+  methods.
+- `<m>/web/client.go` — the module's runnable demo (in-browser: `storage/mem` +
+  `router/loopback` + seed, no login). Run `webtyp` at the module root to see and
+  test the screen; **a screen is built and tested there, never in the app**.
+
+The app then keeps only the two registries:
+
+```go
+// modules/browser.go — neutral: one line per screen, imports <m>/ui
+views = append(views, itemcatalogui.Browser(caller, ids, tenantID))
+
+// modules/server.go — //go:build !wasm: builds each domain *Module once and wires
+// the cross-module ports (e.g. devicemanager.IPLocator into staff_manager, the four
+// readers into appointment_booking). When modules wire each other, return a typed
+// struct (Backends{...}) with an Operations() []router.OperationModule method, so
+// the auth trust store and event subscriptions share the same instances.
+```
+
+Rules the module repos follow (their `AGENTS.md`): dependencies between modules form
+a DAG (`ui/`, `seed/`, `web/` import only upstream modules); a screen that mixes
+modules lives in the **most-downstream** module it touches (e.g. "Personal" =
+staff + schedule lives in `appointment_booking/ui`). The app just lists it.
+
 ### 5. Every test in `tests/`
 
 TODO test of the repo — unit, view, WASM view, contract, integration — lives
@@ -308,6 +342,8 @@ tests in `tests/`, views in `browser.go`, no subdirs in a module — is unchange
 - [ ] `.build/` is in `.gitignore` (the daemon adds it; verify it survived).
 - [ ] `RootCSS()` is in `config/css.go` (`!wasm`), not `web/`.
 - [ ] `config/lang.go` holds the app's only `lang.RegisterWords` call; no library registers its own dictionary; `web/client.go` (and `web/server.go`, if present) import `config`.
+- [ ] No `modules/<m>/` duplicates a reusable domain module that ships `<m>/ui` —
+      the registry imports `github.com/veltylabs/<m>/ui` instead (§4b).
 - [ ] Every `modules/<m>/` has flat files only (`docs/` excepted); its view is
       in `browser.go`, never `view.go`/`backend.go`/`init.go`/`*_wasm.go`.
 - [ ] No function under `modules/` returns `[]any` or `[]interface{}`.

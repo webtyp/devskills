@@ -58,6 +58,7 @@ Without the opening `---`, `codejob` aborts with `plan frontmatter: file must st
 - Must be fully self-contained: include all relevant constraints, interfaces, conventions, and examples inline.
 - Link to relevant docs (`README.md`, `ARCHITECTURE.md`) but repeat critical rules inline — do not assume the agent will read them.
 - **Cross-repo references MUST be GitHub web URLs** (e.g. `https://github.com/webtyp/<repo>/blob/main/docs/X.md`), never local relative paths (`../../other-repo/...`) — the executing agent only has the repo being dispatched. In-repo relative links are fine. Either way the critical content is restated inline; external links are optional reading.
+- **Code the executor cannot reach** (a private repo, a local archive) is copied — only the files the plan needs — into `_temp/` of the target repo, and the plan's last stage deletes `_temp/`. Mechanics: skill **agents-workflow** → "Source the executor cannot see".
 - Structure into clear, sequential execution steps with a stages table at the end.
 - Never include `gopush` or `codejob` inside the plan — both are local developer tools managed outside the agent. `codejob` calls `gopush` internally when closing the loop; the agent must not call either.
 - Every `PLAN.md` MUST include a header line referencing the workflow skill, so the agent understands the context it operates in. Example:
