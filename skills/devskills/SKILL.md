@@ -1,6 +1,6 @@
 ---
 name: devskills
-description: Sync skills from webtyp/devskills/skills to all installed LLM agents (Claude, Gemini, Codex, opencode, Qwen). Run after creating or modifying any SKILL.md file in devskills/skills/.
+description: Sync skills from webtyp/devskills/skills to all installed LLM agents (Claude, Gemini, Antigravity, Codex, opencode, Qwen). Run after creating or modifying any SKILL.md file in devskills/skills/.
 ---
 
 # devskills
@@ -32,6 +32,7 @@ grep -c "<some new phrase>" ~/.claude/skills/<name>/SKILL.md
 2. `devskills` installs the embedded skills to `~/skills/`.
 3. It then symlinks each skill individually — `~/skills/<name>` — into every
    detected LLM's skills dir (`~/.claude/skills/<name>`, `~/.gemini/skills/<name>`,
+   `~/.gemini/config/skills/<name>`,
    `~/.codex/skills/<name>`, `~/.qwen/skills/<name>`,
    `~/.config/opencode/skills/<name>`, `~/.agents/skills/<name>`). Per-skill
    linking (rather than symlinking the whole directory) lets an agent's own

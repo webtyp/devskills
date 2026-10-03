@@ -31,9 +31,9 @@ devskills --force
 
 1. **Installs Modular Skills**: Copies embedded Agent Skills to `~/skills/`.
 2. **Detects installed LLMs**: Checks for `~/.claude/`, `~/.gemini/`, `~/.codex/`,
-   `~/.qwen/`, `~/.config/opencode/`, and `~/.agents/` directories.
+   `~/.qwen/`, `~/.config/opencode/`, `~/.agents/`, and `~/.gemini/config/` (Antigravity VS Code).
 3. **Creates Symlinks**: Symlinks each skill individually from `~/skills/<name>` into
-   `~/.claude/skills/<name>` (and the same for the other detected dirs). Linking
+   `~/.claude/skills/<name>` (and the same for the other detected dirs, including `~/.gemini/config/skills/<name>`). Linking
    per-skill, rather than the whole directory, lets an agent's own skills dir also
    hold vendor-bundled skills (e.g. Codex's `~/.codex/skills/.system/`) without
    devskills overwriting them. This allows LLMs to natively discover and use all

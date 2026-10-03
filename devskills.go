@@ -6,6 +6,8 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+
+	"webtyp.com/devharness"
 )
 
 //go:embed skills
@@ -13,8 +15,8 @@ var embeddedSkills embed.FS
 
 // LLMConfig representa la configuración de un LLM específico
 type LLMConfig struct {
-	Name string // "claude", "gemini", "codex", "opencode", "qwen", "agents"
-	Dir  string // "~/.claude", "~/.gemini" — skills are linked at Dir/skills
+	Name string // "antigravity-vsc", "claude", "gemini", "codex", "opencode", "qwen", "agents"
+	Dir  string // config directory — skills are linked at Dir/skills
 }
 
 // LLM handles synchronization of LLM configuration files and Agent Skills
@@ -39,26 +41,30 @@ func (l *LLM) SetLog(fn func(...any)) {
 // GetSupportedLLMs retorna la lista de LLMs soportados
 func (l *LLM) GetSupportedLLMs() []LLMConfig {
 	home, _ := os.UserHomeDir()
-	return []LLMConfig{
-		{Name: "claude", Dir: filepath.Join(home, ".claude")},
-		{Name: "gemini", Dir: filepath.Join(home, ".gemini")},
-		{Name: "codex", Dir: filepath.Join(home, ".codex")},
-		{Name: "qwen", Dir: filepath.Join(home, ".qwen")},
-		{Name: "opencode", Dir: filepath.Join(home, ".config", "opencode")},
-		// ~/.agents/skills is the vendor-neutral convention opencode (and
-		// others) also auto-load, independent of any single LLM's own dir.
-		{Name: "agents", Dir: filepath.Join(home, ".agents")},
+	harnesses := devharness.Skills()
+	res := make([]LLMConfig, len(harnesses))
+	for i, h := range harnesses {
+		skillsDir, _ := h.SkillsDir(home)
+		res[i] = LLMConfig{
+			Name: h.ID,
+			Dir:  filepath.Dir(skillsDir),
+		}
 	}
+	return res
 }
 
 // DetectInstalledLLMs detecta qué LLMs están instalados
 func (l *LLM) DetectInstalledLLMs() []LLMConfig {
+	home, _ := os.UserHomeDir()
 	var installed []LLMConfig
-	for _, llm := range l.GetSupportedLLMs() {
-		if _, err := os.Stat(llm.Dir); err == nil {
-			installed = append(installed, llm)
-			l.log("Detected LLM:", llm.Name, "at", llm.Dir)
+	for _, h := range devharness.DetectSkills(home) {
+		skillsDir, _ := h.SkillsDir(home)
+		cfg := LLMConfig{
+			Name: h.ID,
+			Dir:  filepath.Dir(skillsDir),
 		}
+		installed = append(installed, cfg)
+		l.log("Detected LLM:", cfg.Name, "at", cfg.Dir)
 	}
 	return installed
 }
@@ -113,9 +119,14 @@ func (l *LLM) Sync(specificLLM string, force bool) (string, error) {
 
 	// Filtrar por LLM específico si se proporcionó
 	if specificLLM != "" {
+		targetID := specificLLM
+		if targetHarness, found := devharness.Find(specificLLM); found {
+			targetID = targetHarness.ID
+		}
+
 		var filtered []LLMConfig
 		for _, llm := range installed {
-			if llm.Name == specificLLM {
+			if llm.Name == targetID {
 				filtered = append(filtered, llm)
 				break
 			}

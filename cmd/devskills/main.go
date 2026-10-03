@@ -21,7 +21,7 @@ Usage:
     devskills -h           Show this help
 
 Detects LLMs by directory:
-    ~/.claude, ~/.gemini, ~/.codex, ~/.qwen, ~/.config/opencode, ~/.agents
+    ~/.claude, ~/.gemini, ~/.codex, ~/.qwen, ~/.config/opencode, ~/.agents, ~/.gemini/config (Antigravity VS Code)
 
 Skills source: webtyp.com/devskills/skills
 Installed to: ~/skills, then symlinked per-skill into each detected
@@ -29,7 +29,7 @@ dir's skills/ subfolder (~/.claude/skills/<name>, ~/.codex/skills/<name>, etc.)
 `)
 	}
 
-	llmFlag := fs.String("l", "", "Sync specific LLM (claude, gemini, codex, qwen, opencode, agents)")
+	llmFlag := fs.String("l", "", "Sync specific LLM (claude, gemini, codex, qwen, opencode, agents, antigravity-vsc)")
 	fs.StringVar(llmFlag, "llm", "", "Sync specific LLM (alias)")
 	forceFlag := fs.Bool("f", false, "Force overwrite with backup")
 	fs.BoolVar(forceFlag, "force", false, "Force overwrite with backup (alias)")

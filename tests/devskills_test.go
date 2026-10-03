@@ -79,7 +79,7 @@ func TestLLM_GetSupportedLLMs_IncludesNewTargets(t *testing.T) {
 		names[cfg.Name] = true
 	}
 
-	for _, want := range []string{"claude", "gemini", "codex", "qwen", "opencode", "agents"} {
+	for _, want := range []string{"claude", "gemini", "codex", "qwen", "opencode", "agents", "antigravity-vsc"} {
 		if !names[want] {
 			t.Errorf("expected %q in GetSupportedLLMs(), got %v", want, names)
 		}
@@ -164,6 +164,42 @@ func TestLLM_Sync_SpecificLLM(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(tmpDir, ".gemini", "skills")); err == nil {
 		t.Error("gemini skills symlink should not be created")
+	}
+}
+
+func TestLLM_Sync_AntigravityVSCode(t *testing.T) {
+	tmpDir := t.TempDir()
+	oldHome := os.Getenv("HOME")
+	os.Setenv("HOME", tmpDir)
+	defer os.Setenv("HOME", oldHome)
+
+	// Instalar extensión simulada
+	extDir := filepath.Join(tmpDir, ".vscode", "extensions", "google.google-antigravity-1.6.0")
+	if err := os.MkdirAll(extDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+
+	llm := devskills.NewLLM()
+
+	// Probar sincronización usando alias "antigravity"
+	summary, err := llm.Sync("antigravity", false)
+	if err != nil {
+		t.Fatalf("Sync with alias antigravity failed: %v", err)
+	}
+	if !strings.Contains(summary, "antigravity-vsc") {
+		t.Errorf("summary should mention antigravity-vsc: %s", summary)
+	}
+
+	// Verificar que los skills se hayan enlazado en ~/.gemini/config/skills/
+	geminiConfigSkills := filepath.Join(tmpDir, ".gemini", "config", "skills")
+	info, err := os.Stat(geminiConfigSkills)
+	if err != nil || !info.IsDir() {
+		t.Fatalf("expected %s to be created as directory: %v", geminiConfigSkills, err)
+	}
+
+	link := filepath.Join(geminiConfigSkills, "core-principles")
+	if _, err := os.Lstat(link); err != nil {
+		t.Errorf("expected skill link in antigravity config: %v", err)
 	}
 }
 

@@ -1,7 +1,7 @@
 # devskills
 <img src="docs/img/badges.svg">
 
-Agent Skills for the WebTyp ecosystem — source of truth for all `SKILL.md`, synced via `devskills` CLI to `~/.claude`, `~/.gemini`, `~/.codex`, `~/.qwen`, `~/.config/opencode`, and `~/.agents`.
+Agent Skills for the WebTyp ecosystem — source of truth for all `SKILL.md`, synced via `devskills` CLI to `~/.claude`, `~/.gemini`, `~/.codex`, `~/.qwen`, `~/.config/opencode`, `~/.agents`, and `~/.gemini/config` (Antigravity VS Code).
 
 ## Installation
 
@@ -18,11 +18,14 @@ devskills
 # Sync only Claude
 devskills -l claude
 
+# Sync only Antigravity (VS Code extension)
+devskills -l antigravity
+
 # Force refresh
 devskills -f
 ```
 
-Skills are embedded at compile time (`//go:embed skills`) and installed to `~/skills/`, then symlinked per-skill into each detected agent's skills dir (`~/.claude/skills/<name> -> ~/skills/<name>`, and likewise for `~/.gemini`, `~/.codex`, `~/.qwen`, `~/.config/opencode`, `~/.agents`). Linking per-skill — instead of the whole directory — lets an agent's own skills dir also hold vendor-bundled skills (e.g. Codex's `~/.codex/skills/.system/`) without devskills overwriting them.
+Skills are embedded at compile time (`//go:embed skills`) and installed to `~/skills/`, then symlinked per-skill into each detected agent's skills dir (`~/.claude/skills/<name> -> ~/skills/<name>`, and likewise for `~/.gemini`, `~/.codex`, `~/.qwen`, `~/.config/opencode`, `~/.agents`, `~/.gemini/config`). Linking per-skill — instead of the whole directory — lets an agent's own skills dir also hold vendor-bundled skills (e.g. Codex's `~/.codex/skills/.system/`) without devskills overwriting them.
 
 After editing any `SKILL.md` in `devskills/skills/<name>/`:
 
