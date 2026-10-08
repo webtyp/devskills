@@ -127,7 +127,9 @@ it from keeping, it narrows the claim.
 2. **Explicit over implicit.** Reading the call must be enough to know what it does; runtime discovery
    by type assertion is not — prefer a written line.
 3. **Illegal states unrepresentable.** One intent = one path, typed to demand what it needs.
-4. **Minimal surface.** Export exactly what the author uses; plumbing stays unexported.
+4. **Minimal surface.** Export exactly what the author uses; plumbing stays unexported. **Tests are
+   not authors**: a symbol exported so a test can reach it is not surface, it is a defect (skill
+   **testing** → «Never export API for a test»).
 5. **Fail at compile time.** Compile error → loud development diagnostic → never a silent failure.
 6. **Self-describing signatures.** Autocomplete must be enough to build; if the API needs a long document,
    the API is incomplete.
@@ -188,7 +190,7 @@ browser is only competitive if **nothing is written twice anywhere in the ecosys
 - A `TODO`, a commented-out block, or a stub for an undecided command — an undecided thing fails loudly,
   pointing at the document that decides it.
 - A test that only exercises doubles, with no consumer-shaped case; an exported symbol nothing
-  outside the package calls.
+  outside the package calls — including one whose only callers are tests.
 - A promise the code cannot keep because a contract is missing downstream (an ARIA role whose keyboard
   behaviour is unimplementable, a documented option with no effect): narrow it or fix the contract.
 

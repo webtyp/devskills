@@ -184,3 +184,4 @@ Apply to all plans within the `webtyp/*` ecosystem:
 - **SSR split by extension**: CSS, SVG, JS, and heavy HTML strings MUST live in extension-named files with `//go:build !wasm`: `css.go` (RootCSS/RenderCSS), `js.go` (RenderJS), `html.go` (RenderHTML), `svg.go` (IconSvg). Never in `ssr.go` (convention eliminated). These files must never reach the WASM binary.
 - **No `front.go`**: WASM interactivity goes in the main component file via `OnMount()`. TinyGo eliminates it as dead code on SSR builds.
 - **`docs/PLAN.md` at module root**: always next to `go.mod`, never inside sub-packages.
+- **Tests in `tests/`**: every test a plan adds goes in `tests/` (external package, public API only); a root-level test only with its `// Root-level test (justified): …` line; and a plan NEVER exports a symbol so a test can reach it. Give the executor the mechanical criterion from skill **testing** → «Test location».
