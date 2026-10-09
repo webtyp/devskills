@@ -109,7 +109,7 @@ complicated one sound simpler than it is.
 
 - **Standard Documents:**
     - **`docs/ARCHITECTURE.md`:** Defines WHAT & WHY (abstract design, constraints). NO implementation code.
-    - **`docs/PLAN.md`:** Defines HOW (steps, reference code, test strategy). It is the master orchestrator for execution. **Ephemeral**: `codejob` renames it to `CHECK_PLAN.md` and deletes it when the loop closes (see skill agents-workflow).
+    - **`docs/PLAN.md`:** Defines HOW (steps, reference code, test strategy). It is the master orchestrator for execution. **Ephemeral**: `codejob close` deletes it when the loop closes; while in flight only its `STATUS` frontmatter changes (see skill agents-workflow).
     - **`docs/DESIGN.md`:** (On demand) Justifies technical decisions and explores alternatives. Must NOT duplicate `ARCHITECTURE.md`. Heavily linked by `ARCHITECTURE.md` to keep the main document clean and focused on abstract structure rather than debate. Every decision entry MUST open with the background a reader needs to care about it — what problem the code was solving, what the candidates even are — before naming the choice. A decision entry that starts at the comparison has skipped the only part a newcomer needed.
     - **`docs/SPECS.md`:** (On demand) Strict functional requirements, exact inputs/outputs, and data logic. Must NOT duplicate `ARCHITECTURE.md`. `PLAN.md` consumes it to derive exact test cases and assertions (link direction: plan → specs, never the reverse).
     - **`docs/SKILL.md`:** (On demand) Provides an LLM-friendly, highly condensed summary of the library's context and constraints.

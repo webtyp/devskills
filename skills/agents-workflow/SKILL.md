@@ -170,27 +170,34 @@ flowchart TD
     L --> N[codejob --ci publish:<br/>gopush tag-only<br/>delete docs/PLAN.md]
 ```
 
-### Pulling an open PR — bare `codejob`, never `gh clone`/`gh pr checkout`
+### Every action is an explicit command — `codejob` alone only looks
+
+| Command | What it does | Valid when STATUS is |
+|---|---|---|
+| `codejob` | help + read-only status of `docs/PLAN.md` and the suggested next command; touches nothing | any |
+| `codejob dispatch` | sends `docs/PLAN.md` to the EXECUTOR | absent / `dispatch` |
+| `codejob pull` | asks the agent; when the PR is ready, checks its branch out **in place** and moves STATUS to `review` (or `reviewing`). In `review`/`reviewing` it fetches the PR branch and fast-forwards the local one | `running`, `reviewing`, `review` |
+| `codejob reply "text"` / `codejob approve` | answers / approves the agent session | `running` |
+| `codejob close "message" [tag] [--release]` | fast-forwards to the PR head (stops if the branches diverged), merges, publishes with `gopush`, deletes `docs/PLAN.md` | `review` |
+
+Any other word (including the old `codejob "message"`) is a usage error. Before this, bare
+`codejob` advanced the state machine and, in `review`, merged and published an unreviewed
+correction (2026-10-09); that is why nothing acts without its verb.
+
+### Pulling an open PR — `codejob pull`, never `gh clone`/`gh pr checkout`
 
 **The repo is already local — it is the same one the plan was dispatched
 from.** Do not `gh repo clone` it elsewhere, and do not `gh pr checkout <n>` by
-hand. `cd` into that existing local repo and run bare `codejob` (no
-arguments): it detects the agent's PR, moves `STATUS` to `review` (or
-`reviewing` if a `REVIEWER` ran), and **checks out the PR branch in that same
-working tree** — one command, no manual git/gh plumbing, no second clone to
-keep track of or clean up.
+hand. `cd` into that existing local repo and run `codejob pull`: it detects the
+agent's PR, moves `STATUS` to `review` (or `reviewing` if a `REVIEWER` ran), and
+**checks out the PR branch in that same working tree**. Run it again after the
+agent pushes a correction: it fast-forwards the local branch to the PR head.
 
 ```bash
 cd <the local repo you dispatched from>
-codejob            # STATUS: running -> review; PR branch checked out in place
-git status --short docs/PLAN.md   # STATUS: review, PR: <url> — confirm before reading
+codejob pull       # STATUS: running -> review; PR branch checked out in place
+codejob            # read-only: confirm STATUS and PR before reading
 ```
-
-⚠️ Re-read the "Never run bare `codejob` to check something" warning below —
-it is about *inspecting* state without advancing it (reading `docs/PLAN.md`
-instead of guessing). It does not conflict with this: **advancing past
-`running` once the PR exists is exactly what bare `codejob` is for**, and it is
-the *only* supported way to get that PR's diff into a local working tree.
 
 There is no `CHECK_PLAN.md` anymore. While a plan is in flight, `docs/PLAN.md`
 stays under that exact name — only its `STATUS` frontmatter changes — so the
@@ -200,7 +207,7 @@ branch codejob just checked out.
 When the user asks the planning agent to review a plan's PR (`STATUS: review`,
 or `reviewing` if a `REVIEWER` already ran):
 
-1. **Read `docs/PLAN.md` on the PR branch** (already checked out by the bare `codejob` above) to understand what was planned (stages, expected outputs, criteria).
+1. **Read `docs/PLAN.md` on the PR branch** (already checked out by `codejob pull` above) to understand what was planned (stages, expected outputs, criteria).
 2. **Inspect the actual code** in the diff to verify each stage was executed correctly.
 3. **Verify documentation** — this is mandatory, agents frequently skip it:
    - `docs/API.md` updated if public API changed (new functions, types, signatures).
@@ -210,7 +217,7 @@ or `reviewing` if a `REVIEWER` already ran):
    - Any doc explicitly listed as a deliverable in the plan must exist and be accurate.
    - If documentation is missing or stale → write a new `docs/PLAN.md` with only the doc fixes.
 4. **Run or instruct tests** if needed (`gotest ./...`).
-5. **If everything is correct (code + docs):** tell the user to merge the PR (cloud) — the merge itself publishes — or run `codejob 'commit message'` locally to merge + `gopush` + delete `docs/PLAN.md` in one step.
+5. **If everything is correct (code + docs):** tell the user to merge the PR (cloud) — the merge itself publishes — or run `codejob close 'commit message'` locally to merge + `gopush` + delete `docs/PLAN.md` in one step.
 6. **If something is missing or broken:** it depends on the review round — see "Review rounds" right below.
 
 ### Review rounds — comment first, fix second
@@ -226,9 +233,9 @@ or `reviewing` if a `REVIEWER` already ran):
   goal is the fewest tokens spent across agents.
 - **Round 2 (the executor's correction is still wrong or incomplete): fix it
   yourself.** The executor already failed to understand the request once; asking
-  again wastes time. Apply the fixes directly on the PR branch that bare `codejob`
+  again wastes time. Apply the fixes directly on the PR branch that `codejob pull`
   checked out, verify (`gotest`), commit them to that branch, and close the loop with
-  `codejob 'message'`. This is the one case where the planning agent edits code in a
+  `codejob close 'message'`. This is the one case where the planning agent edits code in a
   dispatched plan's loop, and it overrides the "never applies multi-file fixes" rule.
 - A design error (the plan itself was wrong) is not a review round: Q&A with the user
   first.
@@ -241,8 +248,8 @@ or `reviewing` if a `REVIEWER` already ran):
   dispatch; park the next one as `docs/PLAN_<TOPIC>.md` and dispatch it after the merge.
 - A plan whose PR is already delivered (`STATUS: review` or `reviewing`) **does not
   count** toward the 15: while you review it, dispatch the next plan in the queue.
-- To wait for the executor, set a background timer (~15 min) and then run bare
-  `codejob` in each dispatched repo — never poll in a tight loop.
+- To wait for the executor, set a background timer (~10–15 min) and then run `codejob pull`
+  in each dispatched repo — never poll in a tight loop.
 
 ### Source the executor cannot see — `_temp/`
 
@@ -260,7 +267,7 @@ secrets before dispatch.
 
 The planning agent **never**:
 - Renames, moves, or deletes `docs/PLAN.md`, or edits its machine-owned frontmatter keys (`STATUS`, `SESSION`, `REVIEW_SESSION`, `ROUND`, `PR`) — all managed by `codejob` (sole exception: the rename to `LAST_PLAN_EXECUTED.md` when the user opts for local execution — see "Local Execution Flow").
-- Merges the PR or runs `gopush` **to close a dispatched plan's loop** — that's the human's call (cloud) or `codejob 'msg'` (local), which calls `gopush` internally. (Outside a plan loop, `gopush` is the normal publish path — see below.)
+- Merges the PR or runs `gopush` **to close a dispatched plan's loop** — that's the human's call (cloud) or `codejob close 'msg'` (local), which calls `gopush` internally. (Outside a plan loop, `gopush` is the normal publish path — see below.)
 - Applies multi-file code fixes directly — always via a PR comment first, or a new `PLAN.md` (sole exception: the second review round, see "Review rounds").
 
 ## Publishing: `gopush` vs `codejob` — do not confuse them
@@ -272,28 +279,25 @@ They are not alternatives. **`gopush` publishes. `codejob` runs the plan loop**
 | You did… | Publish with | Why |
 |---|---|---|
 | Edited docs / a 1-file code fix, **no plan** | **`gopush 'message'`** | There is no plan and no PR. Nothing for `codejob` to close. |
-| Wrote `docs/PLAN.md` and dispatched it | **`codejob 'message'`** (local) or **merge the PR** (cloud) | Closes the loop: merges the PR, calls `gopush`, deletes `docs/PLAN.md`. |
+| Wrote `docs/PLAN.md` and dispatched it | **`codejob close 'message'`** (local) or **merge the PR** (cloud) | Closes the loop: merges the PR, calls `gopush`, deletes `docs/PLAN.md`. |
 | Ran a plan **locally** (`LAST_PLAN_EXECUTED.md`) | **`gopush 'message'`** | No PR was ever opened; the executed spec is committed alongside the code. |
 
-⚠️ **Never run bare `codejob` to "check something".** With no arguments it
-**advances the state machine one step** — dispatches to the `EXECUTOR` if
-`STATUS: dispatch`, dispatches the `REVIEWER` or merges/publishes if further
-along — it is not a lint, a dry-run, or a way to inspect an error. To validate
-a plan's frontmatter, read the file. (`--ci <phase>` is the same state machine
-invoked non-interactively by the GitHub Action; the planning agent never calls
-`--ci` by hand.)
+`codejob` with no command is the way to "check something": it prints the plan's STATUS, PR,
+session and the next command, and changes nothing. (`--ci <phase>` is the state machine
+invoked non-interactively by the GitHub Action; the planning agent never calls `--ci` by hand.)
 
-The planning agent **runs `codejob` when the user says "despacha"** (dispatch). With a fresh `docs/PLAN.md` (`STATUS: dispatch` or no `STATUS` at all) this sends it to the execution agent (Jules):
+The planning agent **runs `codejob dispatch` when the user says "despacha"**:
 
 ```bash
-codejob   # STATUS: dispatch -> running; sends docs/PLAN.md to the EXECUTOR
+codejob dispatch   # STATUS: dispatch -> running; sends docs/PLAN.md to the EXECUTOR
 ```
 
-The `codejob 'commit message'` form (close loop / publish, **local only**) can be run by **the planning agent or the user** once `STATUS: review`:
+`codejob close` (close loop / publish, **local only**) can be run by **the planning agent or
+the user** once `STATUS: review` and the review is done:
 
 ```bash
-codejob 'commit message'        # merge PR + gopush + delete docs/PLAN.md
-codejob 'commit msg' v0.2.0     # same with explicit tag
+codejob close 'commit message'          # merge PR + gopush + delete docs/PLAN.md
+codejob close 'commit msg' v0.2.0       # same with explicit tag
 ```
 
 In the **cloud** setup (`codejob --init-action`), there is no local close step:
@@ -308,7 +312,7 @@ When `gotest` fails or the agent reports errors:
 |---|---|
 | First review finds a small fix (1 file, 1 test) | Fix it yourself on the PR branch — cheaper than instructing the executor |
 | First review of the PR finds errors | Comment them on the same PR (`gh pr comment`); the executor fixes them on its branch |
-| The executor's correction is still wrong | Fix it yourself on the PR branch, verify, close with `codejob 'message'` |
+| The executor's correction is still wrong | Fix it yourself on the PR branch, verify, close with `codejob close 'message'` |
 | PR already merged, error found later (1 file) | Write new `PLAN.md` with the exact fix (include code) |
 | PR already merged, error found later (2+ files) | Write new self-contained `PLAN.md` with all changes |
 | Design logic error | Q&A with user → new `PLAN.md` with resolved decision |

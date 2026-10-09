@@ -32,7 +32,7 @@ REVIEWER: none
 
 | Key | Who writes it | Required | Meaning |
 |---|---|---|---|
-| `PLAN` | human/planning agent | **yes** | Commit message used when the loop closes (`codejob 'msg'` overrides it). |
+| `PLAN` | human/planning agent | **yes** | Commit message used when the loop closes (`codejob close 'msg'` overrides it). |
 | `TAG` | human/planning agent | no | Explicit version (`v0.2.0`); omitted → `gopush` auto-bumps. |
 | `EXECUTOR` | human/planning agent | no | Agent that implements the plan and opens the PR (default `jules`). |
 | `REVIEWER` | human/planning agent | no | Agent that judges the PR and posts a native GitHub review (`APPROVED`/`CHANGES_REQUESTED`); `none`/absent → human-only review, no reviewer dispatch. |

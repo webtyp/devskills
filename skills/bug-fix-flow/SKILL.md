@@ -100,8 +100,8 @@ API** (an exported symbol, a signature, a CLI flag, a declaration format):
    API changes (skill **api-design** — prior art, novice-name test,
    complexity ledger, where it belongs, what it deletes), the failing test
    already committed as the acceptance criterion, and a stages table.
-3. Dispatch it **immediately**: `cd` into that repo, run bare `codejob`
-   (no arguments, no message). Do not wait for the user to say "despacha" —
+3. Dispatch it **immediately**: `cd` into that repo, run `codejob dispatch`
+   (no message). Do not wait for the user to say "despacha" —
    a confirmed, traced, multi-file bug with a plan ready IS the dispatch
    trigger.
 4. Move on to the next found bug (see "Working multiple bugs" below) while
@@ -111,17 +111,18 @@ API** (an exported symbol, a signature, a CLI flag, a declaration format):
 ## Step 4 — Closing a dispatched plan
 
 When you learn a dispatched plan's PR is ready (the user tells you, or you
-check with `codejob` per skill **agents-workflow**):
+check with `codejob pull` per skill **agents-workflow**):
 
-1. Pull it in: `cd` into that repo, bare `codejob` (advances
-   `running → review`, checks out the PR branch).
+1. Pull it in: `cd` into that repo, `codejob pull` (advances
+   `running → review`, checks out the PR branch; run it again after the agent
+   pushes a correction to fast-forward).
 2. Read `docs/PLAN.md` on that branch, inspect the actual diff against every
    stage, and run `gotest`.
 3. A deviation from the plan is not automatically wrong — judge it on its
    own merits (e.g. an executor discovering and fixing a necessary
    side-effect the plan didn't anticipate, with a sound justification, is
    correct work, not a defect to reject).
-4. Correct and green → close it yourself: bare `codejob` again (this is the
+4. Correct and green → close it yourself: `codejob close 'message'` (this is the
    merge + `gopush` + delete-`docs/PLAN.md` step — **not** a manual
    `gopush`, the plan loop owns its own publish). Then bump every
    consuming app, same as the single-file path's step 4.
