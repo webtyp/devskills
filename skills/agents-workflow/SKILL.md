@@ -208,17 +208,34 @@ When the user asks the planning agent to review a plan's PR (`STATUS: review`,
 or `reviewing` if a `REVIEWER` already ran):
 
 1. **Read `docs/PLAN.md` on the PR branch** (already checked out by `codejob pull` above) to understand what was planned (stages, expected outputs, criteria).
-2. **Inspect the actual code** in the diff to verify each stage was executed correctly.
-3. **Verify documentation** — this is mandatory, agents frequently skip it:
+2. **Check the evidence before judging the code** — the PR is not what the agent *says* it did,
+   it is what its commits contain. Every check below caught a real defect (2026-10-09):
+   - **Commit by commit, not only the net diff.** List them —
+     `gh pr view <url> --json commits --jq '.commits[]|.oid[0:7]+" "+.messageHeadline'` — and
+     `git show --stat <sha>` each one. A later commit can delete or revert what an earlier one
+     added; the net diff then looks empty or partial (layout#42: commit 1 added 7 files, commit 2
+     deleted them). Never report "the code is missing" before looking at every commit.
+   - **Every file the plan's stages table names appears in `git diff --stat main`.** If one is
+     missing, find it in the commits (above) before concluding it was never written.
+   - **Nothing deleted that the plan did not order deleted:** `git diff --stat main --diff-filter=D`
+     (a removed test helper broke the whole wasm lane of patient_directory#5).
+   - **No stray files:** `*.orig`, `*.rej`, scratch files (clinical_encounter#7).
+   - **The local branch equals the PR head:** `codejob pull` fast-forwards it; never review or
+     close from a branch that is behind the remote.
+3. **Inspect the actual code** in the diff to verify each stage was executed correctly. When the
+   plan touches a storage/transport contract, a test against the in-memory double is not enough:
+   run (or add) a consumer test against a real backend (changelog#1 passed on `storage/mem` and
+   panicked on SQLite).
+4. **Verify documentation** — this is mandatory, agents frequently skip it:
    - `docs/API.md` updated if public API changed (new functions, types, signatures).
    - `docs/ARCHITECTURE.md` updated if design or structure changed.
    - `README.md` updated if usage examples or install instructions are affected.
    - `docs/SKILL.md` updated if the library's usage conventions changed.
    - Any doc explicitly listed as a deliverable in the plan must exist and be accurate.
    - If documentation is missing or stale → write a new `docs/PLAN.md` with only the doc fixes.
-4. **Run or instruct tests** if needed (`gotest ./...`).
-5. **If everything is correct (code + docs):** tell the user to merge the PR (cloud) — the merge itself publishes — or run `codejob close 'commit message'` locally to merge + `gopush` + delete `docs/PLAN.md` in one step.
-6. **If something is missing or broken:** it depends on the review round — see "Review rounds" right below.
+5. **Run the full suite yourself** (`gotest ./...`, both stdlib and wasm lanes) — the agent's "all green" is a claim, not evidence.
+6. **If everything is correct (code + docs):** tell the user to merge the PR (cloud) — the merge itself publishes — or run `codejob close 'commit message'` locally to merge + `gopush` + delete `docs/PLAN.md` in one step.
+7. **If something is missing or broken:** it depends on the review round — see "Review rounds" right below.
 
 ### Review rounds — comment first, fix second
 

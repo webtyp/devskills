@@ -116,8 +116,10 @@ check with `codejob pull` per skill **agents-workflow**):
 1. Pull it in: `cd` into that repo, `codejob pull` (advances
    `running → review`, checks out the PR branch; run it again after the agent
    pushes a correction to fast-forward).
-2. Read `docs/PLAN.md` on that branch, inspect the actual diff against every
-   stage, and run `gotest`.
+2. Read `docs/PLAN.md` on that branch, run the **evidence checks** of skill
+   **agents-workflow** (review step 2: commits one by one, every planned file
+   present, no unplanned deletions, no stray files, branch equal to the PR
+   head), then inspect the code against every stage and run `gotest` yourself.
 3. A deviation from the plan is not automatically wrong — judge it on its
    own merits (e.g. an executor discovering and fixing a necessary
    side-effect the plan didn't anticipate, with a sound justification, is

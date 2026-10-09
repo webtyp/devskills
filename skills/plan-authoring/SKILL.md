@@ -60,6 +60,10 @@ Without the opening `---`, `codejob` aborts with `plan frontmatter: file must st
 - **Cross-repo references MUST be GitHub web URLs** (e.g. `https://github.com/webtyp/<repo>/blob/main/docs/X.md`), never local relative paths (`../../other-repo/...`) — the executing agent only has the repo being dispatched. In-repo relative links are fine. Either way the critical content is restated inline; external links are optional reading.
 - **Code the executor cannot reach** (a private repo, a local archive) is copied — only the files the plan needs — into `_temp/` of the target repo, and the plan's last stage deletes `_temp/`. Mechanics: skill **agents-workflow** → "Source the executor cannot see".
 - Structure into clear, sequential execution steps with a stages table at the end.
+- **Every plan's acceptance criteria end with the delivery check**, verbatim intent: *"Before
+  opening the PR: `git diff --stat main` lists every file of the stages table, and no file is
+  deleted that this plan does not order deleted."* Executors have opened PRs whose last commit
+  deleted the whole implementation (layout#42) or dropped a test helper other tests used.
 - Never include `gopush` or `codejob` inside the plan — both are local developer tools managed outside the agent. `codejob` calls `gopush` internally when closing the loop; the agent must not call either.
 - Every `PLAN.md` MUST include a header line referencing the workflow skill, so the agent understands the context it operates in. Example:
   ```
