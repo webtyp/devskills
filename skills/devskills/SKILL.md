@@ -1,112 +1,28 @@
 ---
 name: devskills
-description: Sync skills from webtyp/devskills/skills to all installed LLM agents (Claude, Gemini, Antigravity, Codex, opencode, Qwen). Run after creating or modifying any SKILL.md file in devskills/skills/.
+description: How skills are written (one domain, link never repeat, ≤50 lines good, >150 refused) and synced from webtyp/devskills/skills to every installed agent (Claude, Gemini, Antigravity, Codex, opencode, Qwen). Use when creating, editing, splitting or auditing any SKILL.md, and run the sync after every change.
 ---
 
-# devskills
+# devskills — writing and syncing skills
 
-`devskills` is a CLI tool in `webtyp/devskills` that synchronizes skill files from the devskills repository to all installed LLM agent configurations.
+## A skill is a small memory of how ONE thing is done, not a manual
 
-## When to Run
+- **One domain per skill (SRP).** Content of another domain moves to that skill.
+- **Link, never repeat (DRY):** name the owning skill in bold (`**codejob**`); duplication found → split or delete.
+- **Size:** good ≤ 50 lines; > 50 warns; > 150 makes `devskills` refuse to sync (`CheckSkills`, `SkillLinesGood`/`SkillLinesMax`).
+- Imperative rules, one line each; rationale only when it prevents a misuse. The reader is an agent.
+- Format: `skills/<name>/SKILL.md` with frontmatter `name` + `description` (what it covers + "Use when …" triggers).
+- English (master plans are the exception: **master-plan**).
 
-After creating or modifying any `SKILL.md` in `webtyp/devskills/skills/<name>/`:
+## Sync — after every SKILL.md change
 
 ```bash
 cd webtyp/devskills && go install ./cmd/devskills && devskills -f
+grep -c "<a new phrase>" ~/.claude/skills/<name>/SKILL.md   # verify it landed
 ```
 
-**The rebuild step is mandatory**: skills are EMBEDDED in the binary at
-compile time (`//go:embed skills` in `devskills.go`) — `devskills` does NOT
-read the working directory. Running the old binary reinstalls the OLD
-embedded skills and still prints "Skills updated". Always verify the change
-landed:
-
-```bash
-grep -c "<some new phrase>" ~/.claude/skills/<name>/SKILL.md
-```
-
-## How It Works
-
-1. Skills live in `webtyp/devskills/skills/` (source of truth) and are
-   embedded into the `devskills` binary when it is built.
-2. `devskills` installs the embedded skills to `~/skills/`.
-3. It then symlinks each skill individually — `~/skills/<name>` — into every
-   detected LLM's skills dir (`~/.claude/skills/<name>`, `~/.gemini/skills/<name>`,
-   `~/.gemini/config/skills/<name>`,
-   `~/.codex/skills/<name>`, `~/.qwen/skills/<name>`,
-   `~/.config/opencode/skills/<name>`, `~/.agents/skills/<name>`). Per-skill
-   linking (rather than symlinking the whole directory) lets an agent's own
-   skills dir also hold vendor-bundled skills without devskills overwriting
-   them; if a per-skill symlink can't be created, it falls back to copying
-   that skill's files.
-
-## Installation
-
-`devskills` is part of `webtyp.com/devskills`.
-
-**Step 1 — Install the binary:**
-
-```bash
-go install webtyp.com/devskills/cmd/devskills@latest
-```
-
-Or install all devskills binaries at once (requires the repo to be cloned first):
-
-```bash
-go install webtyp.com/devskills/cmd/devskills@latest && devskills
-```
-
-**Step 2 — Clone the devskills repo** (required to EDIT skills — the binary
-carries an embedded copy from build time):
-
-```bash
-git clone https://github.com/webtyp/devskills
-cd devskills
-devskills
-```
-
-To pick up local skill edits: `git pull` (or edit) + `go install ./cmd/devskills` + `devskills -f`.
-
-## Usage
-
-```bash
-# Sync all installed LLMs
-devskills
-
-# Sync only Claude
-devskills -l claude
-
-# Force overwrite with backup
-devskills -f
-```
-
-## Skill File Format
-
-Each skill is a folder with a single `SKILL.md`:
-
-```
-webtyp/devskills/skills/
-└── myskill/
-    └── SKILL.md
-```
-
-`SKILL.md` frontmatter:
-```markdown
----
-name: myskill
-description: One-line description used by the agent to decide when to apply this skill.
----
-
-# Skill content here
-```
-
-## After Creating a New Skill
-
-1. Write `SKILL.md` in `webtyp/devskills/skills/<skillname>/`
-2. Run `devskills` from the shell
-3. The skill is immediately active in all installed agents
-
-## Important
-
-- `devskills` is a **local developer tool** — never include it in `PLAN.md` files sent to external agents.
-- Skills are read-only context for agents — agents do not run `devskills` themselves.
+- Rebuilding is mandatory: skills are embedded (`//go:embed skills`); the old binary reinstalls old skills and still prints "Skills updated".
+- Size check runs first: an oversized skill prints the error and nothing is installed; long ones print `⚠️ long: <name> (N lines > 50)`.
+- Installs to `~/skills/`, then symlinks each skill into every detected agent dir (`~/.claude/skills/<name>`, `~/.gemini/…`, `~/.codex/…`, `~/.qwen/…`, `~/.config/opencode/…`, `~/.agents/…`); copies when a symlink fails. Vendor skills in those dirs are preserved.
+- `devskills -l claude` syncs one agent.
+- Never put `devskills` in a `PLAN.md` for an external agent.

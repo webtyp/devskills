@@ -27,6 +27,8 @@ devskills -f
 
 Skills are embedded at compile time (`//go:embed skills`) and installed to `~/skills/`, then symlinked per-skill into each detected agent's skills dir (`~/.claude/skills/<name> -> ~/skills/<name>`, and likewise for `~/.gemini`, `~/.codex`, `~/.qwen`, `~/.config/opencode`, `~/.agents`, `~/.gemini/config`). Linking per-skill — instead of the whole directory — lets an agent's own skills dir also hold vendor-bundled skills (e.g. Codex's `~/.codex/skills/.system/`) without devskills overwriting them.
 
+Before installing, `devskills` checks every skill's size (`CheckSkills`): over 150 lines it refuses to sync; over 50 it prints `⚠️ long: <name> (N lines > 50)`. Skills no longer embedded are removed from `~/skills/`. Writing rules: skill **devskills**.
+
 After editing any `SKILL.md` in `devskills/skills/<name>/`:
 
 ```bash

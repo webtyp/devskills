@@ -59,9 +59,9 @@ func (c *RangeSlider) RenderCSS() *css.Stylesheet {
 - `Cue(cue, part, …)` reacts to an interaction cue (`widget.Hover`, …).
 - `On(device, …)` / `OnlyOn(device, …)` scope to a device.
 
-**`Stylesheet()` runs `Validate()` and panics on an invalid composition.** A
-test that merely calls `RenderCSS()` therefore also asserts the stylesheet is
-legal — always have one.
+**`Stylesheet()` runs `Validate()` and panics on an invalid composition.** The repo's
+conformance suite calls every `RenderCSS()`, so registration is the test; never assert emitted
+declarations (**testing** → «What deserves a test»).
 
 ## Use the composed recipe, not its parts
 

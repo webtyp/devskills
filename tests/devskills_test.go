@@ -364,3 +364,29 @@ func TestCopyFile(t *testing.T) {
 		t.Errorf("content mismatch")
 	}
 }
+
+func TestLLM_InstallSkills_RemovesStaleSkills(t *testing.T) {
+	tmpDir := t.TempDir()
+	t.Setenv("HOME", tmpDir)
+
+	skillsRoot := filepath.Join(tmpDir, "skills")
+	stale := filepath.Join(skillsRoot, "removed-skill")
+	foreign := filepath.Join(skillsRoot, "not-a-skill")
+	os.MkdirAll(stale, 0755)
+	os.MkdirAll(foreign, 0755)
+	os.WriteFile(filepath.Join(stale, "SKILL.md"), []byte("old"), 0644)
+	os.WriteFile(filepath.Join(foreign, "notes.txt"), []byte("keep"), 0644)
+
+	if _, err := devskills.NewLLM().InstallSkills(); err != nil {
+		t.Fatalf("InstallSkills: %v", err)
+	}
+	if _, err := os.Stat(stale); !os.IsNotExist(err) {
+		t.Error("a skill no longer embedded must be removed")
+	}
+	if _, err := os.Stat(filepath.Join(foreign, "notes.txt")); err != nil {
+		t.Error("a folder without SKILL.md is not devskills' and must be kept")
+	}
+	if _, err := os.Stat(filepath.Join(skillsRoot, "devskills", "SKILL.md")); err != nil {
+		t.Error("embedded skills must stay installed")
+	}
+}

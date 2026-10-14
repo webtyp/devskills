@@ -1,6 +1,6 @@
 ---
 name: testing
-description: Testing workflow with gotest CLI, gopush publishing, mocking patterns, WASM/stdlib dual testing, and diagram-driven testing. Use when writing or running tests.
+description: What deserves a test (behaviour and domain rules, never the look) and how tests are written and run — gotest, tests/ location, never export for a test, mocks, WASM/stdlib dual pattern, diagram-driven tests. Use before writing, planning or reviewing any test.
 ---
 
 # Testing
@@ -11,6 +11,18 @@ description: Testing workflow with gotest CLI, gopush publishing, mocking patter
 > at the edge — plus a **conformance suite** in the repo owning the contract once
 > a second implementation exists. This skill covers HOW tests are written and
 > run; that one covers WHICH test an API owes.
+
+## What deserves a test — behaviour that must keep working, never the look
+
+Ask before writing one: **"does it fail when the product is broken, and only then?"** No → do not write it.
+
+- **Test:** domain rules (validation, state machines, calculations, permissions, tenant isolation); contracts between pieces (encoding, routing, a public API's observable behaviour); behaviour a user relies on (form validation timing, submit, keyboard and focus, the ARIA contract a role promises); every confirmed bug (**bug-fix-flow**).
+- **Do not test:** the look — CSS declarations, colours, sizes, spacing, markup order, class strings, copy; trivial code (a recipe composing two options, a getter); implementation details instead of outcomes. These are *change-detector* tests: they break on every intended change and never catch a real defect.
+- The look is verified **by eye in the running app** (webtyp MCP screenshot), not by the suite.
+- Structural guards are written **once per repo** (a conformance suite: stylesheets validate, classes match, Kind allows states), never copied per component.
+- One test per behaviour, through the public API, the way a consumer uses it.
+
+## Running and placing tests
 
 - **Testing Runner (`gotest`):** For Go tests, ALWAYS use the globally installed `gotest` CLI command. **DO NOT** use `go test` directly, and **DO NOT** invoke it via `go run webtyp.com/devflow/cmd/gotest`. Simply type `gotest` (no arguments) for the full suite, or `gotest -run TestName`. It automatically handles `-vet`, `-race`, `-cover`, WASM tests, and README badges.
 - **`gotest` in Agent Plans:** When writing a `PLAN.md` destined for an external agent (e.g., Jules), you MUST include the following installation step as the **first prerequisite** in the plan, because external agents run in isolated environments where `gotest` is not globally available:

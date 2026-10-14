@@ -105,22 +105,16 @@ complicated one sound simpler than it is.
 ## Everything else
 
 - **Documentation First:** You MUST update the documentation *before* coding or running `gopush`.
-- **Context-Aware Rule Compilation:** Every `PLAN.md` MUST start with a "Development Rules" section that copies/pastes the relevant constraints from this skill file (e.g., WASM restrictions, DI rules).
 
 - **Standard Documents:**
     - **`docs/ARCHITECTURE.md`:** Defines WHAT & WHY (abstract design, constraints). NO implementation code.
-    - **`docs/PLAN.md`:** Defines HOW (steps, reference code, test strategy). It is the master orchestrator for execution. **Ephemeral**: `codejob close` deletes it when the loop closes; while in flight only its `STATUS` frontmatter changes (see skill agents-workflow).
+    - **`docs/PLAN.md`:** Defines HOW (steps, reference code, test strategy). It is the master orchestrator for execution. **Ephemeral**: `codejob close` deletes it when the loop closes; while in flight only its `STATUS` frontmatter changes (skill **codejob**).
     - **`docs/DESIGN.md`:** (On demand) Justifies technical decisions and explores alternatives. Must NOT duplicate `ARCHITECTURE.md`. Heavily linked by `ARCHITECTURE.md` to keep the main document clean and focused on abstract structure rather than debate. Every decision entry MUST open with the background a reader needs to care about it — what problem the code was solving, what the candidates even are — before naming the choice. A decision entry that starts at the comparison has skipped the only part a newcomer needed.
     - **`docs/SPECS.md`:** (On demand) Strict functional requirements, exact inputs/outputs, and data logic. Must NOT duplicate `ARCHITECTURE.md`. `PLAN.md` consumes it to derive exact test cases and assertions (link direction: plan → specs, never the reverse).
     - **`docs/SKILL.md`:** (On demand) Provides an LLM-friendly, highly condensed summary of the library's context and constraints.
     - **Modular Docs:** If `ARCHITECTURE.md` or `PLAN.md` become too large, they must be divided into domain-specific, uppercase, underscore-separated files (e.g., `docs/BUS_ARCHITECTURE.md`, `docs/CHART_BAR_PLAN.md`).
 
-- **API changes carry a `## Design gate` section:** when a `PLAN.md` adds or
-  changes any public API, that section holds the five answers of skill
-  **api-design** (prior art, novice-name test, complexity ledger, where it
-  belongs, what it deletes). Do not restate those rules in the document — link
-  to the skill; two copies of a rule drift, and the stale one is the one someone
-  follows.
+- **Writing a skill:** skill **devskills**.
 
 - **Diagram Standards:**
     - **Format & Location:** Markdown files (`*.md`) containing Mermaid code, stored in `docs/diagrams/` and linked from the architecture documents.

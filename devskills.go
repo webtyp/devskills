@@ -101,11 +101,47 @@ func (l *LLM) InstallSkills() (string, error) {
 		// Escribir archivo (sobrescribir siempre para actualizar)
 		return os.WriteFile(destPath, data, 0644)
 	})
-	return destRoot, err
+	if err != nil {
+		return destRoot, err
+	}
+	return destRoot, l.removeStaleSkills(destRoot)
+}
+
+// removeStaleSkills borra de destRoot cada skill (carpeta con SKILL.md) que ya
+// no está embebido: un skill renombrado o dividido no debe seguir instalado.
+// Una carpeta sin SKILL.md no es de devskills y se deja intacta.
+func (l *LLM) removeStaleSkills(destRoot string) error {
+	entries, err := os.ReadDir(destRoot)
+	if err != nil {
+		return err
+	}
+	for _, e := range entries {
+		if !e.IsDir() {
+			continue
+		}
+		if _, err := fs.Stat(embeddedSkills, "skills/"+e.Name()+"/"+skillFile); err == nil {
+			continue
+		}
+		dir := filepath.Join(destRoot, e.Name())
+		if _, err := os.Stat(filepath.Join(dir, skillFile)); err != nil {
+			continue
+		}
+		l.log("Removing stale skill:", dir)
+		if err := os.RemoveAll(dir); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Sync sincroniza todos los LLMs instalados e instala los skills
 func (l *LLM) Sync(specificLLM string, force bool) (string, error) {
+	// 0. Verificar tamaño: un skill de más de SkillLinesMax líneas no se instala
+	warnings, err := CheckSkills(embeddedSkills)
+	if err != nil {
+		return "", err
+	}
+
 	// 1. Instalar skills
 	destRoot, err := l.InstallSkills()
 	if err != nil {
@@ -154,7 +190,11 @@ func (l *LLM) Sync(specificLLM string, force bool) (string, error) {
 	}
 
 	// Construir resumen
-	summary := "Skills updated. "
+	summary := ""
+	for _, w := range warnings {
+		summary += w + "\n"
+	}
+	summary += "Skills updated. "
 	if len(updated) > 0 {
 		summary += fmt.Sprintf("✅ Config updated: %v", updated)
 	}

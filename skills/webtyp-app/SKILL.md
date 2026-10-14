@@ -1,166 +1,39 @@
 ---
 name: webtyp-app
-description: Global MCP daemon for webtyp/app — how to start the server, available tools, IDE auto-config, SSE logs, and diagnostics. Use when working with the webtyp development environment.
+description: The global webtyp MCP daemon — starting it, starting a project headless, the human TUI, IDE auto-config, auth token, HTTP endpoints and diagnostics when the MCP does not answer. Use when working with the webtyp development environment.
 ---
 
-# webtyp/app — MCP Integration
+# webtyp/app — the dev daemon
 
-`webtyp/app` es el orquestador central del entorno de desarrollo. Expone un servidor MCP global persistente en el puerto `6060`.
+- **The agent talks to projects only through the global MCP server on `:6060`.** Not running → `webtyp -mcp`.
+- Start a project with the MCP tool `start_development` (headless). **Never run `webtyp` in a shell to start a project.**
+- Tools are registered once at startup and self-describe via `tools/list`; `browser_*` tools answer "not ready" until a project is active.
+- The human runs `webtyp` (TUI, SSE log viewer): `Ctrl+C` detaches, the project keeps running; `q` stops the project.
 
-## Cómo iniciar el MCP
+## IDE config — written automatically at startup (`app.ConfigureIDEs`)
 
-```bash
-webtyp -mcp          # inicia el daemon global (MCP + SSE en :6060)
-webtyp               # abre el TUI cliente (se conecta al daemon en :6060)
-```
-
-El daemon persiste entre proyectos. El TUI solo es un visor SSE — Ctrl+C lo cierra sin detener el servidor.
-
-## Configuración IDE (auto-gestionada)
-
-Al iniciar, `app.ConfigureIDEs` escribe automáticamente la configuración MCP en:
-
-| IDE | Archivo |
-|-----|---------|
-| VS Code | `~/.config/Code/User/mcp.json` o profiles |
-| Claude Code | `~/.claude.json` |
+| IDE | File |
+|---|---|
+| Claude Code | `~/.claude.json` → `"webtyp": {"url": "http://localhost:6060/mcp", "type": "http"}` |
+| VS Code | `~/.config/Code/User/mcp.json` (or profiles) |
 | Antigravity | `~/.gemini/antigravity/mcp_config.json` |
 
-Formato Claude Code (`~/.claude.json`):
-```json
-{
-  "mcpServers": {
-    "webtyp": {
-      "url": "http://localhost:6060/mcp",
-      "type": "http"
-    }
-  }
-}
-```
+Auth: the daemon persists an API key (`WEBTYP_API_KEY`); requests carry `Authorization: Bearer <key>`. No key → open.
 
-## Auth
+## Endpoints
 
-El daemon genera y persiste un API key en disco (`cfg.APIKeyPath`).
-- `mcp.NewTokenAuthorizer(apiKey)` — activo cuando `apiKey != ""`
-- `mcp.OpenAuthorizer()` — activo cuando no hay API key
+| Route | Auth | Purpose |
+|---|---|---|
+| `POST /mcp` | Bearer | JSON-RPC 2.0 MCP + `webtyp/*` methods |
+| `GET /logs` | — | SSE log stream |
+| `GET /webtyp/state` · `POST /webtyp/action` | Bearer | TUI state · key actions (`q`, `r`, start, stop, restart) |
+| `GET /version` | — | daemon version |
 
-El token va en el header: `Authorization: Bearer <apiKey>`
-
-## Herramientas MCP registradas (16 tools — registro estático al arrancar)
-
-Todas las tools se registran **una sola vez al iniciar el daemon**. No hay `list_changed`.
-
-### Daemon tools (3) — siempre disponibles
-
-| Tool | Descripción |
-|------|-------------|
-| `start_development` | Inicia/cambia proyecto activo en modo headless |
-| `app_info` | URL, dir público, modo WASM, módulos del proyecto activo |
-| `app_get_logs` | Logs recientes con filtro de sección (e.g. `BUILD`, `SERVER`) |
-
-### Browser tools (13) — visibles desde el arranque, "no listo" sin proyecto activo
-
-| Tool | Descripción |
-|------|-------------|
-| `browser_navigate` | Navega a una URL |
-| `browser_click_element` | Click en un selector CSS |
-| `browser_fill_element` | Rellena un campo de texto |
-| `browser_swipe_element` | Gesto swipe en un elemento |
-| `browser_evaluate_js` | Ejecuta JavaScript y retorna resultado |
-| `browser_get_content` | Obtiene HTML/texto de la página |
-| `browser_get_console` | Logs de consola del browser |
-| `browser_get_errors` | Errores JS de la página |
-| `browser_get_network_logs` | Peticiones de red |
-| `browser_get_performance` | Métricas de rendimiento |
-| `browser_inspect_element` | Atributos y estilos de un elemento |
-| `browser_screenshot` | Captura pantalla |
-| `browser_emulate_device` | Emula viewport de dispositivo |
-
-### Arquitectura de registro (daemon, desde v0.5.28)
-
-```
-daemon startup
-    ├── browser singleton = cfg.BrowserFactory(...)   // una sola instancia de larga vida
-    ├── daemonToolProvider (dtp)
-    │     ├── start_development
-    │     ├── app_get_logs
-    │     └── app_info
-    ├── BrowserAdapter{dtp.browser}                   // delega a browser.GetMCPTools()
-    └── mcp.NewServer([..cfg.McpToolHandlers, dtp, BrowserAdapter])
-
-start_development RPC
-    └── runProjectLoop() → onProjectReady(h)
-          ├── dtp.setActiveHandler(h)   // app_info / app_get_logs operativos
-          └── browser.OpenBrowser(...)  // browser_* operativos
-```
-
-> **No existe `ProjectToolProxy`** (eliminado en v0.5.28). El browser singleton expone sus
-> tools desde el arranque; retornan error "not ready" hasta que un proyecto está activo.
-
-## Flujo daemon/cliente
-
-```
-webtyp -mcp  →  runDaemon()
-    ├── crea mcp.Server (Auth + SSE)
-    ├── registra daemonToolProvider + BrowserAdapter (estático)
-    └── HTTP :6060
-          ├── POST /mcp                → srv.HandleMessage (JSON-RPC 2.0)
-          ├── GET  /logs              → SSE log stream
-          ├── GET  /webtyp/state    → estado del proyecto activo
-          └── POST /webtyp/action   → keyboard webhooks (q, r, start, stop, restart)
-
-webtyp (sin flags)  →  clientMode
-    ├── detecta daemon en :6060
-    ├── conecta GET /logs (SSE)
-    └── TUI viewer (Bubble Tea)
-          ├── Ctrl+C → detach (daemon sigue corriendo)
-          └── q      → POST /webtyp/action {key:"q"} → detiene proyecto
-```
-
-## Endpoints HTTP
-
-| Método | Ruta | Auth | Descripción |
-|--------|------|------|-------------|
-| POST | `/mcp` | Bearer | JSON-RPC 2.0 MCP + métodos `webtyp/*` |
-| GET | `/logs` | — | SSE stream de logs del proyecto activo |
-| GET | `/webtyp/state` | Bearer | Estado JSON del TUI activo |
-| POST | `/webtyp/action` | Bearer | Dispatch de acciones: `{key, value}` |
-| GET | `/version` | — | Versión del daemon |
-
-## SSE (streaming de notificaciones)
-
-- Logs del proyecto → canal `"logs"` (consumido por TUI cliente)
-- Notificaciones MCP → canal `"mcp"`
-- No se emite `notifications/tools/list_changed` (registro estático)
-
-## Archivos clave
-
-| Archivo | Rol |
-|---------|-----|
-| `daemon.go` | `runDaemon()`: inicia MCP global, gestiona auth+SSE+HTTP; `daemonToolProvider` |
-| `mcp_ide.go` | `ConfigureIDEs()`, `WriteMCPConfig()`: auto-config de IDEs |
-| `mcp_registry.go` | `BrowserAdapter`, `buildProjectProviders()` (modo standalone) |
-| `sse_publisher.go` | Ring buffer `[100]LogEntry`; `RecentLogs(section, limit)` |
-| `section-build.go` | Emite `✅ build ok` / `❌ build failed` en sección BUILD |
-| `start.go` | Wiring modo standalone: llama `ConfigureIDEs` + `buildProjectProviders` |
-
-## Diagnóstico si el MCP no responde
+## MCP does not answer
 
 ```bash
-# 1. Verificar que el daemon corre
-curl http://localhost:6060/mcp \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","method":"initialize","id":"1","params":{"protocolVersion":"2024-11-05","clientInfo":{"name":"test","version":"0"}}}'
-
-# 2. Ver tools disponibles (reemplaza <TOKEN> con WEBTYP_API_KEY del .env)
-curl http://localhost:6060/mcp \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <TOKEN>" \
-  -d '{"jsonrpc":"2.0","method":"tools/list","id":"1","params":{}}'
-
-# 3. Si no responde, iniciar el daemon
-webtyp -mcp
-
-# 4. Verificar configuración en Claude Code
-cat ~/.claude.json | grep -A5 mcpServers
+curl http://localhost:6060/mcp -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"initialize","id":"1","params":{"protocolVersion":"2024-11-05","clientInfo":{"name":"t","version":"0"}}}'
+webtyp -mcp                                   # not running → start it
+grep -A5 mcpServers ~/.claude.json            # check the IDE entry
 ```
