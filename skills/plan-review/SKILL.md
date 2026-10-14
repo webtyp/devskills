@@ -1,6 +1,6 @@
 ---
 name: plan-review
-description: Reviewing the PR of a dispatched docs/PLAN.md — evidence checks commit by commit, docs verification, running the suite, review rounds (comment first, fix second) and what to do with errors after execution. Use when a plan's STATUS is review/reviewing or the user asks to review a plan's PR.
+description: Reviewing the PR of a dispatched docs/PLAN.md — evidence checks commit by commit, docs verification, running the suite, at most 2 feedback attempts to the agent then local fix or local execution, and what to do with errors after merge. Use when a plan's STATUS is review/reviewing or the user asks to review a plan's PR.
 ---
 
 # Reviewing a plan's PR
@@ -20,13 +20,14 @@ Checkout: `codejob pull` (**codejob**). The spec is `docs/PLAN.md` on the PR bra
 
 A deviation from the plan is judged on its merits, not rejected by default.
 
-## Outcome
+## Outcome — at most 2 attempts by the agent
 
 | Situation | Action |
 |---|---|
 | All correct | Tell the user to merge, or `codejob close 'msg'` |
 | Small fix (1 file, few lines), any round | Fix it on the PR branch yourself |
-| Round 1 errors | One `gh pr comment <url> --body-file <f>` listing each finding (file:line, wrong, required, how to verify); no code edits |
-| Round 2, correction still wrong | Fix on the PR branch, `gotest`, `codejob close 'msg'` |
+| Attempt 1 or 2 fails (PR wrong, tests red) | Feedback to the agent: `codejob reply "<findings>"` while `running`, or one `gh pr comment <url> --body-file <f>` on its PR — each finding with file:line, what is wrong, what the plan required, how to verify; no code edits |
+| Attempt 2 still wrong, PR published | Fix it locally on the PR branch, `gotest`, `codejob close 'msg'` |
+| Attempt 2 still wrong, nothing published | Wait for the agent to publish; if it never does, execute the plan locally (**agents-workflow** → «Local execution») |
 | Error found after merge | New `docs/PLAN.md` with the exact fix |
 | The plan's design was wrong | Q&A with the user first (**agents-workflow**) |

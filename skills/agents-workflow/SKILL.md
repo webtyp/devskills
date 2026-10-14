@@ -10,7 +10,7 @@ Plan content: **plan-authoring**. Dispatch, frontmatter, publish: **codejob**. R
 ## Role of the planning agent
 
 - Edits only `.md` files unless the user explicitly asks for code.
-- A code change touching more than one file → `docs/PLAN.md`, never a direct edit (exceptions: **plan-review** → review rounds).
+- A code change touching more than one file → `docs/PLAN.md`, never a direct edit (exceptions: **plan-review** → «Outcome»).
 - Never renames, moves or deletes `docs/PLAN.md` — `codejob` owns its lifecycle (sole exception: local execution, below).
 
 ## Plan or direct edit
