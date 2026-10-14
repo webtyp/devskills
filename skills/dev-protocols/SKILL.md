@@ -11,7 +11,7 @@ description: Development protocols including language rules (English docs, mirro
 > zero-technical-debt rules and "fix at the root, never at the leaf" — a defect
 > found one library down blocks the plan instead of being patched here.
 
-- **Language Protocol:** Plans and documentation must be generated in **English**. Chat conversations with the user must match the language used by the user (mirroring).
+- **Language Protocol:** Plans and documentation must be generated in **English**. Chat conversations with the user must match the language used by the user (mirroring). **Exception:** a multi-repo master plan (`webtyp/docs/<TOPIC>_MASTER_PLAN.md`) is written in **the language the user writes in** (Spanish if they write Spanish, Portuguese if Portuguese…) — it is the document the developer reviews, and reading it in their native language lowers the cognitive load of the review. Plans dispatched to execution agents (per-library `docs/PLAN.md`) always stay in **English** (skill **agents-workflow** → «Multi-repo work»).
 - **Strategic Justification:** Always provide the rationale for your chosen solution based on best practices, offering alternatives and explaining why the selection fits the context.
 - **Explicit Execution:** Never start writing/modifying actual codebase source code unless explicitly told to "execute the plan", "ok", or "ejecuta".
 

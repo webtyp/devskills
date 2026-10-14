@@ -321,13 +321,15 @@ binary uploads, static SSR, and auth flows.
 A project may instead use **plain REST** for its own API (e.g. a Cloudflare
 Worker where MCP-over-goflare is unproven). Then:
 
-- `routes/routes.go` carries the **explicit mount table** — every
+- `config/routes.go` carries the **explicit mount table** — every
   `r.Get/r.Post/...` with its `.Public()`/`.Authenticated()`, and nothing else.
+  Security headers are applied here via `webtyp.com/router/security`:
+  `policy := security.Policy{}.AllowImages("https://..."); r.Use(policy.Middleware())`.
   It is the REST equivalent of `modules/server.go`'s op-registration. (The file
   itself is not REST-specific: **any** project with a backend declares it — see
   §3b. What REST changes is what goes *inside* it.)
 - The renderer-touching half of the modules moves to a `modules/panel/`
-  package (`//go:build wasm`) that `routes/` **never** imports — that missing
+  package (`//go:build wasm`) that `config/routes.go` **never** imports — that missing
   import is the package boundary keeping `dom`/`layout`/`crudview` out of
   `edge.wasm` (a build tag is not enough: `goflare`/`sitec` pass no `-tags`).
 - Server-side handler modules stay flat under `modules/<domain>/`
@@ -339,7 +341,7 @@ tests in `tests/`, views in `browser.go`, no subdirs in a module — is unchange
 ## When adding the optional dirs
 
 - **`edge/main.go`** (`//go:build wasm`): builds the D1/R2 bindings, calls
-  `config.New...`/`routes.Register` (or the MCP mount), `edge.Serve(r)`. It
+  `config.New...`/`config.Register` (or the MCP mount), `edge.Serve(r)`. It
   never does schema DDL.
 - **`cmd/migrate/main.go`** (`//go:build !wasm`): reads `CLOUDFLARE_*` /
   `D1_*` env, runs each package's `Migrate`/`Sync` against the D1 HTTP API.
@@ -350,8 +352,8 @@ tests in `tests/`, views in `browser.go`, no subdirs in a module — is unchange
 
 - [ ] `config/` imports nothing from the repo's own module tree.
 - [ ] `web/*.go` are `package main`, contain only env/origin resolution + a call into `config`.
-- [ ] **A project with a backend declares `routes/routes.go`, and `Register` takes exactly one parameter (`router.Router`).** More parameters make the generated main pass `nil`.
-- [ ] **No `web/server.go` unless the generated main genuinely cannot serve** — check the startup log says `External mode: routes/routes.go present, generated main from …`, not `user-written server main at …`.
+- [ ] **A project with a backend declares `config/routes.go`, and `Register` takes exactly one parameter (`router.Router`).** More parameters make the generated main pass `nil`.
+- [ ] **No `web/server.go` unless the generated main genuinely cannot serve** — check the startup log says `External mode: config/routes.go present, generated main from …`, not `user-written server main at …`.
 - [ ] `.build/` is in `.gitignore` (the daemon adds it; verify it survived).
 - [ ] `RootCSS()` is in `config/css.go` (`!wasm`), not `web/`.
 - [ ] `config/lang.go` holds the app's only `lang.RegisterWords` call; no library registers its own dictionary; `web/client.go` (and `web/server.go`, if present) import `config`.
@@ -365,4 +367,4 @@ tests in `tests/`, views in `browser.go`, no subdirs in a module — is unchange
 - [ ] No `_test.go` outside `tests/`.
 - [ ] `config.Config` does not exist — types are `ServerConfig`/`ClientConfig`.
 - [ ] `edge/main.go` does no schema DDL; `cmd/migrate/main.go` is a thin main.
-- [ ] (REST projects) `routes/routes.go` is the only file with `r.Get/r.Post`; `routes/` never imports `modules/panel/`.
+- [ ] (REST projects) `config/routes.go` is the only file with `r.Get/r.Post`; backend routing never imports `modules/panel/`.

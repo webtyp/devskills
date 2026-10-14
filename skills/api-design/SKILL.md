@@ -30,7 +30,7 @@ without looking accumulates novel vocabulary for solved problems.
 
 > *Routes:* file-system (Next.js, Remix) · central manifest (Rails, Django, chi `Mount`) · runtime
 > discovery (Spring, NestJS). Only the first two make routes knowable **without running the app** — so
-> `routes/routes.go` + `Mount(prefix, fn)` is family two, chosen for that property.
+> `config/routes.go` + `Mount(prefix, fn)` is family two, chosen for that property.
 
 ### 2. The novice-name test
 

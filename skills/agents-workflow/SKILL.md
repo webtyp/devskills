@@ -121,7 +121,33 @@ The planning agent MUST perform a conversational Q&A with the user before writin
 3. **Never present a single take-it-or-leave-it proposal for an architectural choice.** Offer at least two candidate approaches with honest trade-offs and a recommendation, and wait for the user's decision. Writing a plan around an un-offered choice invalidates the plan.
 4. Only write `docs/PLAN.md` once all decisions are resolved.
 
-**The Q&A stays in chat. `PLAN.md` contains only final resolutions.**
+**`PLAN.md` contains only final resolutions.** Where the Q&A lives depends on
+the scope — see the next section.
+
+### Multi-repo work — the master plan is the conversation state
+
+When a task spans more than one library (a cross-cutting wave), **all state lives
+in `.md` files, never in chat**:
+
+1. **One master plan, in the user's language** (the language they write in the
+   chat), at `webtyp/docs/<TOPIC>_MASTER_PLAN.md` — exception to the English rule
+   of skill **dev-protocols**: it is the document the developer reviews, and their
+   native language makes the review easier. Dispatched plans stay in English. Indexed in `webtyp/docs/MASTER_PLANS.md` as above.
+2. **The Q&A is written in the master plan, not in chat**: a `## Preguntas
+   abiertas` section with numbered questions (`P1`, `P2`…), each with ≥2
+   options, honest trade-offs, a recommendation and its justification (prior
+   art, measured evidence with `file:line` links). The user answers in the file
+   or in chat; the agent then moves the answer to `## Decisiones` (`D1`, `D2`…,
+   citing the question it closes) and deletes the question. The document is
+   edited as the work advances — never forked into a second one.
+3. **No summaries in chat.** The chat reply names the files written or updated
+   and nothing else; repeating the document's content makes the user read it twice.
+4. **One `docs/PLAN.md` per committed library** (English, skill
+   **plan-authoring**), written only once the master plan's decisions for that
+   library are closed, and dispatched with `codejob`. The master plan lists each
+   library, its plan's status and the order between them.
+5. A new working rule the user states during the work is added to this skill
+   (or the skill that owns it) in the same turn — not to agent memory.
 
 > **If the task adds or changes any public API** (an exported symbol, a
 > signature, a CLI flag, a file convention, a declaration format), the Q&A is not
