@@ -37,9 +37,10 @@ New work for a repo whose `docs/PLAN.md` exists:
 2. **Running or in review** (`STATUS` set): it cannot change. Write the new work to
    `docs/PLAN_<TOPIC>.md` and record it in the master plan; when the running plan closes, that file
    becomes `docs/PLAN.md` (merging, per step 1, with any other pending plan of the repo).
-3. **Stale plan files** (`docs/PLAN_*.md`, `docs/PLAN_STAGE_*.md` whose work is already in the code):
-   verify against the code, then the new plan deletes them in its docs stage — a leftover pointing at
-   `PLAN.md` misleads the executor.
+3. **Obsolete plan files** (`docs/PLAN_*.md`, `docs/PLAN_STAGE_*.md`, drafts, whose work is already in
+   the code or superseded): verify against the code, then **delete them now** — they are docs, the
+   planning agent deletes them directly and publishes. Never leave one for a later plan: a leftover
+   pointing at `PLAN.md` misleads the executor.
 
 ## Local execution — `LAST_PLAN_EXECUTED.md`
 
