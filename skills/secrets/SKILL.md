@@ -13,7 +13,7 @@ A secret is any value that grants access: API tokens, private keys, client secre
 - **The developer types it once, into the `webtyp/app` wizard** (a `Sensitive` step). Docs and agents never say "add `X=...` to `.env`", "`export X=...`" or "`gh secret set X`" with a value.
 - **Destinations are fed by tooling, from the keyring**: CI secrets, Worker secrets, etc. Copying a value by hand into a dashboard is the documented exception only when the provider has no API (say so, with the screen and field).
 - **The project declares which secrets it needs; the framework stores and delivers them.** A library never hardcodes a list of secret names.
-- **An agent never asks for, reads back or prints a secret value.** It names the key, says what it is, where it comes from and what breaks without it (skill **documentation**), and points the user to the wizard.
+- **An agent never asks for, reads back or prints a secret value.** It names the key, says what it is, where it comes from and what breaks without it (skill **documentation**), guides the developer step by step through any manual provider screen, and points them to the wizard to type the value.
 - A secret found in `.env`, git history or a doc is a finding: report it, move it to the keyring, rotate it.
 - Tests generate their own throwaway keys (`asym.GenerateKeyPair()`, random bytes); never a real secret.
 
