@@ -1,6 +1,6 @@
 ---
 name: secrets
-description: Where secrets live in the webtyp ecosystem — only in webtyp/keyring, entered through the webtyp/app wizard, never in .env, the repo, a plan, a shell command or the chat; how a deploy destination (CI, Worker) receives them. Use when a project needs a token, key, password or client credential, when writing deploy docs or a plan that mentions one, or when tempted to tell the user to paste or `export` a value.
+description: Where secrets live in the webtyp ecosystem — in the destination's store in production and in webtyp/keyring locally, entered through the webtyp/app wizard, never in .env, the repo, a plan, a shell command or the chat; how a deploy destination (CI, Worker) receives them. Use when a project needs a token, key, password or client credential, when writing deploy docs or a plan that mentions one, or when tempted to tell the user to paste or `export` a value.
 ---
 
 # Secrets
@@ -9,7 +9,8 @@ A secret is any value that grants access: API tokens, private keys, client secre
 
 ## Rules
 
-- **It lives only in `webtyp/keyring`** (OS credential store; browser: WebCrypto). Never in `.env`, a committed file, `deploy.yaml`, a `docs/PLAN.md`, a log line, a test fixture or a chat message.
+- **Two places, no others.** In production it lives in the **destination's** store (GitHub Actions secrets, Worker secrets). On the developer's machine it lives in **`webtyp/keyring`** (OS credential store; browser: WebCrypto), the source the wizard feeds destinations from. Never in `.env`, a committed file, `deploy.yaml`, a `docs/PLAN.md`, a log line, a test fixture or a chat message.
+- **Destinations are write-only**: the keyring never fetches a secret back from the cloud. Missing locally → the wizard re-creates it (mint or generate, then replace at the destination) or asks for it. Flow: `webtyp/docs/diagrams/DEPLOY_SECRETS_FLOW.md`.
 - **The developer types it once, into the `webtyp/app` wizard** (a `Sensitive` step). Docs and agents never say "add `X=...` to `.env`", "`export X=...`" or "`gh secret set X`" with a value.
 - **Destinations are fed by tooling, from the keyring**: CI secrets, Worker secrets, etc. Copying a value by hand into a dashboard is the documented exception only when the provider has no API (say so, with the screen and field).
 - **The project declares which secrets it needs; the framework stores and delivers them.** A library never hardcodes a list of secret names.
