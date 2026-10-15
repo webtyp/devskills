@@ -26,26 +26,20 @@ Plan content: **plan-authoring**. Dispatch, frontmatter, publish: **codejob**. R
 3. An architectural choice gets ≥2 options with trade-offs and a recommendation; wait for the user.
 4. Write the plan only when every decision is resolved; it holds resolutions only. Single library → Q&A in chat; multi-repo → in the master plan (**master-plan**).
 
-## Never clobber a pending plan — the execution queue
+## A repo that already has a plan — merge, never queue
 
-If `docs/PLAN.md` already holds a pending plan:
+New work for a repo whose `docs/PLAN.md` exists:
 
-1. Move it to `docs/PLAN_<TOPIC>.md`; write the new one to `docs/PLAN_<NEW_TOPIC>.md`.
-2. Rewrite `docs/PLAN.md` as a queue that opens with:
-
-   ```markdown
-   # PLAN — execution queue for `<module>`
-
-   > If you were told to "execute the plan described in docs/PLAN.md", execute
-   > **ALL the plans below, in order**. Finish one (acceptance criteria green)
-   > before the next. Never mix changes between plans.
-
-   | Order | Plan | Subject |
-   |-------|------|---------|
-   | 1 | [PLAN_<TOPIC>.md](PLAN_<TOPIC>.md) | ... |
-
-   After all plans, run `gotest ./...` once more: everything green.
-   ```
+1. **Not dispatched yet** (no `STATUS`): add the new work as **more stages of that plan**, so one
+   dispatch does everything. Then reconcile both halves: dependencies/prerequisites, files touched
+   twice, deletions, docs that one half rewrites and the other contradicts, header, stages table,
+   acceptance. Fix every inconsistency in the same edit.
+2. **Running or in review** (`STATUS` set): it cannot change. Write the new work to
+   `docs/PLAN_<TOPIC>.md` and record it in the master plan; when the running plan closes, that file
+   becomes `docs/PLAN.md` (merging, per step 1, with any other pending plan of the repo).
+3. **Stale plan files** (`docs/PLAN_*.md`, `docs/PLAN_STAGE_*.md` whose work is already in the code):
+   verify against the code, then the new plan deletes them in its docs stage — a leftover pointing at
+   `PLAN.md` misleads the executor.
 
 ## Local execution — `LAST_PLAN_EXECUTED.md`
 
