@@ -14,6 +14,7 @@ An open choice in the plan is a Q&A gap, not a detail to delegate.
 - Ecosystem rules are **linked, never copied**: the plan opens with `> Read AGENTS.md at the repo root before any change.` Missing or stale `AGENTS.md` → write it before dispatch (**agents-md**). The plan holds only this change's decisions.
 - Cross-repo links are GitHub URLs (`https://github.com/webtyp/<repo>/blob/main/...`), never `../../`; content the executor needs from another repo is restated in the plan.
 - Code the executor cannot reach goes to `_temp/` (**codejob**).
+- **Every tool the plan names is installed in the plan.** The executor has none of the local CLIs: a `## Tools` section, first, with one `go install` line per tool the plan uses (catalog below). A command the plan runs without its install line is a defect.
 - Name every file per stage, including new ones.
 - Quote error messages verbatim; they become typed constants.
 - List every deletion, each with a grep-verifiable criterion (`grep -rn "oldFn" .` → empty). A weak agent never removes what the plan did not order.
@@ -23,6 +24,18 @@ An open choice in the plan is a Q&A gap, not a detail to delegate.
 - Public API change → `## Design gate` before the stages, five answers of **api-design** (read that skill; do not restate its criteria).
 - Sequential stages, a stages table at the end.
 - Never mention `gopush` or `codejob` inside the plan.
+
+## Tool catalog — copy the lines the plan needs
+
+| Tool | Install |
+|---|---|
+| `gotest` (always: every plan runs the suite) | `go install webtyp.com/devflow/cmd/gotest@latest` |
+| `langc` (translations, `lang.json`) | `go install webtyp.com/lang/cmd/langc@latest` |
+| `ormc` (regenerates `model_orm.go`) | `go install webtyp.com/ormc/cmd/ormc@latest` |
+| `sitec` (SSR / asset extraction) | `go install webtyp.com/sitec/cmd/sitec@latest` |
+| `weightsc` | `go install webtyp.com/weightsc/cmd/weightsc@latest` |
+
+Never in a plan: `gopush`, `codejob`, `devskills`, `webtyp` (local developer tools).
 
 ## Modular stage files
 

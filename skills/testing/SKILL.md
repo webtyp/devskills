@@ -25,10 +25,7 @@ Ask before writing one: **"does it fail when the product is broken, and only the
 ## Running and placing tests
 
 - **Testing Runner (`gotest`):** For Go tests, ALWAYS use the globally installed `gotest` CLI command. **DO NOT** use `go test` directly, and **DO NOT** invoke it via `go run webtyp.com/devflow/cmd/gotest`. Simply type `gotest` (no arguments) for the full suite, or `gotest -run TestName`. It automatically handles `-vet`, `-race`, `-cover`, WASM tests, and README badges.
-- **`gotest` in Agent Plans:** When writing a `PLAN.md` destined for an external agent (e.g., Jules), you MUST include the following installation step as the **first prerequisite** in the plan, because external agents run in isolated environments where `gotest` is not globally available:
-    ```bash
-    go install webtyp.com/devflow/cmd/gotest@latest
-    ```
+- **`gotest` in a plan:** its install line goes in the plan's `## Tools` (**plan-authoring** → «Tool catalog»).
 - **Publishing (`gopush`):** If tests pass and docs are updated, ALWAYS use the globally installed `gopush 'your commit message'` CLI command to deploy. **DO NOT** use standard `git commit` / `git push`, and **DO NOT** invoke it via `go run`. It handles testing, tagging, pushing, and updating dependencies automatically.
 
 - **Test location — `tests/`, the root only when justified:**
