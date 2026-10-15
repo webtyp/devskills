@@ -18,6 +18,8 @@ Per-library plans: **plan-authoring**; their loop: **codejob**.
 - Questions live in the file: `P<n>`, ≥2 options, one recommendation with evidence (`file:line`, prior art). Never ask what the code answers.
 - Chat reply = list of files touched. No summaries.
 - One `docs/PLAN.md` per library, only once its decisions are closed; the master plan tracks them in a table.
+- **Nothing is left in the conversation.** The moment decisions close, write **every** plan of the wave on disk — including follow-ups and small "in-session" tasks (each gets its own plan or exact instructions in the master). A plan whose repo already has a pending `docs/PLAN.md` goes to `docs/PLAN_<TOPIC>.md` and the master says so. Why: a session can end at any time; a plan that only exists in context makes later plans inconsistent.
+- Every addition sent to a running agent (`codejob reply`) is also recorded in the master, verbatim.
 - A new working rule from the user goes into the skill that owns it, same turn.
 - Numbering never restarts: new questions continue after the highest `P` used.
 
