@@ -17,26 +17,40 @@ You will use this whenever you are developing or testing an application that req
 
 Manual logins during local development waste time: every server restart or session expiration forces the developer to re-enter credentials or navigate through auth redirect flows. 
 
-Rather than creating custom bypasses, test-only login buttons, or fake mock users that diverge from real production security, `webtyp.com/auth` replays real credentials from `.env` directly through the active authenticators, minting a genuine session.
+Rather than creating custom bypasses, test-only login buttons, or fake mock users that diverge from real production security, `webtyp.com/auth` replays real credentials from the project's keyring directly through the active authenticators, minting a genuine session.
 
 ---
 
-## Configuration via `.env`
+## Configuration
 
-Add `DEV_AUTOLOGIN` to your application's `.env` file with the exact JSON payload expected by the configured authenticator:
+Declare `DEV_AUTOLOGIN` in `config/deploy.go`:
+
+```go
+deploy.Secret{
+	Key:    "DEV_AUTOLOGIN",
+	What:   "Credentials replayed to open a dev session automatically",
+	Source: deploy.Typed,
+	Guide:  []lang.Text{"Type the JSON payload of your authenticator, e.g. {\"code\":\"12345678-5\"}"},
+	To:     []deploy.Place{deploy.ToLocal},
+}
+```
+
+Each developer types the value in the **SECRETS** tab of `webtyp`; `webtyp.com/env` reads it from the project's keyring (`keyring/auto.OpenForModule`). Never store it in `.env`.
+
+Example values expected by the configured authenticator:
 
 ### 1. Trusted IP Authenticator (`trusted_ip`)
 Used when authentication is bound to an identity code (e.g. RUT, employee ID, account number):
 
-```bash
-DEV_AUTOLOGIN={"code":"12345678-5"}
+```json
+{"code":"12345678-5"}
 ```
 
 ### 2. Email & Password Authenticator (`email_password`)
 Used when authentication requires username/email and password:
 
-```bash
-DEV_AUTOLOGIN={"email":"admin@example.com","password":"secretpassword"}
+```json
+{"email":"admin@example.com","password":"secretpassword"}
 ```
 
 ---
