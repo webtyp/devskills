@@ -46,6 +46,7 @@ A plan that says *what* without *the exact shape* makes the executor ask, stall 
 - **Each test as setup → call → expected**, not "test the rules".
 - **Toolchain limits already known** (e.g. `ormc` rejects module constants and local kinds inside `input.Select(...)`; no `map`, no stdlib `time`) go in the stage they affect.
 - **The delivery rules, in the plan itself**: never pause to ask permission or report progress — when the delivery check passes, commit, push and open the PR; stuck for 30 minutes, open the PR anyway listing what fails. Never edit a generated file (`model_orm.go`): a build error there means the hand-written code is wrong. Without these lines the agent stops ("unable to complete") or "fixes" the generator's output.
+- **The 3-hour rule (granularity and detail in the *how*)**: if an agent takes >3 hours on a plan, it is a symptom that the plan was not detailed enough in the *how*. Ambiguous directions, broad stages, or missing exact signatures force the executor to invent or get trapped in test regressions. When that happens: do not keep sending band-aids; split the plan into smaller, tighter stages with explicit examples and exact contracts, and re-dispatch.
 - When the executor asks twice the same kind of question, the plan lacked a section: answer it, then add the section to the plan.
 
 ## Tool catalog — copy the lines the plan needs
