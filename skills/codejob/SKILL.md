@@ -52,7 +52,8 @@ Never leave it waiting. Read its last messages (`codejob pull` prints them), the
 | The work is done and it asks permission (to commit, push, open the PR) | `codejob reply` telling it to commit, push and open the PR now |
 | It asks something the plan should have answered | answer with exact structures (`codejob reply`), then add that answer to the plan so the next dispatch does not ask |
 | "Unable to complete" / failed with no usable work | **review the plan**: find what made it stop (an ambiguous step, a guessed API, a missing tool or version, a command that fails); fix the plan, reset its frontmatter to undispatched (remove `STATUS`/`SESSION`), and `codejob dispatch` again |
-| Failed twice on the same plan | finish it locally (**agents-workflow** → «Local execution») |
+| Failed twice on the same plan, and it is **small/simple** (≤2 files, one clear concept) | finish it locally (**agents-workflow** → «Local execution») |
+| Failed twice on the same plan, and it is **large or touches an unfamiliar pattern** (many files, a shared chassis, a reactive/architectural model the executor has to infer) | do not finish it locally and do not ask the user — **split it**: rewrite as the smallest safe slice (e.g. new types with zero wiring), dispatch that, and queue the rest as follow-up plans once it lands. Smaller, narrower plans succeed more often with a cheaper/weaker executor model than one large one |
 
 ## Publish with
 
