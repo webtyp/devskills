@@ -42,6 +42,16 @@ Per-library plans: **plan-authoring**; their loop: **codejob**.
 - Written in **the language the user writes in**; dispatched `docs/PLAN.md` stay in English.
 - Status line first-class: it must say what the wave is waiting for.
 
+## Varios agentes en el mismo master — no pisarse
+
+Con más de un agente orquestador leyendo el mismo master (Claude, Antigravity, …): toda fase **en
+curso, despachada o en revisión** lleva, al inicio de su celda `Estado`, `[<Agente> · <AAAA-MM-DD
+HH:MM>]` (hora local). Antes de `pull`/`reply`/`dispatch`/`close` sobre una fase: marca de **otro**
+agente con menos de 90 min → no la toques, elige otra fase o espera. Sin marca, marca propia, o más
+de 90 min sin commit nuevo visible en el repo → es libre: escribe tu marca, `commit`+`push` el
+master, y solo entonces actúa. Refresca la hora en cada pasada mientras sigas trabajándola; bórrala
+al cerrar la fase (una fase cerrada no necesita dueño).
+
 ## What never goes in a master
 
 - **Conversation history**: answers to the agent (`codejob reply`), review diaries, "what was tried", timestamps of notices, the user's raw answers. A reply sent to a running agent is recorded **in that repo's `docs/PLAN.md`** (section `## Additions`), which dies with the plan.
