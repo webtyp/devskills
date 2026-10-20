@@ -1,6 +1,6 @@
 ---
 name: api-design
-description: The design gate for any public API — five answers (prior art, novice-name test, complexity ledger, where it belongs, what it deletes) written in docs/PLAN.md before coding. Use when adding, changing, renaming or reviewing an exported symbol, CLI surface, file convention or declaration format, or starting a library.
+description: The design gate for any public API — an ecosystem search first, then five answers (prior art, novice-name test, complexity ledger, where it belongs, what it deletes) written in docs/PLAN.md before coding. Use when adding, changing, renaming or reviewing an exported symbol, CLI surface, file convention or declaration format, or starting a library.
 ---
 
 # API design — the gate
@@ -13,6 +13,19 @@ Applies to a new/changed exported symbol, CLI subcommand or flag, file/directory
 declaration format or library — not to unexported code or a fix that changes no signature.
 SOLID is enforced where it is checked: **S**, **O** in gate 4; **L**, **I**, **D** in **api-harness**
 (publication, rules 8–9). When a rule and a principle disagree, the principle wins.
+
+## Step 0 — search the ecosystem first, before the five answers
+
+The same logic in two repos is a third repo (**zero-debt**), but nobody can obey that without looking. Before designing
+anything that adds a library, a module, an exported type or an exported function, **search what already exists** and write the
+result in the plan under `## Ecosystem search` (3–6 lines):
+
+1. **List what exists:** `ls ~/Dev/Project/webtyp ~/Dev/Project/veltylabs ~/Dev/Project/veltylabs/modules`, and read the README of every repo whose name is near the idea.
+2. **Grep every noun and verb of the idea** over both trees: `grep -rli '<word>' --include=*.go --include=*.md ~/Dev/Project/webtyp ~/Dev/Project/veltylabs`. Search the names you are about to invent (`Fanout`, `Notify`, `Publisher`, `Urgency`, `Currency`, `Key`) and their synonyms (severity/level, queue/outbox, bus/broker/events).
+3. **Decide each concept:** **reuse** (import it; the plan names the package), **extend** (what is missing is a plan against *that* repo, never a local copy or a wrapper), or **new** (name the closest existing thing and the concrete reason it does not fit).
+4. A plan that creates a library, module or exported name with no `## Ecosystem search` is incomplete: do not dispatch it. Re-run the search when the plan changes scope.
+
+Misses this step exists for: a notification library that re-invented the severity of `msgtype` and the pub/sub of `events`; a money library that planned its own `Fanout` while `events.Fanout` existed.
 
 ## The gate — five answers in `docs/PLAN.md`, before coding
 

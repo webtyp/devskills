@@ -123,3 +123,4 @@ default theme). A component or widget only **consumes** tokens. A third-party
 - **dom-elements** — binding the states this stylesheet reacts to
 - **components** — where `css.go` sits in a component
 - **api-design** — the gate for adding a `style` Option or a `widget.Part`
+- **ui-consistency** — which colours and layouts a stylesheet may express (colour roles, form layout)

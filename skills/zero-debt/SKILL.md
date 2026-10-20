@@ -14,7 +14,8 @@ hello world; that is the main reason WASM adoption stalls in the browser, and it
 browser is only competitive if **nothing is written twice anywhere in the ecosystem**.
 
 - **The same functionality in two repos is a third repo**, imported by both — never a copy, never a
-  local helper "just for here". This is the lego rule measured in bytes.
+  local helper "just for here". This is the lego rule measured in bytes. **Search before you write**:
+  **api-design** → «Step 0» is the procedure, and the plan records its result.
 - A repeated string (env key, path, prefix, flag name, error message) is a named constant in the
   owning package; string literals are forbidden in logic.
 - A value the library computes is **read** by `cmd/`, never re-derived; a check it performs is

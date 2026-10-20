@@ -9,7 +9,7 @@ Applies once the root cause is **traced** to a shared library. A bug in the app'
 
 ## 1. Prove it — a test that fails for the real reason
 
-- Use the library's own conventions (`AGENTS.md`, `tests/`). An existing green test that misses the bug is too weak: tighten it.
+- Use the library's own conventions (`AGENTS.md`, `tests/`). Search the tests first (**testing** → «Search before you write»): an existing test of that scenario is **extended** with the failing assertion, not duplicated; a green one that misses the bug is too weak — tighten it.
 - Real stack, fake only at the edge (`httptest.NewServer` + real client; `orm.New(mem.New())`). A synthetic shortcut that passes with the bug present proves nothing.
 - UI bugs: try a stdlib test with a fake `Presenter` before a `_wasm_test.go`.
 - `gotest` must fail **with the traced symptom**, and the full suite must be otherwise green.

@@ -16,7 +16,7 @@ Checkout: `codejob pull` (**codejob**). The spec is `docs/PLAN.md` on the PR bra
 5. Local branch equals the PR head.
 6. Read the code against each stage. A storage/transport contract needs a consumer test on a real backend, not only the in-memory double.
 7. Docs updated where the change requires (`docs/API.md`, `ARCHITECTURE.md`, `README.md`, `docs/SKILL.md`, any doc the plan lists).
-8. Run `gotest ./...` yourself (stdlib + wasm).
+8. Run `go build ./...` and `gotest ./...` yourself (stdlib + wasm). A PR that does not compile means the agent **guessed signatures**: fix it locally against the real source, and add the missing `## APIs used` rows to the plan's lesson (**plan-authoring**).
 
 A deviation from the plan is judged on its merits, not rejected by default.
 

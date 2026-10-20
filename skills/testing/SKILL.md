@@ -21,6 +21,7 @@ Ask before writing one: **"does it fail when the product is broken, and only the
 - The look is verified **by eye in the running app** (webtyp MCP screenshot), not by the suite.
 - Structural guards are written **once per repo** (a conformance suite: stylesheets validate, classes match, Kind allows states), never copied per component.
 - One test per behaviour, through the public API, the way a consumer uses it.
+- **Search before you write.** Before adding a test, grep the repo's tests for the behaviour, the symbol and the message it would assert. A test that already pins the scenario is **extended** (same fixture, one more assertion); a test that pins a behaviour you are deliberately changing is **updated or deleted** — never left failing, never shadowed by a second test. A new test is justified only by a scenario no existing one reaches; say which tests were extended, updated and new.
 
 ## Running and placing tests
 

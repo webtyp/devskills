@@ -38,10 +38,21 @@ Full spec: `devflow` repo, `docs/CODEJOB.md`.
 | `codejob` | read-only status + suggested next command | any |
 | `codejob dispatch` | sends the plan to the EXECUTOR (run it when the user says "despacha") | absent / `dispatch` |
 | `codejob pull` | checks the PR branch out **in the same local repo** (never `gh repo clone` / `gh pr checkout`); re-run to fast-forward after a correction | `running`, `reviewing`, `review` |
-| `codejob reply "text"` / `codejob approve` | answers / approves the agent session | `running` |
+| `codejob reply "text"` / `codejob approve` | answers / approves the agent session; the text sent is also appended to that repo's `docs/PLAN.md` under `## Additions` (never to a master) | `running` |
 | `codejob close "msg" [tag]` | merge + `gopush` + delete `docs/PLAN.md` (local) | `review` |
 
 Cloud setup: the human merges the PR and the Action publishes. Never call `--ci` by hand.
+
+## When the agent stops — "Jules was unable to complete the task", a failed session, a question
+
+Never leave it waiting. Read its last messages (`codejob pull` prints them), then:
+
+| What happened | Do |
+|---|---|
+| The work is done and it asks permission (to commit, push, open the PR) | `codejob reply` telling it to commit, push and open the PR now |
+| It asks something the plan should have answered | answer with exact structures (`codejob reply`), then add that answer to the plan so the next dispatch does not ask |
+| "Unable to complete" / failed with no usable work | **review the plan**: find what made it stop (an ambiguous step, a guessed API, a missing tool or version, a command that fails); fix the plan, reset its frontmatter to undispatched (remove `STATUS`/`SESSION`), and `codejob dispatch` again |
+| Failed twice on the same plan | finish it locally (**agents-workflow** → «Local execution») |
 
 ## Publish with
 
@@ -62,3 +73,12 @@ Never put `gopush` or `codejob` inside a plan.
 ## Source the executor cannot see — `_temp/`
 
 Copy only the files the plan needs to `<repo>/_temp/<source-repo>/<same path>` (never `.env`, `docs/`, `data/`, `config/`; grep for secrets). `_` makes Go ignore it. The plan's last stage deletes `_temp/` (`test ! -e _temp`).
+
+## gopush and local `replace`
+
+Working across libraries uses a temporary `replace webtyp.com/<dep> => ../<dep>` in the consumer's `go.mod`. **Do not remove them by hand**: publish in dependency order and `gopush` does it.
+
+- `gopush` on the dependency runs a cascade over every dependent in the workspace: it **removes the `replace` of the module just published**, `go get <dep>@<tag>`, `go mod tidy`, runs the `gotest` gate (reverting `go.mod`/`go.sum` on failure).
+- Then: **clean tree and no other `replace` left** → publishes the dependent too (commit + tag + push). **Uncommitted work or `replace`s for other modules** → *deps-only*: commits just `go.mod`/`go.sum`, pushes **without a tag**, stops there; replaces of unrelated modules are left in place (so that commit can carry them until their module is published).
+- So the order is leaf-most dependency first; the last `gopush` of the chain leaves no `replace`. `--no-cascade` publishes only the module itself.
+

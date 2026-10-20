@@ -18,11 +18,12 @@ Plan content: **plan-authoring**. Dispatch, frontmatter, publish: **codejob**. R
 - Documentation (`.md`) → edit directly.
 - Go code → `docs/PLAN.md` at the module root (next to `go.mod`), reviewed by the user before dispatch.
 - Public API change → the plan carries a `## Design gate` with the five answers of **api-design**; without it, do not dispatch.
+- **Default to dispatching, even a single-file fix.** The planning agent runs on a constrained token budget while the user's `codejob`/Jules capacity is comparatively cheap: orchestrate (write the plan, dispatch, pull, review, close) rather than editing code directly. Reserve a direct edit for something that would take longer to write as a plan than to fix (a one-line label or constant), or for work that blocks an active dispatch loop and must land immediately.
 
 ## Q&A first
 
 1. Read the code before asking; never ask what it answers.
-2. Check prior art: git history, predecessor repos, decision records (verify a rejection's real scope).
+2. Search the ecosystem for what already exists (**api-design** → «Step 0»), then check prior art: git history, predecessor repos, decision records (verify a rejection's real scope). Reuse or extend before creating.
 3. An architectural choice gets ≥2 options with trade-offs and a recommendation; wait for the user.
 4. Write the plan only when every decision is resolved; it holds resolutions only. Single library → Q&A in chat; multi-repo → in the master plan (**master-plan**).
 
