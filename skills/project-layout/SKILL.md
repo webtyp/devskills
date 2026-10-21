@@ -54,7 +54,7 @@ Rule: *why is it split?* The API does not exist on that platform (`syscall/js`, 
 2. **`config → modules`, never `modules → config`**: `grep -rn "<module-path>/config" modules/` → empty. Shared presets live in `config/layouts/`.
 3. **`web/` is `package main` only**: env/origin resolution + a call into `config`. `RootCSS()` lives in `config/css.go` because `sitec` imports it and a `main` is not importable.
 4. **Every test in `tests/`** (`package tests`, imports `config`); run with `gotest` (skill **testing**).
-5. **An untagged file compiles into all three binaries**: it imports only cross-platform packages. Server logic is `!browser`, renderer code is `browser`, asset producers are `!wasm`.
+5. **An untagged file compiles into all three binaries**: it imports only cross-platform packages. Server logic is `!browser`, renderer code is `browser`, asset producers are `!wasm`. Consequence for any tool that computes a build graph: the asset files of a browser-only package, and what they import, exist only in the **native** graph **with** `-tags=browser` — probe each platform with and without the destination tag, never one combination per platform.
 
 ## Review checklist
 

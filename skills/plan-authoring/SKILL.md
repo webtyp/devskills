@@ -16,6 +16,7 @@ An open choice in the plan is a Q&A gap, not a detail to delegate.
 - Code the executor cannot reach goes to `_temp/` (**codejob**).
 - **Every tool the plan names is installed in the plan.** The executor has none of the local CLIs: a `## Tools` section, first, with one `go install` line per tool the plan uses (catalog below). A command the plan runs without its install line is a defect.
 - Name every file per stage, including new ones.
+- A plan that changes a convention (a build tag, a file or binary name, a constant shared by tools) lists **every site that knows it**, found by grep (`grep -rn '"browser"\|tags=' --include=*.go`), and a stage per site. Two copies of one function in the same repo count as two sites: changing one is how `style.css` shipped empty.
 - Quote error messages verbatim; they become typed constants.
 - List every deletion, each with a grep-verifiable criterion (`grep -rn "oldFn" .` → empty). A weak agent never removes what the plan did not order.
 - State anti-footguns where an ecosystem rule could be misapplied (e.g. "this repo is backend tooling: stdlib is legitimate, do NOT 'fix' it").
