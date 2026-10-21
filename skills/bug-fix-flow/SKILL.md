@@ -16,7 +16,7 @@ Applies once the root cause is **traced** to a shared library. A bug in the app'
 
 ## 2. Fix — by size
 
-**One file:** fix now → `gotest` green → `gopush 'msg'` → bump affected apps (`go get <module>@<new>`), rebuild, run their tests → verify live if tooling exists. No plan.
+**One file:** fix now → `gotest` green → `replace` in the affected app's `go.mod` (**codejob** «gopush and local `replace`») → rebuild, run its tests, verify live if tooling exists → only then `gopush 'msg'` (its cascade drops the `replace` and bumps the app). Never publish to test a fix. No plan.
 
 **More than one file, a design decision, or public API:** do not touch code. Write `docs/PLAN.md` (**agents-workflow**, **plan-authoring**, **api-design** gate) with the failing test as acceptance criterion, then `codejob dispatch` immediately — a traced bug with a ready plan is the trigger. Move on to the next bug while it runs.
 
