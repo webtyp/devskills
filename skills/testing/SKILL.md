@@ -43,6 +43,7 @@ Ask before writing one: **"does it fail when the product is broken, and only the
 
 - **WASM/Stlib Dual Testing Pattern:**
     - **Separation:** Use build tags for isomorphic code (`frontWasm_test.go` -> `//go:build wasm`, `backStlib_test.go` -> `//go:build !wasm`).
+    - **One pass per destination:** `gotest` runs native (server), `GOOS=js GOARCH=wasm` (Worker and shared wasm, compile + vet) and `GOOS=js GOARCH=wasm -tags browser` in headless Chrome (browser files, view tests). A `browser` test never runs natively.
     - **Shared Logic:** Both files MUST call a shared test runner (e.g., `RunAPITests(t)`) to avoid duplication.
     - **Unified Setup:** Use a single `setup_test.go` to initialize the library/test server once.
 

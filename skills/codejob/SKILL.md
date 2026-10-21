@@ -71,6 +71,7 @@ Never put `gopush` or `codejob` inside a plan.
 - ≤ 15 plans `running` at once; one plan per repo (park the next as `docs/PLAN_<TOPIC>.md`).
 - Plans in `review`/`reviewing` do not count.
 - **After dispatching, set a recurring 15-minute timer** that runs `codejob` (read-only) and `codejob pull` in every repo with a plan in flight, and applies **plan-review** to each delivered PR. Remove the timer when no plan is in flight. Never poll in a tight loop.
+- **Skip the timer when another agent already owns the review** (e.g. a master plan says "Antigravity coordina la revisión"). Dispatch and move on; that agent's own session does the polling.
 
 ## Source the executor cannot see — `_temp/`
 

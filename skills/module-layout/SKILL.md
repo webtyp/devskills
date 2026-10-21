@@ -32,7 +32,7 @@ Reference: `veltylabs/modules/pharmacy_manager` (domain with stock) and `service
 | `migrate/` | `Migrate(conn ddl.Execer, c ddl.Compiler) error`: every table in foreign-key order, with a test of that order |
 | `ui/` | `ID`, `Label`, icons (`svg.go`, `!wasm`), `Browser(caller, ids, tenantID) (platformd.UIModule, error)`; options of closed lists with `SetOptions` (`ormc` rejects module constants in `input.Select(...)`) |
 | `seed/` | `Load(m, tenantID) (Data, error)` through the module's own methods |
-| `web/client.go` | the runnable demo (`wasm`): `storage/mem`, `router/loopback`, `events/mock`, `unixid` |
+| `web/browser.go` | the runnable demo (`browser`): `storage/mem`, `router/loopback`, `events/mock`, `unixid` |
 | `tests/` | external package; `setup_test.go` holds the helpers (`newModule`, `new<Entity>`, `testTenant`, a test `IDGenerator`); one file per area; conformance suites in their own file; a constant used by untagged tests never lives in a `!wasm` file |
 
 Root files beside the code: `lang.json` (positional, no `default`), `AGENTS.md`, `README.md` (quick start, operations table generated from `MountOperations`, readers, key files), `docs/ARCHITECTURE.md`, `docs/diagrams/database.md` (Mermaid ERD).
