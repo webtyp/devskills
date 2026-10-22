@@ -13,6 +13,7 @@ description: Development protocols including language rules (English docs, mirro
 
 - **Language Protocol:** Plans and documentation must be generated in **English**. Chat conversations with the user must match the language used by the user (mirroring). **Exception:** master plans go in the user's language (skill **master-plan**).
 - **Strategic Justification:** Always provide the rationale for your chosen solution based on best practices, offering alternatives and explaining why the selection fits the context.
+- **Verify before asserting a rule:** never state a rule about a set of files, packages or repos ("only `svg.go` is `!wasm`", "nobody imports X") from one example or from memory. Enumerate it first (`grep -l '^//go:build' */ui/*.go`, `go list -deps`) and quote what you counted. A generalisation the user acts on without the code behind it breaks every repo it is applied to; if you have not checked, say so instead of asserting.
 - **Explicit Execution:** Never start writing/modifying actual codebase source code unless explicitly told to "execute the plan", "ok", or "ejecuta".
 
 - **Harness Plan Mode (any agent with a built-in plan mode — e.g. Claude Code, Gemini CLI):**
