@@ -66,6 +66,8 @@ Never leave it waiting. Read its last messages (`codejob pull` prints them), the
 
 Never put `gopush` or `codejob` inside a plan.
 
+**Never publish with git**: no `git commit`, `git push`, `git tag` or `gh pr merge` by hand. `gopush` publishes; `codejob close` commits uncommitted review corrections, merges and publishes. Reading with git (`git show`, `git diff`) is fine.
+
 ## Concurrency
 
 - ≤ 15 plans `running` at once; one plan per repo (park the next as `docs/PLAN_<TOPIC>.md`).

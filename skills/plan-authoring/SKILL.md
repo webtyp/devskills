@@ -34,7 +34,7 @@ The executor cannot see the code it calls and **invents what the plan only names
 - A `## APIs used` section lists every symbol of another repo the stages call: `symbol | exact signature | tag | file`. Include return values (`(*Target, error)`), the named types of fields and constants (`deploy.TargetID`, not `string`), interface method sets, and the zero-value or error behaviour the stages rely on.
 - When a stage wires several of them together, add the exact call sequence as a code block that compiles.
 - Close the section with: «If a signature in the published tag differs from this table, stop and name the symbol in the PR; never adapt it by guessing.»
-- The Delivery check starts with `go build ./...` and `gotest`; the plan states that **a PR that does not compile, or whose tests could not run, is a failed delivery**, and gives the environment (`GOPRIVATE=webtyp.com/*,github.com/veltylabs/*`, `GOFLAGS=-mod=mod`, `go mod tidy` before generators).
+- The Delivery check starts with `gotest` (it builds and vets; never add `go build`/`go vet`); the plan states that **a PR that does not compile, or whose tests could not run, is a failed delivery**, and gives the environment (`GOPRIVATE=webtyp.com/*,github.com/veltylabs/*`, `GOFLAGS=-mod=mod`, `go mod tidy` before generators).
 
 ## A plan is structures and examples, not a description
 
