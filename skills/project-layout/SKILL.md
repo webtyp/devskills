@@ -1,6 +1,6 @@
 ---
 name: project-layout
-description: The one directory distribution every webtyp application uses — config/ as the single composition root, modules/ registries, tests/ at the root, web/{browser,edge,server}.go mains whose file name is the binary, the two build-tag axes (platform wasm, destination browser), optional cmd/migrate/ — and its invariants and review checklist. Use when creating an app, placing a file, choosing a build tag, or reviewing project structure.
+description: The one directory distribution every webtyp application uses — config/ as the single composition root, modules/ registries, tests/ at the root, web/{browser,server,edge}/main.go — one main per folder, the folder is the binary, the two build-tag axes (platform wasm, destination browser), optional cmd/migrate/ — and its invariants and review checklist. Use when creating an app, placing a file, choosing a build tag, or reviewing project structure.
 ---
 
 # Project layout
@@ -25,22 +25,22 @@ Module files: **app-modules**. Generated server main: **app-server-main**. REST 
 │   ├── browser.go     // browser: Browser(...) ([]platformd.UIModule, error)
 │   └── <m>/           // only app-local capabilities (skill app-modules)
 ├── tests/             // EVERY test of the repo
-├── web/               // the only output folder: no .build/, no edge/
-│   ├── browser.go     // browser: main() → web/public/browser.wasm
-│   ├── server.go      // !wasm: GENERATED (skill app-server-main) → web/server
-│   ├── edge.go        // wasm && !browser, optional Worker → web/edge.wasm + web/edge.js
-│   └── public/        // served to anyone: never the Worker
+├── web/               // the only output folder: no .build/, no edge/ at the root
+│   ├── browser/main.go // main() → web/public/browser.wasm
+│   ├── server/main.go  // GENERATED (skill app-server-main) → web/server/server
+│   ├── edge/main.go    // optional Worker → web/edge/edge.wasm + web/edge/edge.js
+│   └── public/         // the only thing served, to anyone: never a binary
 └── cmd/migrate/main.go // !wasm, optional: schema reconciliation, never in the Worker
 ```
 
 ## Build tags: two axes, one name per binary
 
-The file name says which binary it goes to. **Platform** `wasm`/`!wasm` is set by the compiler (`GOARCH=wasm`, browser **and** Worker). **Destination** `browser`/`!browser` is passed only by the client compiler (`-tags browser`, `browser,dev` in development); `goflare` refuses it and the native server passes none.
+The **folder** under `web/` says which binary a main builds; a main carries no destination tag (at most `wasm`/`!wasm`), because a tag of our own (`browser`) hides the file from gopls. Relative paths (`web/public`) resolve against the process's working directory, never the binary's folder: every launcher starts it at the project (or package) root. **Platform** `wasm`/`!wasm` is set by the compiler (`GOARCH=wasm`, browser **and** Worker). **Destination** `browser`/`!browser` is passed only by the client compiler (`-tags browser`, `browser,dev` in development); `goflare` refuses it and the native server passes none.
 
 | Runs in | Tag |
 |---|---|
 | browser only | `browser` |
-| Worker only | `wasm && !browser` (in practice only `web/edge.go`) |
+| Worker only | `wasm && !browser` (rare: the Worker main needs none, its folder separates it) |
 | native server only | `!wasm` |
 | browser + Worker | `wasm` |
 | native server + Worker | `!browser` |
@@ -52,16 +52,16 @@ Rule: *why is it split?* The API does not exist on that platform (`syscall/js`, 
 
 1. **`config/` is one package**, not `app/` + `client/`: server and client share symbols. Types are per layer (`ServerConfig`, `ClientConfig`) — **never `config.Config`** (files of different tags compile together and would collide). Zero-value deps = production; injected doubles = tests.
 2. **`config → modules`, never `modules → config`**: `grep -rn "<module-path>/config" modules/` → empty. Shared presets live in `config/layouts/`.
-3. **`web/` is `package main` only**: env/origin resolution + a call into `config`. `RootCSS()` lives in `config/css.go` because `sitec` imports it and a `main` is not importable.
+3. **`web/<binary>/` is `package main` only**: env/origin resolution + a call into `config`. `RootCSS()` lives in `config/css.go` because `sitec` imports it and a `main` is not importable.
 4. **Every test in `tests/`** (`package tests`, imports `config`); run with `gotest` (skill **testing**).
 5. **An untagged file compiles into all three binaries**: it imports only cross-platform packages. Server logic is `!browser`, renderer code is `browser`, asset producers are `!wasm`. Consequence for any tool that computes a build graph: the asset files of a browser-only package, and what they import, exist only in the **native** graph **with** `-tags=browser` — probe each platform with and without the destination tag, never one combination per platform.
 
 ## Review checklist
 
 - [ ] `config/` imports nothing from the repo's module tree.
-- [ ] `web/*.go` only resolve config and call `config`; each carries exactly the tag of the table.
+- [ ] `web/<binary>/main.go` only resolves config and calls `config`; no destination tag.
 - [ ] Backend → `config/routes.go` with one-parameter `Register` (**app-server-main**).
 - [ ] `RootCSS()` in `config/css.go`.
 - [ ] Module checklist of **app-modules** passes.
 - [ ] No `_test.go` outside `tests/`; no `config.Config`; no `edge/`, no `.build/`.
-- [ ] `.gitignore`: `/web/public/`, `/web/server`, `/web/edge.*`.
+- [ ] `.gitignore`: `/web/public/`, `/web/server/server`, `/web/edge/edge.*`.

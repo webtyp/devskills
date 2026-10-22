@@ -1,6 +1,6 @@
 ---
 name: app-modules
-description: How a module is built inside a webtyp app or a veltylabs module repo — the typed server.go/browser.go pair and its build tags (!browser / browser), the two registries, lazy Activate(), flat files, forbidden names, and reusable modules that ship their own ui/, seed/ and web/browser.go demo. Use when adding or reviewing a module.
+description: How a module is built inside a webtyp app or a veltylabs module repo — the typed server.go/browser.go pair and its build tags (!browser / browser), the two registries, lazy Activate(), flat files, forbidden names, and reusable modules that ship their own ui/, seed/ and web/browser/main.go demo. Use when adding or reviewing a module.
 ---
 
 # App modules
@@ -38,9 +38,9 @@ func Browser(caller router.Caller, ids model.IDGenerator, tenantID string) (plat
 
 The app writes **no** `modules/<m>/`; it imports `<m>/ui` from its registry. The module repo carries:
 
-- `<m>/ui` — `ID`, `Label`, `Browser(...)` (`browser`), its `css.go`/`svg.go`. The domain root never imports `layout`.
+- `<m>/ui` — `ID`, `Label`, `Browser(...)` with **no tag** (only the browser main imports `ui`), its asset producers (`css.go`, `svg.go`, `image.go`…) `!wasm`. The domain root never imports `layout`.
 - `<m>/seed` — `Load(...) (Data, error)`, demo data through the module's own methods.
-- `<m>/web/browser.go` (`browser`) — runnable demo (`storage/mem` + `router/loopback` + seed). **A screen is built and tested there, never in the app.**
+- `<m>/web/browser/main.go` — runnable demo (`storage/mem` + `router/loopback` + seed). **A screen is built and tested there, never in the app.**
 
 Module dependencies form a DAG; a screen mixing modules lives in the most-downstream one. When modules wire each other, `modules/server.go` returns a typed struct with `Operations() []router.OperationModule`.
 

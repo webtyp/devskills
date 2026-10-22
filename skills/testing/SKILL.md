@@ -22,7 +22,7 @@ Ask before writing one: **"does it fail when the product is broken, and only the
 - **Integration with real models runs in `webtyp/agenteval`'s laboratory** (agent + avatar + UI in the browser, never a lab page per app); every run's findings go to `agenteval/docs/REAL_TESTS.md`.
 - Structural guards are written **once per repo** (a conformance suite: stylesheets validate, classes match, Kind allows states), never copied per component.
 - One test per behaviour, through the public API, the way a consumer uses it.
-- **A fixture mirrors the real layout (skill project-layout)**: tagged mains (`web/browser.go` with `browser`), dependencies from another module, `!wasm` asset files. A fixture simpler than the layout it stands for (untagged `main.go`, everything in one module) passes with the bug present.
+- **A fixture mirrors the real layout (skill project-layout)**: mains in `web/<binary>/main.go`, `browser`-tagged files where a package is shared, dependencies from another module, `!wasm` asset files. A fixture simpler than the layout it stands for (untagged `main.go`, everything in one module) passes with the bug present.
 - **Search before you write.** Before adding a test, grep the repo's tests for the behaviour, the symbol and the message it would assert. A test that already pins the scenario is **extended** (same fixture, one more assertion); a test that pins a behaviour you are deliberately changing is **updated or deleted** — never left failing, never shadowed by a second test. A new test is justified only by a scenario no existing one reaches; say which tests were extended, updated and new.
 
 ## Running and placing tests

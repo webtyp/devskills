@@ -1,6 +1,6 @@
 ---
 name: app-rest-edge
-description: Variant of the webtyp app layout for plain REST and Cloudflare Workers — config/routes.go as the explicit mount table with security policy, modules/panel/ (browser) kept out of edge.wasm, web/edge.go (wasm && !browser) and cmd/migrate/main.go. Use when a project serves REST instead of rpc operations or deploys with goflare.
+description: Variant of the webtyp app layout for plain REST and Cloudflare Workers — config/routes.go as the explicit mount table with security policy, modules/panel/ (browser) kept out of edge.wasm, web/edge/main.go (wasm && !browser) and cmd/migrate/main.go. Use when a project serves REST instead of rpc operations or deploys with goflare.
 ---
 
 # REST and edge variant
@@ -15,5 +15,5 @@ Canonical transport is rpc (`rpc.Mount(r, prefix, modules...)` server-side, `rpc
 
 ## Optional files
 
-- `web/edge.go` (`//go:build wasm && !browser`): D1/R2 bindings → `config.Register` (or rpc mount) → `edge.Serve(r)`. `goflare` builds it into `web/edge.wasm` + `web/edge.js` (never into `web/public/`, which is served to anyone). Never schema DDL.
+- `web/edge/main.go` (no destination tag: its folder separates it): D1/R2 bindings → `config.Register` (or rpc mount) → `edge.Serve(r)`. `goflare` builds it into `web/edge/edge.wasm` + `web/edge/edge.js` (never into `web/public/`, which is served to anyone). Never schema DDL.
 - `cmd/migrate/main.go` (`//go:build !wasm`): reads `CLOUDFLARE_*`/`D1_*`, runs each package's `Migrate`/`Sync`; run as the deploy workflow's `pre-deploy` or by hand. Thin main.
