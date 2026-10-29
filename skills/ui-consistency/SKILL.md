@@ -25,6 +25,7 @@ A screen must be usable by someone who was never told how it works: no external 
 - **A field whose meaning is not obvious carries `Field.Help`** (`model/field.go`), shown under it; obvious fields ("Name", "Active") do not.
 - **Show where to start.** A module with prerequisites states its first steps; an empty list says what goes there and how to add the first one; a configuration problem is shown on the screen, never only through an operation.
 - **A read-only list still offers the actions that make sense** (open the detail, resolve, go to the origin); a list that only displays is a defect.
+- **What is saved shows at once wherever it is displayed** — the list row, every select fed by that list, the title — with no code in the module and no reload by hand; a stale row after «Guardado» is a framework defect (**bug-fix-flow**). A failed save names the field that failed, never a bare status code.
 
 The shared mechanism (module description, "?" button, welcome card, empty state of a view) is being decided in `webtyp/docs/MODULE_GUIDANCE_MASTER_PLAN.md`; until it ships, follow these rules with what exists.
 

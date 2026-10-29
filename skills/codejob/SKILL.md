@@ -66,6 +66,8 @@ Never leave it waiting. Read its last messages (`codejob pull` prints them), the
 
 Never put `gopush` or `codejob` inside a plan.
 
+A long `codejob close`/`gopush` (its cascade) runs as the harness's background task, never with `&` inside a shell call: when that call returns the cascade is killed half-way and leaves dependents with an uncommitted `go.mod` (2026-10-29: `appkit`, `auth`, `sitetheme`, `mikrotik`).
+
 **Never publish with git**: no `git commit`, `git push`, `git tag` or `gh pr merge` by hand. `gopush` publishes; `codejob close` commits uncommitted review corrections, merges and publishes. Reading with git (`git show`, `git diff`) is fine.
 
 ## Concurrency
@@ -84,6 +86,6 @@ Copy only the files the plan needs to `<repo>/_temp/<source-repo>/<same path>` (
 Working across libraries uses a temporary `replace webtyp.com/<dep> => ../<dep>` in the consumer's `go.mod`. **Do not remove them by hand**: publish in dependency order and `gopush` does it.
 
 - `gopush` on the dependency runs a cascade over every dependent in the workspace: it **removes the `replace` of the module just published**, `go get <dep>@<tag>`, `go mod tidy`, runs the `gotest` gate (reverting `go.mod`/`go.sum` on failure).
-- Then: **clean tree and no other `replace` left** → publishes the dependent too (commit + tag + push). **Uncommitted work or `replace`s for other modules** → *deps-only*: commits just `go.mod`/`go.sum`, pushes **without a tag**, stops there; replaces of unrelated modules are left in place (so that commit can carry them until their module is published).
+- Then: **clean tree and no other `replace` left** → publishes the dependent too (commit + tag + push). **Uncommitted work or `replace`s for other modules** → *deps-only*: commits just `go.mod`/`go.sum`, pushes **without a tag**, stops there; replaces of unrelated modules are left in place (so that commit can carry them until their module is published). **That commit also takes whatever is staged** (`git rm`, `git add`): leave work in progress unstaged in every dependent while a cascade runs, or a half change lands on `main` (a `git rm` of a file still called elsewhere pushed a `main` that did not compile).
 - So the order is leaf-most dependency first; the last `gopush` of the chain leaves no `replace`. `--no-cascade` publishes only the module itself.
 

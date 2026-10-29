@@ -51,5 +51,14 @@ When the user decides a plan runs locally instead of via `codejob`:
 2. Execute with it as the spec; commit it with the code via `gopush`.
 3. Next local execution overwrites it (never `_2` variants; git keeps history).
 4. Other docs may point to it only as "the most recent locally executed plan", never to its sections.
+5. **Code is written in the target repo, never outside it.** No prototype in a scratch dir, no copy of a module "to try the design first": create the repo first (`gonew`) and write there. Code that already works is the implementation — copy it in, do not turn it into a plan.
 
 Rationale that must outlive a plan goes to permanent docs before dispatch: **documentation** → «Ephemeral vs Permanent».
+
+## Agent asking too many questions — fix the plan, re-dispatch
+
+When an executor agent asks multiple questions, struggles with compilation/tests, or stalls without opening a working PR, **do not engage in conversational ping-pong with `codejob reply`**. Repeated questions are the diagnostic symptom of an ambiguous, incomplete, or flawed plan.
+
+1. **Stop and analyze:** Read the executor's questions to identify where the plan was vague, lacked verbatim signatures/code, or assumed tools that don't exist in headless CI.
+2. **Rewrite `docs/PLAN.md`:** Eliminate all ambiguity. Write exact code blocks, concrete types, exact `go get` package URLs in `## Tools`, and verbatim test wiring. Never tell the executor to run local dev tools (`webtyp`) or capture screenshots in headless CI (verify `web/browser` with `go build ./web/browser`; screenshots are inspected locally upon pull).
+3. **Re-dispatch:** Reset frontmatter (`STATUS: dispatch`, remove `SESSION`) and run `codejob dispatch`. A clear plan executes in one pass without questions.

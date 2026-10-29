@@ -11,6 +11,8 @@ Per-library plans: **plan-authoring**; their loop: **codejob**.
 
 **Working state, not an archive.** It holds only what someone needs to keep the wave moving: the questions the user must answer, the decisions not yet built, and the work not yet done. It **shrinks** as the wave advances, because each finished thing leaves for the place that owns it. When the wave ends it is deleted (and its row in `MASTER_PLANS.md`).
 
+**A wave ends only when it works in the reference app** (`mjosefa-cms` with the fewest modules), not when its libraries publish: the last phase of every wave is that app running the change, a screenshot of each screen it touches reviewed, and a behaviour test in the app that walks it (for the menu: as an admin and as a user without permissions, every visible link opens a non-empty screen). Published libraries with no app using the change is a wave half done — MODULE_GUIDANCE closed with 2 of 18 modules described.
+
 **Hard limit: 150 lines.** Check with `wc -l` after every edit. Over the limit means something that belongs elsewhere is still in it: move it out before adding anything.
 
 ## Fixed format (sections in this order, no others)
@@ -36,7 +38,8 @@ Per-library plans: **plan-authoring**; their loop: **codejob**.
 ```
 
 - **Questions first**, because they are what the user reads. No questions → write «Ninguna.»
-- Each question: ≥2 options, one recommendation with evidence (`file:line`, prior art), at most ~6 lines. Never ask what the code answers.
+- Each question: ≥2 options, one recommendation with evidence (`file:line`, prior art), at most ~6 lines plus code. Written in plain words for a junior (**dev-protocols** «Plain words»): first what the user sees break, then the cause, never a label they must decode. Never ask what the code answers.
+- **A design question always carries code**: one fenced block with what the consumer writes today and under each option (real call sites from the repo, `// A` / `// B` comments), plus what the user sees change. Signatures or prose alone are not an example — the user cannot approve what they cannot picture.
 - A decision row is **one line** with where it gets built; it leaves when that repo ships it.
 - A phase row is one line; a closed phase stays as one line («cerrada vX.Y.Z») until the wave ends.
 - Written in **the language the user writes in**; dispatched `docs/PLAN.md` stay in English.
@@ -62,6 +65,7 @@ al cerrar la fase (una fase cerrada no necesita dueño).
 
 ## Rules
 
+- Write edits to a master plan (and any `docs/PLAN.md`) directly to disk via shell (**dev-protocols**), never through IDE buffer tools that leave unsaved tabs in VS Code; when moving a staged plan into `<repo>/docs/PLAN.md`, `mv` it so the staging copy is deleted.
 - File: `webtyp/docs/<TOPIC>_MASTER_PLAN.md` — descriptive name, never a bare `MASTER_PLAN.md`.
 - Indexed as a row in `webtyp/docs/MASTER_PLANS.md`; read the index before starting a wave (it may exist or be blocked).
 - Every phase that **creates** a library or module says, in one line, what the **ecosystem search** found (**api-design** → «Step 0»): reuse, extend, or new.
@@ -80,3 +84,4 @@ al cerrar la fase (una fase cerrada no necesita dueño).
 4. Re-read the code the decisions touch: an obvious implication goes inside the decision; a real trade-off becomes a new `P`.
 5. Propagate to «Fases», the status line and the `MASTER_PLANS.md` row.
 6. Move out everything finished, verified or historical (see «What never goes in a master»), then `wc -l` ≤ 150.
+7. **Correct the skills the same turn** — they are the framework's only source of truth: every closed decision or published phase that changes how something is written updates its owning skill (**devskills**); what is decided but not shipped carries a `STATUS (remove this line when <TOPIC>_MASTER_PLAN closes): …` line. Report each skill touched.

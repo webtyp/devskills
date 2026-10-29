@@ -16,7 +16,7 @@ description: What deserves a test (behaviour and domain rules, never the look) a
 
 Ask before writing one: **"does it fail when the product is broken, and only then?"** No → do not write it.
 
-- **Test:** domain rules (validation, state machines, calculations, permissions, tenant isolation); contracts between pieces (encoding, routing, a public API's observable behaviour); behaviour a user relies on (form validation timing, submit, keyboard and focus, the ARIA contract a role promises); every confirmed bug (**bug-fix-flow**).
+- **Test:** domain rules (validation, state machines, calculations, permissions, tenant isolation); contracts between pieces (encoding, routing, a public API's observable behaviour); behaviour a user relies on (a saved value showing at once in its list row and its selects — **ui-consistency** —, form validation timing, submit, keyboard and focus, the ARIA contract a role promises); every confirmed bug (**bug-fix-flow**).
 - **Do not test:** the look — CSS declarations, colours, sizes, spacing, markup order, class strings, copy; trivial code (a recipe composing two options, a getter); implementation details instead of outcomes. These are *change-detector* tests: they break on every intended change and never catch a real defect.
 - The look is verified **by eye in the running app** (webtyp MCP screenshot), not by the suite.
 - **Integration with real models runs in `webtyp/agenteval`'s laboratory** (agent + avatar + UI in the browser, never a lab page per app); every run's findings go to `agenteval/docs/REAL_TESTS.md`.

@@ -11,6 +11,7 @@ A secret is any value that grants access: API tokens, private keys, client secre
 
 - **Production secret → only the destination's store** (GitHub Actions secrets, Worker secrets). **Nobody keeps a copy**, so two people never overwrite each other with a stale value.
 - **Personal or development secret → that person's `webtyp/keyring`** (OS credential store; browser: WebCrypto): their Cloudflare bootstrap token, their own dev credentials. Never shared between people.
+- **Not a secret: the local development database.** Postgres on `localhost` with its default user and password grants nothing anyone outside the machine can use; it is written as-is in the app's local-development doc so a new machine can rebuild `.env`. **Production database credentials are never chosen nor seen by a person**: the deploy target creates the database and its roles on the server and generates their passwords there. STATUS (remove this line when MVP_DEPLOYMENT_ROADMAP closes): that step is its M3a (`webtyp/deploy`, target `selfhost`).
 - **Never** in `.env`, a committed file, a `docs/PLAN.md`, a log line, a test fixture or a chat message.
 
 ## Rules

@@ -80,7 +80,7 @@ Used when authentication requires username/email and password:
 ## Production Safety
 
 `DEV_AUTOLOGIN` is strictly guarded by Go build tags:
-- In production builds (`//go:build prod`), `devlogin_prod.go` compiles a stub where `devAutologinBody` is unconditionally `nil`.
+- Only the webtyp dev environment compiles with `-tags dev` (`devlogin.go`). Every other build — production is simply the normal build — compiles `devlogin_off.go` (`//go:build !dev`), where `devAutologinBody` is unconditionally `nil`. An app follows the same convention: production behaviour by default, development relaxations behind `dev` (never a `prod` tag someone must remember to pass; `gotest` runs the default build and a `-tags dev` pass).
 - The environment variable is **never read** in production, ensuring zero risk of accidental credential exposure or unauthorized session creation in deployed binaries.
 
 ---

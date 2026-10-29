@@ -112,6 +112,18 @@ Scales are typed, not raw: `style.Space2`, `style.TextSm`, `style.IconSm`,
 `AccentWash`, `AccentInverse`, `AccentHover`, `Success`, `Danger`,
 `DangerWash`, `Subtle`, `Bare`, `Inactive`).
 
+## No CSS text anywhere in Go — `css.go` is the only source of a look
+
+Not only in `css.go`: **no Go file of any webtyp package writes CSS** — no `<style>` block inside
+generated SVG or HTML, no `style="…"` attribute, no CSS in a string constant, no `@media`. Such CSS
+escapes the token set and the app's theme (a diagram drawing its own `@media (prefers-color-scheme)`
+stayed dark inside an app switched to light). A generated artifact (SVG, HTML) carries **classes and
+geometry only**; its look is the package's `css.go` with this DSL — an SVG drawing uses `Paint(s)`
+(shape), `Ink(s)` (text), `Line(s)` (stroke, no fill) and `Dashed()`. A file opened outside the app
+(a checked-in `.svg`) embeds that same sheet, generated: `css.Theme(css.DefaultLight()).String()` plus the
+package's `RenderCSS().String()`. A look the DSL cannot express yet is a missing recipe: plan in
+`widget/style` (above), never a hand-written fallback.
+
 ## Never declare `:root` or `RootCSS()`
 
 Theme tokens are global state owned by the application (or `webtyp/dom`'s

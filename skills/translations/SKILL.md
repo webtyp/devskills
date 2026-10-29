@@ -38,5 +38,6 @@ Never masculine inflection toward the user; use verbs or neutral phrasing:
 ## `lang.Text` vs `string`
 
 - Fixed UI copy (labels, buttons, titles, placeholders) is typed `lang.Text`; translate in `Render()` with `lang.Translate(x)`. Callers still write literals: `Modal{Title: "Delete project"}`.
-- Data stays `string` and never passes through `lang.Translate`: user data, ids, timestamps, format samples (`"12345678-9"`).
+- Data stays `string` and never passes through `lang.Translate`: user data, ids, timestamps, format samples (`"12345678-9"`), prefixes and type names. Pass non-prose as variables so `langc` does not scoop them into `lang.json`.
+- Reuse vocabulary: decompose shared error patterns (`fmt.Err(opPrefix, "requires at least one", "field")`) so multi-word phrases are shared across operations instead of repeating full sentences.
 - Inputs: `SetExample(...)` takes the format sample; `SetPlaceholder(...)` only translatable words.

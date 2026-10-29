@@ -18,6 +18,11 @@ browser is only competitive if **nothing is written twice anywhere in the ecosys
   **api-design** → «Step 0» is the procedure, and the plan records its result.
 - A repeated string (env key, path, prefix, flag name, error message) is a named constant in the
   owning package; string literals are forbidden in logic.
+- **A fact is declared once, by the piece that owns it; every other piece reads it from there.** A
+  list an app keeps by hand of something a library already declared (permissions, screens, routes,
+  migrations) will drift — the permission `Requires("service")` on an operation and a second copy in
+  the app's `config.Modules()` left «Catálogo» empty four times. If a piece cannot read the fact, the
+  owner is missing an export: fix the owner, never add the copy.
 - A value the library computes is **read** by `cmd/`, never re-derived; a check it performs is
   called, never re-implemented. Two functions differing only in a constant are one function and a
   parameter.

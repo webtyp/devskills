@@ -17,6 +17,9 @@ Checkout: `codejob pull` (**codejob**). The spec is `docs/PLAN.md` on the PR bra
 6. Read the code against each stage. A storage/transport contract needs a consumer test on a real backend, not only the in-memory double.
 7. Docs updated where the change requires (`docs/API.md`, `ARCHITECTURE.md`, `README.md`, `docs/SKILL.md`, any doc the plan lists).
 8. Run `gotest` yourself, **once**: it already builds, vets, races and runs every destination (stdlib + wasm). Never add `go build`, `go vet` or a second `gotest` run — the plan's own delivery check asks for a repeat only when the repeat is the thing being proven. A PR that does not compile means the agent **guessed signatures**: fix it locally against the real source, and add the missing `## APIs used` rows to the plan's lesson (**plan-authoring**).
+9. **A change the user sees** (screen, menu, icon, text, form) is opened in the module's demo (`web/browser/main.go`, run with `webtyp` at the module root) and **looked at in a screenshot** before approving. Tests prove behaviour and never the look (**testing**), so this look is the only check that catches a wrong glyph or an empty screen.
+10. **Translations and text**: if the repo has `lang.json` or touches user-facing copy/errors, run `langc sync .` (**langc**) — must report 0 untranslated keys, 0 reuse warnings (`share ... — extract it as its own key and reuse it`), and 0 identical values (`ERROR ... ends with ... unchanged`). Reuse warnings are defects, never acceptable exceptions.
+11. **Build tags**: `git diff main | grep '^+//go:build'` — a non-test file with a tag other than `wasm`, `browser`, `dev` (or Go's OS names in OS code) is rejected (**project-layout** «No other tag»).
 
 A deviation from the plan is judged on its merits, not rejected by default.
 

@@ -1,6 +1,6 @@
 ---
 name: api-design
-description: The design gate for any public API — an ecosystem search first, then five answers (prior art, novice-name test, complexity ledger, where it belongs, what it deletes) written in docs/PLAN.md before coding. Use when adding, changing, renaming or reviewing an exported symbol, CLI surface, file convention or declaration format, or starting a library.
+description: The design gate for any public API — an ecosystem search first, then five answers (prior art, novice-name test, complexity ledger, where it belongs, what it deletes) written in docs/PLAN.md before coding. Use when adding, changing, renaming or reviewing an exported symbol, CLI surface, file convention or declaration format, or starting a library (new repos only with `gonew`).
 ---
 
 # API design — the gate
@@ -23,7 +23,8 @@ result in the plan under `## Ecosystem search` (3–6 lines):
 1. **List what exists:** `ls ~/Dev/Project/webtyp ~/Dev/Project/veltylabs ~/Dev/Project/veltylabs/modules`, and read the README of every repo whose name is near the idea.
 2. **Grep every noun and verb of the idea** over both trees: `grep -rli '<word>' --include=*.go --include=*.md ~/Dev/Project/webtyp ~/Dev/Project/veltylabs`. Search the names you are about to invent (`Fanout`, `Notify`, `Publisher`, `Urgency`, `Currency`, `Key`) and their synonyms (severity/level, queue/outbox, bus/broker/events).
 3. **Decide each concept:** **reuse** (import it; the plan names the package), **extend** (what is missing is a plan against *that* repo, never a local copy or a wrapper), or **new** (name the closest existing thing and the concrete reason it does not fit).
-4. A plan that creates a library, module or exported name with no `## Ecosystem search` is incomplete: do not dispatch it. Re-run the search when the plan changes scope.
+4. **New repo → `gonew` only:** `gonew <name> "<description>"` (from `webtyp.com/devflow`) creates the local git, the GitHub remote, `go.mod`, README, LICENSE, `.gitignore`, the first commit and tag `v0.0.1`; an existing local dir gets `gonew add-remote <path>`. Never `git init`, `go mod init` or `gh repo create` by hand, and never tell the user to.
+5. A plan that creates a library, module or exported name with no `## Ecosystem search` is incomplete: do not dispatch it. Re-run the search when the plan changes scope.
 
 Misses this step exists for: a notification library that re-invented the severity of `msgtype` and the pub/sub of `events`; a money library that planned its own `Fanout` while `events.Fanout` existed.
 
@@ -32,7 +33,10 @@ Misses this step exists for: a notification library that re-invented the severit
 A plan that adds or changes public API without them is incomplete: do not dispatch it.
 ### 1. Prior art
 
-Name **at least three** established frameworks, what each does, and why this ecosystem differs.
+Name **at least three** established frameworks — or, for a product flow (login, booking, payment, sign-up), three
+applications **in production** that solve it — what each does, and why this ecosystem differs. **Each one carries the link
+to its official documentation, read in this session**; a claim without a link is written as «unverified», never stated
+as fact. The default is to follow the standard they share; departing from it needs a reason tied to this ecosystem.
 "Nobody else does it this way" is valid only followed by the reason it is right here — an API invented
 without looking accumulates novel vocabulary for solved problems.
 

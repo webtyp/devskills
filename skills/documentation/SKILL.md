@@ -52,6 +52,12 @@ Show the command the reader would type, the error they would see, the file that
 would appear. An abstract statement of a rule plus one concrete example beats two
 paragraphs of abstraction.
 
+### Code comments teach, with an example
+
+The comment of every exported symbol says what it is for in plain words and shows a short usage
+example (`// Ejemplo: …`), so a reader understands it without opening the implementation. Language by tree:
+**dev-protocols** (in `veltylabs/*` comments, docs and diagrams are Spanish).
+
 ## README — a newcomer's entry point, not just an index
 
 A README that only indexes `docs/` files (see "Readme Indexing" below) answers
@@ -104,6 +110,7 @@ complicated one sound simpler than it is.
 
 ## Everything else
 
+- **No client data in `webtyp/*`:** a library (code, tests, docs, plans) never names a client's domain, brand or data. Examples use the domains reserved for that by RFC 2606 (`example.com`, `example.org`, `example.net`) and invented names (`acme`). A client's real names live only in its own repo (`veltylabs/*`).
 - **Documentation First:** You MUST update the documentation *before* coding or running `gopush`.
 
 - **Standard Documents:**
@@ -118,6 +125,7 @@ complicated one sound simpler than it is.
 
 - **Diagram Standards:**
     - **Format & Location:** Markdown files (`*.md`) containing Mermaid code, stored in `docs/diagrams/` and linked from the architecture documents.
+    - STATUS (remove this line when DB_DIAGRAM_MASTER_PLAN closes): the database diagram becomes `docs/diagrams/database.svg`, generated from the models on save (never edited by hand); until `webtyp/erd` ships, keep the existing `database.md`.
     - **Simplicity:** Use simple, vertical, linear flowcharts (`flowchart TD`). **NEVER** use the `subgraph` directive (ruins TUI rendering). Use `<br/>` for line breaks inside standard nodes instead of quoting text strings.
 
 - **Ephemeral vs Permanent:** Permanent docs (`README.md`, `ARCHITECTURE.md`, `DESIGN.md`, `SPECS.md`, diagrams) must **NEVER link to or cite `PLAN.md`/`CHECK_PLAN.md`** — not even section references like "PLAN §8" — those files are deleted at loop close, so every such reference is a guaranteed dead link. Rationale and rejected alternatives belong in `DESIGN.md`; contracts in `ARCHITECTURE.md`. A permanent doc written documentation-first (before the implementation lands) may carry a self-deleting marker — `STATUS (remove this note when X lands): …` — whose removal is an explicit task of the plan.

@@ -17,33 +17,31 @@ MUST end in `Model` — that is how `ormc` discovers it:
 
 ```go
 import (
-    "webtyp.com/webtyp/input"
+    "webtyp.com/input"
     "webtyp.com/model"
 )
 
-var LoginDataModel = model.Definition{
-    Name: "login_data",
+var ServiceModel = model.Definition{
+    Name: "service",
     Fields: model.Fields{
-        {Name: "email",    Type: model.FieldText, NotNull: true, Widget: input.Email()},
-        {Name: "password", Type: model.FieldText, NotNull: true, Widget: input.Password()},
-    },
-}
-
-var ProductModel = model.Definition{
-    Name: "product",
-    Fields: model.Fields{
-        {Name: "id",    Type: model.FieldInt,  DB: &model.FieldDB{PK: true, AutoInc: true}},
-        {Name: "name",  Type: model.FieldText, NotNull: true, Permitted: model.Permitted{Minimum: 2}, Widget: input.Text()},
-        {Name: "price", Type: model.FieldFloat, Widget: input.Number()},
+        {Name: "id", Type: model.Text(), DB: &model.FieldDB{PK: true}, OmitEmpty: true},
+        {Name: "tenant_id", Type: model.Text(), NotNull: true},
+        {Name: "specialty_id", Type: input.Select(), Label: "Specialty", Ref: &SpecialtyModel, DB: &model.FieldDB{RefColumn: "id"}, NotNull: true},
+        {Name: "name", Type: input.Text(), Label: "Name", NotNull: true, Permitted: model.Permitted{Minimum: 1, Maximum: 255}},
+        {Name: "price", Type: input.Decimal(), Label: "Price"},
     },
 }
 ```
 
-- **DB tables**: fields carry `DB: &model.FieldDB{...}` metadata.
-- **Form-only DTOs** (login, filters, …): NO `DB` metadata — same pattern,
-  just no table.
-- **UI binding**: `Widget: input.Email()` etc. (typed expression from
-  `webtyp/webtyp/input`). A field without `Widget` gets NO input in forms.
+- **`Type` is a `model.Kind`** — it fixes storage, semantic name and validation in one value. An `input.Xxx()` Kind
+  (`webtyp.com/input`, it embeds `model.Kind`) **is** the form control; a plain `model.Text()`/`model.Int()`… Kind gets
+  **no** input (ids, tenant, timestamps). There is no `Widget` slot.
+- **`Label`** (English key, translated) and **`Help`** sit on the field; `Ref` is a foreign key (`FieldDB.RefColumn`).
+- **DB tables** carry `DB: &model.FieldDB{...}`; **form-only DTOs** (login, filters) carry none.
+- **A listed model marks its list item on the fields**: `Item: model.ItemLabel` (one), `model.ItemDescription` (several
+  are joined with « · » in field order), `model.ItemBadge` (one; a date goes as seconds). `ormc` generates a typed
+  `func (m *X) Item() model.Item` and rejects an invalid mark set (`model.ValidateItem`); never write `Item()` by hand.
+  A select fed by another list without a foreign key says `Options: &OtherModel` (`Ref` when it is a foreign key).
 
 Then generate:
 
@@ -52,7 +50,7 @@ go generate ./...   # runs ormc (//go:generate ormc); install:
 go install webtyp.com/orm/cmd/ormc@latest
 ```
 
-`ormc` parses the Definition literal (including the `Widget:` expressions)
+`ormc` parses the Definition literal (including each field's Kind expression)
 and **generates the concrete Go struct** plus `ModelName()`, `Schema()`,
 `Pointers()`, `Validate()`, `EncodeFields()`/`DecodeFields()` (typed codec)
 and the `*List` type, into the generated `*_orm.go` file. **Never edit
@@ -69,18 +67,18 @@ generated files — they are overwritten on every run.**
   exclusively through the generated typed codec — a hand-written DTO without
   generated `Encode/DecodeFields` cannot travel.
 - ❌ **`form.RegisterInput` as a fix for empty forms.** `form.New` binds
-  inputs ONLY via `Field.Widget` from the schema — there is no name matching.
-  If a form renders without fields, the Definition is missing `Widget:`
-  entries → fix the Definition and regenerate; never patch at the consumer.
+  inputs ONLY from fields whose `Type` is an `input.Input` Kind — there is no name matching.
+  If a form renders without fields, those fields carry a plain `model.Xxx()` Kind
+  → fix the Definition and regenerate; never patch at the consumer.
 
 ## Library roles
 
 | Library | Responsibility | Knows about |
 |---|---|---|
-| **model** | `Definition`, `Field`, `Fielder`, `Widget` iface, `Permitted`, `ValidateFields`, typed codec contracts | nothing else |
+| **model** | `Definition`, `Field`, `Kind`, `Fielder`, `Permitted`, `ValidateFields`, typed codec contracts | nothing else |
 | **orm / ormc** | DB mapping + THE code generator (Definition → struct + methods) | model |
 | **form** | `form.New(parentID, &Generated{})` — schema-driven form; SSR + reactive render | model, dom, webtyp/input |
-| **webtyp/input** | Concrete widgets with validation (`Email`, `Password`, `Phone`, `Text`, `Number`, `Checkbox`, `Textarea`, …) | model |
+| **input** | Concrete form Kinds with validation (`Email`, `Password`, `Phone`, `Text`, `Number`, `Checkbox`, `Textarea`, …) | model |
 | **json** | Zero-reflection codec over generated `Encode/DecodeFields` | model |
 | **dom** | Pure HTML layout elements + signals. **NO form functions** (no `Input()`, `Form()`, …) | — |
 
@@ -88,7 +86,7 @@ generated files — they are overwritten on every run.**
 
 ```
 model.ValidateFields(action, m)
-  → per field: NotNull → Widget.Validate (semantic) → Permitted (chars/length)
+  → per field: PK/NotNull → the Kind's Validate (semantic) → Permitted (chars/length)
 ```
 
 Runs identically in WASM (`form.Validate()`) and on the server (after decode,
@@ -97,16 +95,16 @@ before persistence).
 ## How to instruct an agent in a PLAN.md
 
 1. Write the `model.Definition` literal(s) — var name ending in `Model`,
-   every form-visible field with an explicit `Widget:`.
+   every form-visible field with an `input.Xxx()` Kind.
 2. Delete any hand-written struct the Definition replaces (ormc generates it;
    names would collide).
 3. Run `go generate ./...` (ormc). Verify the generated schema carries the
-   widgets and codecs.
+   input Kinds and codecs.
 4. Regression test: `form.New(id, &Generated{})` yields exactly the expected
    number of inputs — catches a future regeneration that loses widgets.
 
 ## Custom inputs
 
-A project may define custom widgets (same `model.Widget` contract) and use
-them in its Definitions like any `input.Xxx()`. They live with the consumer;
-stdlib widgets live in `webtyp/webtyp/input`.
+A project may define a custom input (implement `input.Input`, which embeds
+`model.Kind`) and use it in its Definitions like any `input.Xxx()`. It lives
+with the consumer; the shared ones live in `webtyp.com/input`.

@@ -22,7 +22,7 @@ Module files: **app-modules**. Generated server main: **app-server-main**. REST 
 │   └── layouts/       // leaf package for design presets
 ├── modules/
 │   ├── server.go      // !browser: Server(...) ([]router.OperationModule, error)
-│   ├── browser.go     // browser: Browser(...) ([]platformd.UIModule, error)
+│   ├── browser.go     // browser: Screens(caller) []view.Screen (config draws them: layout/app.BuildMenu)
 │   └── <m>/           // only app-local capabilities (skill app-modules)
 ├── tests/             // EVERY test of the repo
 ├── web/               // the only output folder: no .build/, no edge/ at the root
@@ -46,7 +46,9 @@ The **folder** under `web/` says which binary a main builds; a main carries no d
 | native server + Worker | `!browser` |
 | all three | none |
 
-Rule: *why is it split?* The API does not exist on that platform (`syscall/js`, `os`, `net`) → `wasm`/`!wasm`. It belongs to another binary → `browser`/`!browser`. Libraries keep `wasm`/`!wasm`; only a library file imported by both browser and Worker that must behave differently uses `browser`. Every destination is tested on its platform (`gotest` runs one pass per destination: skill **testing**).
+**No other tag.** App and library code uses only `wasm`/`!wasm`, `browser`/`!browser` and `dev`/`!dev` (development only: `DEV_AUTOLOGIN`; the normal build **is** production). Never invent one (`prod`, `server`, `local`): a file behind a tag nobody passes is never compiled and breaks unseen (mjosefa-cms, 2026-10-28). Code that talks to the operating system keeps Go's own `windows`/`linux`/`darwin`; opt-in test suites keep theirs.
+
+Rule: *why is it split?* The API does not exist on that platform (`syscall/js`, `os`, `net`) → `wasm`/`!wasm`. It belongs to another binary → `browser`/`!browser`. Libraries carry no destination tag — the linker already drops what a binary never calls, so server-only code of a library (an SVG generator, an endpoint) stays untagged — and keep `wasm`/`!wasm` only for a missing API; only a library file imported by both browser and Worker that must behave differently uses `browser`. Every destination is tested on its platform (`gotest` runs one pass per destination: skill **testing**).
 
 ## Invariants
 
@@ -55,6 +57,7 @@ Rule: *why is it split?* The API does not exist on that platform (`syscall/js`, 
 3. **`web/<binary>/` is `package main` only**: env/origin resolution + a call into `config`. `RootCSS()` lives in `config/css.go` because `sitec` imports it and a `main` is not importable.
 4. **Every test in `tests/`** (`package tests`, imports `config`); run with `gotest` (skill **testing**).
 5. **An untagged file compiles into all three binaries**: it imports only cross-platform packages. Server logic is `!browser`, renderer code is `browser`, asset producers are `!wasm`. Consequence for any tool that computes a build graph: the asset files of a browser-only package, and what they import, exist only in the **native** graph **with** `-tags=browser` — probe each platform with and without the destination tag, never one combination per platform.
+6. **The app chooses the database, and only the app.** The concrete engine (`postgres`, `sqlite`, `indexdb`, `storage/mem`) is imported only in `config/`, `web/*/main.go`, `cmd/` or tests. Every library — `appkit`, `dbsync`, `changelog`, `orm`, the modules — receives the connection through the engine-agnostic contracts (`storage`, `orm`) and never opens or picks one; depending on those contracts is fine, they run in server, Worker and browser alike. Check: `grep -rln 'webtyp.com/postgres\|webtyp.com/sqlite\|webtyp.com/indexdb' --include=*.go <library> \| grep -v '_test.go\|/tests/'` → empty.
 
 ## Review checklist
 
