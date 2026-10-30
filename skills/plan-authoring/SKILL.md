@@ -11,7 +11,7 @@ Process: **agents-workflow**. Frontmatter and dispatch: **codejob**. Multi-repo 
 
 An open choice in the plan is a Q&A gap, not a detail to delegate.
 
-- Ecosystem rules are **linked, never copied**: the plan opens with `> Read AGENTS.md at the repo root before any change.` Missing or stale `AGENTS.md` → write it before dispatch (**agents-md**). The plan holds only this change's decisions.
+- Ecosystem rules are **linked, never copied**: the plan opens with `> Read AGENTS.md at the repo root before any change.` and, right below it, the **«Finish by yourself»** line (frontmatter example in **codejob**): Jules finished `site_manager` (2026-10-30), asked «should I proceed?» and the session died unpublished — a delivery rule at the end of the plan is not enough Missing or stale `AGENTS.md` → write it before dispatch (**agents-md**). The plan holds only this change's decisions.
 - Cross-repo links are GitHub URLs (`https://github.com/webtyp/<repo>/blob/main/...`), never `../../`; content the executor needs from another repo is restated in the plan.
 - Code the executor cannot reach goes to `_temp/` (**codejob**).
 - **Every tool the plan names is installed in the plan.** The executor has none of the local CLIs: a `## Tools` section, first, with one `go install` line per tool the plan uses (catalog below). A command the plan runs without its install line is a defect.

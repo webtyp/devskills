@@ -18,6 +18,8 @@ REVIEWER: none
 ---
 
 > Read AGENTS.md at the repo root before any change.
+> **Finish by yourself:** when the delivery check passes, commit, push and open the pull request. Never ask whether to
+> proceed or finalize — nobody answers, and a session that waits ends without your work.
 ```
 
 | Key | Writer | Meaning |
