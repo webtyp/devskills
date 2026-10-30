@@ -91,6 +91,8 @@ but only where the mechanism supports it: a recipe driven by a `widget.State`
 reads a state attribute, which CSS alone cannot move. Inventing a parallel
 CSS-only path beside a state-driven one is a leaf fix.
 
+**An element has one parent, for the life of the page.** `Render()` builds every element it returns, each time it runs: a screen shown again by `dom.Show` runs it again. An element kept in a field and handed to a component (`modaldialog.ModalDialog{Content: el}`) panics on the second render (`dom: element … is already a child of another element`). Keep the component's *state* in the field (a signal, an id), build its elements inside `Render()`. A test proves it by drawing the screen twice, nested components included.
+
 ## State reaches the markup as a `widget.State`, never a class
 
 ```go

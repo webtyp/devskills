@@ -33,6 +33,8 @@ Module files: **app-modules**. Generated server main: **app-server-main**. REST 
 └── cmd/migrate/main.go // !wasm, optional: schema reconciliation, never in the Worker
 ```
 
+STATUS (remove this line when MVP_DEPLOYMENT_ROADMAP closes): an app never commits a `compose.yaml` or `Dockerfile`; for a self-hosted server the `selfhost` target of `webtyp/deploy` generates the compose on the server from `config/deploy.go` (its M3a).
+
 ## Build tags: two axes, one name per binary
 
 The **folder** under `web/` says which binary a main builds; a main carries no destination tag (at most `wasm`/`!wasm`), because a tag of our own (`browser`) hides the file from gopls. Relative paths (`web/public`) resolve against the process's working directory, never the binary's folder: every launcher starts it at the project (or package) root. **Platform** `wasm`/`!wasm` is set by the compiler (`GOARCH=wasm`, browser **and** Worker). **Destination** `browser`/`!browser` is passed only by the client compiler (`-tags browser`, `browser,dev` in development); `goflare` refuses it and the native server passes none.

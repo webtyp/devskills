@@ -5,7 +5,7 @@ description: The global webtyp MCP daemon — starting it, starting a project he
 
 # webtyp/app — the dev daemon
 
-- **The agent talks to projects only through the global MCP server on `:6060`.** Not running → `webtyp -mcp`.
+- **The agent talks to projects only through the global MCP server on `:6060`.** Not running → `webtyp mcp` (a subcommand, as `webtyp help` shows in v0.7.33; run it from inside a Go module, e.g. the project root — elsewhere it exits with "not a Go module").
 - Start a project with the MCP tool `start_development` (headless). **Never run `webtyp` in a shell to start a project.**
 - Tools are registered once at startup and self-describe via `tools/list`; `browser_*` tools answer "not ready" until a project is active.
 - The human runs `webtyp` (TUI, SSE log viewer): `Ctrl+C` detaches, the project keeps running; `q` stops the project.
@@ -34,6 +34,6 @@ Auth: the daemon persists an API key (`WEBTYP_API_KEY`); requests carry `Authori
 ```bash
 curl http://localhost:6060/mcp -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","method":"initialize","id":"1","params":{"protocolVersion":"2024-11-05","clientInfo":{"name":"t","version":"0"}}}'
-webtyp -mcp                                   # not running → start it
+webtyp mcp                                    # not running → start it (from a Go module dir)
 grep -A5 mcpServers ~/.claude.json            # check the IDE entry
 ```

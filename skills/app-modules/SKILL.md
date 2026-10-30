@@ -39,11 +39,11 @@ func Screens(caller router.Caller) []view.Screen
 
 The app writes **no** `modules/<m>/`; it imports `<m>/ui` from its registry. The module repo carries:
 
-- `<m>/ui` — `ID`, `Label`, `Screens(caller) []view.Screen` with **no tag** (only the browser main imports `ui`), its asset producers (`css.go`, `svg.go`, `image.go`…) `!wasm`. Neither the root nor `ui` imports `layout` (exception: a `Component` screen built with `layout/chatview`/`crudview`/`rightpanel`; never `platformd`), so a `layout` release does not force a module release.
+- `<m>/ui` — `ID`, `Label`, `Screens(caller) []view.Screen` with **no tag** (only the browser main imports `ui`), its asset producers (`css.go`, `svg.go`, `image.go`…) `!wasm`. Neither the root nor `ui` imports `layout` (exception: a `Component` screen built with `layout/chatview`/`crudview`/`rightpanel`, or implementing `layout.UsesNotifier`; never `platformd`), so a `layout` release does not force a module release. A `Component` screen tells the user «saved» or an error through the platform's notices (`UseNotifier(layout.Notifier)` + `Notify(msgtype.Success|Error, msg, layout.Auto())`), never a status line of its own.
 - `<m>/seed` — `Load(...) (Data, error)`, demo data through the module's own methods.
 - `<m>/web/browser/main.go` — runnable demo (`storage/mem` + `router/loopback` + seed). **A screen is built and tested there, never in the app.**
 
-Module dependencies form a DAG; a screen mixing modules lives in the most-downstream one. When modules wire each other, `modules/server.go` returns a typed struct with `Operations() []router.OperationModule`.
+Modules never import each other (skill **module-layout**): a screen mixing modules lives in the app, which wires each module's narrow interfaces. When modules wire each other, `modules/server.go` returns a typed struct with `Operations() []router.OperationModule`.
 
 ## Before a module enters an app — the review it must pass
 

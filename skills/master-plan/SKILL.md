@@ -40,6 +40,7 @@ Per-library plans: **plan-authoring**; their loop: **codejob**.
 - **Questions first**, because they are what the user reads. No questions → write «Ninguna.»
 - Each question: ≥2 options, one recommendation with evidence (`file:line`, prior art), at most ~6 lines plus code. Written in plain words for a junior (**dev-protocols** «Plain words»): first what the user sees break, then the cause, never a label they must decode. Never ask what the code answers.
 - **A design question always carries code**: one fenced block with what the consumer writes today and under each option (real call sites from the repo, `// A` / `// B` comments), plus what the user sees change. Signatures or prose alone are not an example — the user cannot approve what they cannot picture.
+- **A design that touches a screen carries screenshots**: today's screen and the proposal (the reference HTML in `docs/ui-reference`, or a mockup), saved as PNG under the repo being changed (`docs/img/<topic>-<n>.png` of the app or of the module) and linked from the question or decision in the master (`![today](…)`). The user approves what they see, not a description. A design is not presented, and its plan not dispatched, without them.
 - A decision row is **one line** with where it gets built; it leaves when that repo ships it.
 - A phase row is one line; a closed phase stays as one line («cerrada vX.Y.Z») until the wave ends.
 - Written in **the language the user writes in**; dispatched `docs/PLAN.md` stay in English.
