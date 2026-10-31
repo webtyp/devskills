@@ -1,133 +1,61 @@
 ---
 name: documentation
-description: Documentation standards for ARCHITECTURE.md, PLAN.md, DESIGN.md, SPECS.md, SKILL.md, diagrams, and README indexing. Use when creating or updating project documentation.
+description: Documentation standards for README.md, ARCHITECTURE.md, PLAN.md, DESIGN.md, SPECS.md, SKILL.md, and diagrams. Grounded in Minimalist Instruction, Cognitive Load Theory, and Diátaxis. Use when creating, updating, or reviewing project documentation.
 ---
 
 # Documentation
 
-## Who every document is written for
+## Who every document is written for (Pedagogical Basis)
 
-**This applies to every file in `docs/` and to `README.md` — not only to the
-README.**
+Every file in `docs/` and `README.md` is written for a **junior developer with zero prior context** who did not attend the conversation that produced the repo. We combine three proven frameworks:
 
-The reader is someone with **little to no context**: a junior developer, a new
-hire, or the original author six months later. They did not attend the
-conversation that produced the document. They do not know the vocabulary of this
-project yet. Assume nothing beyond general programming knowledge.
+1. **Minimalist Instruction (John M. Carroll):** Open with a concrete real-world problem before any abstraction. State prerequisites before Step 1. Pair every action with its visible output.
+2. **Cognitive Load Theory & Progressive Disclosure (Sweller / Nielsen):** Keep `README.md` short (**≤ 150 lines**, never > 200). An oversized README overwhelms the reader. Never duplicate error lists, env var catalogs, or glossary tables in the README — **link concepts inline on first mention** to `docs/*.md`, the Go source file (`layout.go`, `install.go`), or the external standard.
+3. **Diátaxis (Daniele Procida):** Follow cognitive order — *Why it exists* → *Before you start* → *Step-by-step tutorial* → *Documentation map*.
 
-The goal for WebTyp is that **any person can understand the framework**, so
-documentation is written closer to a tutorial than to a set of meeting minutes.
-A document that is only legible to whoever was in the room has failed, however
-correct its content is.
+Language follows **dev-protocols**: English in `webtyp/*`, Spanish in `veltylabs/*`. In `webtyp/*`, never use client names or domains; use RFC 2606 (`example.com`, `acme`). Update documentation *before* coding or running `gopush`.
 
-### Every document and every section opens with context, before its content
+## Mandatory `README.md` Template (4 Sections in Exact Order, ≤ 150 Lines)
 
-Before the first claim, table, decision, or API listing, the reader must be told,
-in plain sentences:
+Every repository `README.md` MUST stay concise (≤ 150 lines) and contain these 4 sections in order (translated to Spanish in `veltylabs/*`):
 
-1. **What this is about** — name the thing being discussed and say what it *is*,
-   even when the name looks self-explanatory to you. "`truststore` is a Go
-   library that installs a certificate into the operating system's list of
-   trusted authorities."
-2. **When the reader will run into it** — the concrete situation that makes this
-   page relevant. "You ran `webtyp dev`, the browser opened on `https://` and did
-   not warn you about the certificate. This is the piece that made that happen."
-3. **Why the document exists** — what question it settles, or what would go wrong
-   without it.
+### 1. `## Why This Exists` (`## ¿Por qué existe?`)
+- Plain-language paragraph naming what the package/app is and when the reader runs into it.
+- A concise **Without this vs. With this** (*Sin esto vs. Con esto*) comparison showing the concrete failure mode this repository solves.
+- **Inline links on first mention:** The first time any domain concept, cryptographic format, sibling repo (`https://github.com/webtyp/...`), or internal flow appears in prose, link it right there to its section in `docs/ARCHITECTURE.md`, `docs/diagrams/*.md`, or external spec. Do NOT create a separate glossary table in the README.
 
-Only then the detail. A section that opens with **"Question."** or with a
-comparison table, and leaves the reader to infer the subject from the title, is
-exactly the failure this rule exists to close.
+### 2. `## Before You Start` (`## Antes de comenzar`)
+- Short checklist of what must exist *before* Step 1, split by environment (e.g., publisher machine vs. target server), with inline links to the tools or source files that define those requirements.
 
-### Introduce the vocabulary you use
+### 3. `## Step-by-Step Guide` (`## Guía paso a paso`)
+- Numbered steps (`### Step 1: ...`, `### Step 2: ...`) walking from zero to a working result.
+- Every step MUST include three parts:
+  1. **Goal:** What you are doing and why, in one plain sentence.
+  2. **Command or runnable code:** Copy-pasteable shell commands or a **complete, compilable Go file** (`package`, `import`, declared variables — fragments with undeclared variables are forbidden). Always import `"webtyp.com/fmt"` in Go examples (never stdlib `"fmt"` or `"log"`), and exit `main()` on error with `fmt.Println(err); return` (or `os.Exit(1)` in host CLIs).
+  3. **Expected result:** What appears on screen, on disk, or over HTTP.
+- **Link to code instead of listing constants:** Never copy tables of environment variables, secret files, or exported `Err*` constants into `README.md` — link directly to the Go source files (`[layout.go](layout.go)`, `[install.go](install.go)`, `[apply.go](apply.go)`) and `[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)` where they live.
 
-The first time a document uses a term the reader may not own — trust store, CA,
-leaf certificate, SAN, SPKI, RBAC, adapter, strategy — define it in one short
-clause on the spot, or link to the place that does. Never let the explanation of
-a decision depend on jargon the reader was never given.
+### 4. `## Documentation Map` (`## Mapa de documentación`)
+- An ordered reading table (`Order | Document | What question it answers & when to read it`) indexing every permanent file in `docs/` and `docs/diagrams/`. Bare comma-separated link dumps (`See [A], [B], [C]`) are forbidden.
 
-### Prefer the concrete over the abstract
+## Mandatory `docs/ARCHITECTURE.md` Template (4 Sections in Exact Order)
 
-Show the command the reader would type, the error they would see, the file that
-would appear. An abstract statement of a rule plus one concrete example beats two
-paragraphs of abstraction.
+Defines WHAT & WHY (no implementation code blocks):
 
-### Code comments teach, with an example
+1. **`## 1. Overview in One Minute` (`## 1. Visión general en un minuto`)**: Plain-language mental model of the pieces and who decides what, before any table.
+2. **`## 2. Repository Pieces & On-Disk Layout` (`## 2. Piezas y estructura`)**: Tables mapping each source file, service, or on-disk file to its single responsibility and owner.
+3. **`## 3. Step-by-Step Flows` (`## 3. Flujos paso a paso`)**: One subsection per core flow, narrating the happy path and failure/rollback path in plain words and linking to its diagram in `docs/diagrams/`.
+4. **`## 4. Security Boundaries & Contracts` (`## 4. Contratos y límites de seguridad`)**: Why each invariant exists (least-privilege UIDs, digest pinning, network isolation) and what is forbidden.
 
-The comment of every exported symbol says what it is for in plain words and shows a short usage
-example (`// Ejemplo: …`), so a reader understands it without opening the implementation. Language by tree:
-**dev-protocols** (in `veltylabs/*` comments, docs and diagrams are Spanish).
+## Mandatory `docs/diagrams/*.md` Template (3 Parts in Exact Order)
 
-## README — a newcomer's entry point, not just an index
+1. **Context header (above the diagram):** 2–3 plain sentences stating what scenario the diagram shows, what triggers it, and which test file verifies its branches.
+2. **Mermaid diagram:** Simple vertical `flowchart TD`. **NEVER** use `subgraph` (breaks TUI rendering). Use `<br/>` for line breaks inside nodes.
+   - STATUS (remove this line when DB_DIAGRAM_MASTER_PLAN closes): the database diagram becomes `docs/diagrams/database.svg`, generated from the models on save (never edited by hand); until `webtyp/erd` ships, keep the existing `database.md`.
+3. **Step-by-step walkthrough (below the diagram):** Numbered list explaining every step and error branch in plain words.
 
-A README that only indexes `docs/` files (see "Readme Indexing" below) answers
-"where is everything," never "what do I actually do." Both are required — the
-index is not optional, but it is not the first thing a reader needs either.
+## Other Standard Documents & Rules
 
-### Getting Started, staged by what the reader wants to do
-
-Every `README.md` MUST open (above the doc index) with a "Getting Started"
-section broken into the concrete goals a reader arrives with, most common
-first — typically:
-
-1. **See it running locally.** The shortest real path to a working UI/output
-   on the reader's own machine. Exact commands, in order, copy-pasteable.
-   State plainly what does NOT work yet at this stage (e.g., "login is
-   disabled here," "uses fake data") instead of leaving the reader to
-   discover a silent limitation.
-2. **Deploy it.** Link to `docs/DEPLOY.md` (or equivalent) — do not inline
-   deploy steps here if they already live there.
-3. **Develop a feature / contribute code.** Link to `docs/ARCHITECTURE.md`/
-   `AGENTS.md` — do not re-explain architecture here.
-
-A reader must be able to tell which section matches what they want to do
-**right now** from the headers alone, without reading the other two.
-
-### Every required configuration value gets a plain-language line, not just a name
-
-A `.env` key, CLI flag, or secret listed as required MUST document three
-things, not just its name:
-
-- **What it actually is**, in one plain sentence — not a restatement of the
-  name. `IAM_CLIENT_SECRET` is not self-explanatory; "the password this app
-  uses to prove its own identity to the shared login service" is.
-- **Where it comes from** — generated how, by whom, or fetched from where.
-- **What breaks if it is missing** — the exact error the reader will see, so
-  a stuck reader can match their symptom back to the cause.
-
-Never list a bare variable name and assume the reader already knows the
-system well enough to infer its purpose. That assumption is exactly the
-failure mode this rule exists to close.
-
-### A complicated setup is a design defect, not a documentation gap to paper over
-
-Before writing an elaborate "configure these 5 prerequisites first" section,
-ask whether the software itself could remove the need for some of them. A
-local dev/preview path that requires production credentials just to render a
-UI is usually the thing to fix, not the thing to document more thoroughly.
-Documentation describes the simplest real path — it does not make a needlessly
-complicated one sound simpler than it is.
-
-## Everything else
-
-- **No client data in `webtyp/*`:** a library (code, tests, docs, plans) never names a client's domain, brand or data. Examples use the domains reserved for that by RFC 2606 (`example.com`, `example.org`, `example.net`) and invented names (`acme`). A client's real names live only in its own repo (`veltylabs/*`).
-- **Documentation First:** You MUST update the documentation *before* coding or running `gopush`.
-
-- **Standard Documents:**
-    - **`docs/ARCHITECTURE.md`:** Defines WHAT & WHY (abstract design, constraints). NO implementation code.
-    - **`docs/PLAN.md`:** Defines HOW (steps, reference code, test strategy). It is the master orchestrator for execution. **Ephemeral**: `codejob close` deletes it when the loop closes; while in flight only its `STATUS` frontmatter changes (skill **codejob**).
-    - **`docs/DESIGN.md`:** (On demand) Justifies technical decisions and explores alternatives. Must NOT duplicate `ARCHITECTURE.md`. Heavily linked by `ARCHITECTURE.md` to keep the main document clean and focused on abstract structure rather than debate. Every decision entry MUST open with the background a reader needs to care about it — what problem the code was solving, what the candidates even are — before naming the choice. A decision entry that starts at the comparison has skipped the only part a newcomer needed.
-    - **`docs/SPECS.md`:** (On demand) Strict functional requirements, exact inputs/outputs, and data logic. Must NOT duplicate `ARCHITECTURE.md`. `PLAN.md` consumes it to derive exact test cases and assertions (link direction: plan → specs, never the reverse).
-    - **`docs/SKILL.md`:** (On demand) Provides an LLM-friendly, highly condensed summary of the library's context and constraints.
-    - **Modular Docs:** If `ARCHITECTURE.md` or `PLAN.md` become too large, they must be divided into domain-specific, uppercase, underscore-separated files (e.g., `docs/BUS_ARCHITECTURE.md`, `docs/CHART_BAR_PLAN.md`).
-
-- **Writing a skill:** skill **devskills**.
-
-- **Diagram Standards:**
-    - **Format & Location:** Markdown files (`*.md`) containing Mermaid code, stored in `docs/diagrams/` and linked from the architecture documents.
-    - STATUS (remove this line when DB_DIAGRAM_MASTER_PLAN closes): the database diagram becomes `docs/diagrams/database.svg`, generated from the models on save (never edited by hand); until `webtyp/erd` ships, keep the existing `database.md`.
-    - **Simplicity:** Use simple, vertical, linear flowcharts (`flowchart TD`). **NEVER** use the `subgraph` directive (ruins TUI rendering). Use `<br/>` for line breaks inside standard nodes instead of quoting text strings.
-
-- **Ephemeral vs Permanent:** Permanent docs (`README.md`, `ARCHITECTURE.md`, `DESIGN.md`, `SPECS.md`, diagrams) must **NEVER link to or cite `PLAN.md`/`CHECK_PLAN.md`** — not even section references like "PLAN §8" — those files are deleted at loop close, so every such reference is a guaranteed dead link. Rationale and rejected alternatives belong in `DESIGN.md`; contracts in `ARCHITECTURE.md`. A permanent doc written documentation-first (before the implementation lands) may carry a self-deleting marker — `STATUS (remove this note when X lands): …` — whose removal is an explicit task of the plan.
-
-- **Readme Indexing:** The `README.md` must act as an index. Every file in `docs/` must be linked from `README.md` — **except the ephemeral lifecycle files** (`PLAN.md`, `PLAN_*.md`, `CHECK_PLAN.md`), which are never indexed. Cross-link logically related permanent documents (e.g., `ARCHITECTURE.md` linking to `SPECS.md` or `DESIGN.md`) to avoid duplicating information across files.
+- **`docs/PLAN.md`:** Ephemeral execution plan (`codejob close` deletes it). Permanent docs (`README.md`, `ARCHITECTURE.md`, `DESIGN.md`, `SPECS.md`, diagrams) must **NEVER** link to or cite `PLAN.md`/`CHECK_PLAN.md`. A doc written before implementation lands may carry `STATUS (remove this note when X lands): …`.
+- **`docs/DESIGN.md` / `docs/SPECS.md` / `docs/SKILL.md`:** Created on demand. `DESIGN.md` opens every decision with background before comparing candidates; `SPECS.md` holds strict I/O contracts; `SKILL.md` summarizes library usage for LLMs. Split large docs into `docs/<DOMAIN>_ARCHITECTURE.md`.
+- **Code comments:** Every exported symbol comment explains its purpose in plain words and includes a short usage example (`// Example: …` or `// Ejemplo: …`).
