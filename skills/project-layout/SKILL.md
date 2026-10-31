@@ -33,7 +33,7 @@ Module files: **app-modules**. Generated server main: **app-server-main**. REST 
 └── cmd/migrate/main.go // !wasm, optional: schema reconciliation, never in the Worker
 ```
 
-STATUS (remove this line when MVP_DEPLOYMENT_ROADMAP closes): an app never commits a `compose.yaml` or `Dockerfile`; for a self-hosted server the `selfhost` target of `webtyp/deploy` generates the compose on the server from `config/deploy.go` (its M3a).
+STATUS (remove this line when MVP_DEPLOYMENT_ROADMAP closes): an app never commits a `compose.yaml` or `Dockerfile`; for a self-hosted server the target `selfupdate.Server` of `webtyp/selfupdate` generates the compose on the server from `config/deploy.go`. The entry point folder under `web/` determines the deployment target: `web/edge/` → Worker (`goflare.Worker`, `github.Actions`); `web/server/` only → Server (`selfupdate.Server`, `gorelease.Local`).
 
 ## Build tags: two axes, one name per binary
 
