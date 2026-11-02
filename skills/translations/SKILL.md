@@ -16,6 +16,14 @@ return fmt.Err("Rol no encontrado") // ❌
 return fmt.Err("Role not found")    // ✅ Spanish lives in lang.json
 ```
 
+## Where a translation is written — once, at the lowest owner
+
+- A text is translated in the `lang.json` of the library that writes it; never in an app (an app's `config/lang.json` is configuration only — **langc**).
+- A shared column or word (`tenant id`, `created at`, `name`, `status`) is translated once in `webtyp/model/lang.json`; a module never repeats it, `langc sync` drops a copy that agrees and reports one that disagrees.
+- A reference to an entity (`room id`, `device id`) belongs to the module that owns the entity.
+- Leave a language **empty** when no person who reads it reviewed it. Never fill a slot with a placeholder (`"name (zh)"`, `"fake …"`, `"Traducción"`, `"kind español"`) or copy the Spanish into other languages: an empty slot shows the English key and is reported; a placeholder is shown to users and hides the gap.
+- STATUS (remove this line when TUI_SIGNAL_MASTER_PLAN closes): local, unpublished (`lang/langc`, `model/lang.json`).
+
 ## Think in Spanish first — noun before adjective
 
 Multi-word keys and variadic `lang.Translate(...)` must read naturally in Spanish:

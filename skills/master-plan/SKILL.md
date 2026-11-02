@@ -56,6 +56,15 @@ de 90 min sin commit nuevo visible en el repo → es libre: escribe tu marca, `c
 master, y solo entonces actúa. Refresca la hora en cada pasada mientras sigas trabajándola; bórrala
 al cerrar la fase (una fase cerrada no necesita dueño).
 
+## Local execution across repos — the master is the roadmap
+
+When the owner orders a wave **executed locally** (small changes spread over several repos) instead of
+dispatched: no `docs/PLAN.md` per repo; the master **is the execution roadmap**. Each `Fases` row says
+what landed locally and how it was verified (`gotest`, the reference app). Every consumer points at the
+local copies with `replace` in its `go.mod`; **nothing is published** (`gopush`, tags) until the owner
+reviews the changes and says they are satisfied. Then publish bottom-up, drop each `replace`, and close
+the rows.
+
 ## What never goes in a master
 
 - **Conversation history**: answers to the agent (`codejob reply`), review diaries, "what was tried", timestamps of notices, the user's raw answers. A reply sent to a running agent is recorded **in that repo's `docs/PLAN.md`** (section `## Additions`), which dies with the plan.

@@ -1,6 +1,6 @@
 ---
 name: langc
-description: The webtyp translation dictionary and its CLI — positional lang.json format, where dictionaries live (app config/lang.json vs library lang.json, project wins), langc sync and its 8 AST extraction rules. Use when running langc, editing lang.json, or a key is missing or untranslated.
+description: The webtyp translation dictionary and its CLI — positional lang.json format, where dictionaries live (app config/lang.json is configuration only; texts live in each library lang.json), langc sync and its 8 AST extraction rules. Use when running langc, editing lang.json, or a key is missing or untranslated.
 ---
 
 # langc — the dictionary
@@ -9,10 +9,10 @@ Writing the text itself: **translations**.
 
 ## Where dictionaries live
 
-- App: `config/lang.json` (has `default` and `languages`).
+- App: `config/lang.json` holds **configuration only** — `default` and `languages`, no keys. A text is translated once, in the `lang.json` of the library that uses it; an app that needs its own text puts it in a module. `langc sync` moves a translation an app still holds into that library (never overwriting a different one: it reports the conflict). STATUS (remove this line when TUI_SIGNAL_MASTER_PLAN closes): in local, unpublished `lang/langc`.
 - Library: `lang.json` at its module root (no `default`). Run on its own (a demo, no `config/`), the bundle's default is the first of its `languages`.
 - There is **no** `config/lang.go` and no Go API to register words or force a language: the dictionary's `default` plus the browser's language decide. Never call `lang.OutLang("es")` in an app.
-- `sitec` merges them at build (`langc.BundleTranslations`); the app wins. Injected as `<script type="application/json" id="webtyp-lang">`, read once by `webtyp/lang` in the browser.
+- `sitec` merges them at build (`langc.BundleTranslations`); the library dictionaries filtered to the app's `languages`. Injected as `<script type="application/json" id="webtyp-lang">`, read once by `webtyp/lang` in the browser.
 
 ## Format — positional
 
@@ -35,10 +35,11 @@ Writing the text itself: **translations**.
 ## `langc sync [dir]` (`-tool` for backend CLIs)
 
 1. Walks the AST (skips `*_test.go`, vendor, hidden dirs, `tests/`, `conformance/`).
-2. Adds new keys as `["", …]`; in apps deletes unused keys (libraries keep them: dynamic keys).
-3. Sorts keys; reports `lang: N untranslated (es) — see config/lang.json`.
-4. Checks reuse: flags keys sharing 2+ words (`share ... — extract it as its own key and reuse it`). Fix by decomposing `fmt.Err` call sites to share vocabulary; reuse warnings are defects.
-5. Checks identical values: flags non-prose keys whose values end unchanged in every language (`ERROR ... ends with ... unchanged`). Fix by passing codes, prefixes and type names as variables (data), never literals.
+2. In a library adds new keys as `["", …]` and keeps unused ones (dynamic keys); a key a dependency already translates without contradiction is dropped (written once, lower in the graph: **translations**). In an app writes no keys: it moves the app's translations to their library and reports `N untranslated (es) in <library> — see <its lang.json>`.
+3. Scope: the app's packages and every package they import from the client **or** server build; a module reached only from a file in neither build (`config/deploy.go`, tag `deploy`) is a tool and is not scanned. Keys are read only from the browser build: `GOOS=js GOARCH=wasm -tags browser`, as `app` compiles it — a `!browser` file is server code.
+4. Sorts keys; reports each diagnostic once (again only when it changes), under the `LANG` label in the dev TUI.
+5. Checks reuse: flags keys sharing 2+ words (`share ... — extract it as its own key and reuse it`). Fix by decomposing `fmt.Err` call sites to share vocabulary; reuse warnings are defects.
+6. Checks identical values: flags non-prose keys whose values end unchanged in every language (`ERROR ... ends with ... unchanged`). Fix by passing codes, prefixes and type names as variables (data), never literals.
 
 Then fill the empty values and run `gotest`.
 
@@ -48,7 +49,7 @@ Then fill the empty values and run `gotest`.
 
 1. `lang.Translate("…")`, `lang.Text("…")`
 2. `fmt.Err("…")`
-3. `model.Field` `Label` (or `Name` with `_` → space when no Label)
+3. `model.Field` `Label` (or `Name` with `_` → space when no Label) — never inside a `model.Definition{Wire: true}` (a transport format)
 4. `fmt.KeyValue{Value: "…"}` passed to `webtyp.com/input`
 5. `input.SetPlaceholder("…")`, `input.SetTitle("…")`
 6. `model.Field` `Help`

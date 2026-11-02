@@ -33,6 +33,8 @@ var ServiceModel = model.Definition{
 }
 ```
 
+A transport format (a JSON-RPC message, a webhook payload) sets `Wire: true`: its field names are protocol, not screen text — **langc** does not extract them and it is never given to a form. `ormc` generates `Wire() bool` (`model.Wirer`) and `form.New` refuses it. STATUS (remove this line when TUI_SIGNAL_MASTER_PLAN closes): local, unpublished `model`, `ormc`, `form`.
+
 - **`Type` is a `model.Kind`** — it fixes storage, semantic name and validation in one value. An `input.Xxx()` Kind
   (`webtyp.com/input`, it embeds `model.Kind`) **is** the form control; a plain `model.Text()`/`model.Int()`… Kind gets
   **no** input (ids, tenant, timestamps). There is no `Widget` slot.
