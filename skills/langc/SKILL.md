@@ -9,7 +9,7 @@ Writing the text itself: **translations**.
 
 ## Where dictionaries live
 
-- App: `config/lang.json` holds **configuration only** — `default` and `languages`, no keys. A text is translated once, in the `lang.json` of the library that uses it; an app that needs its own text puts it in a module. `langc sync` moves a translation an app still holds into that library (never overwriting a different one: it reports the conflict). STATUS (remove this line when TUI_SIGNAL_MASTER_PLAN closes): in local, unpublished `lang/langc`.
+- App: `config/lang.json` holds **configuration only** — `default` and `languages`, no keys. A text is translated once, in the `lang.json` of the library that uses it; an app that needs its own text puts it in a module. `langc sync` moves a translation an app still holds into that library (never overwriting a different one: it reports the conflict).
 - Library: `lang.json` at its module root (no `default`). Run on its own (a demo, no `config/`), the bundle's default is the first of its `languages`.
 - There is **no** `config/lang.go` and no Go API to register words or force a language: the dictionary's `default` plus the browser's language decide. Never call `lang.OutLang("es")` in an app.
 - `sitec` merges them at build (`langc.BundleTranslations`); the library dictionaries filtered to the app's `languages`. Injected as `<script type="application/json" id="webtyp-lang">`, read once by `webtyp/lang` in the browser.
