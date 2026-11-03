@@ -16,4 +16,5 @@ Canonical transport is rpc (`rpc.Mount(r, prefix, modules...)` server-side, `rpc
 ## Optional files
 
 - `web/edge/main.go` (no destination tag: its folder separates it): D1/R2 bindings → `config.Register` (or rpc mount) → `edge.Serve(r)`. `goflare` builds it into `web/edge/edge.wasm` + `web/edge/edge.js` (never into `web/public/`, which is served to anyone). Never schema DDL.
+- STATUS (remove this line when APP_COMPOSITION_MASTER_PLAN closes): decided (D24, not built) — moves to the generated root `migrate/main.go`, the same binary every app uses, run by the deploy workflow's `pre-deploy`.
 - `cmd/migrate/main.go` (`//go:build !wasm`): reads `CLOUDFLARE_*`/`D1_*`, runs each package's `Migrate`/`Sync`; run as the deploy workflow's `pre-deploy` or by hand. Thin main.

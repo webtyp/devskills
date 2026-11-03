@@ -31,6 +31,7 @@ Module files: **app-modules**. Generated server main: **app-server-main**. REST 
 │   ├── edge/main.go    // optional Worker → web/edge/edge.wasm + web/edge/edge.js
 │   └── public/         // the only thing served, to anyone: never a binary
 └── cmd/migrate/main.go // !wasm, optional: schema reconciliation, never in the Worker
+// STATUS (remove this line when APP_COMPOSITION_MASTER_PLAN closes): decided (D21–D25, built in appkit, not yet published) — every app keeps config/app.go (appkit.App, !browser), config/browser.go (appkit.Browser, browser) and config/brand.go (appkit.Brand), one-line mains and a generated root migrate/main.go (appkit.Migrate(config.App)) instead of cmd/migrate/; the one migrate binary is run by webtyp dev, the self-host supervisor and the Worker pre-deploy.
 ```
 
 STATUS (remove this line when MVP_DEPLOYMENT_ROADMAP closes): an app never commits a `compose.yaml` or `Dockerfile`; for a self-hosted server the target `selfupdate.Server` of `webtyp/selfupdate` generates the compose on the server from `config/deploy.go`. The entry point folder under `web/` determines the deployment target: `web/edge/` → Worker (`goflare.Worker`, `github.Actions`); `web/server/` only → Server (`selfupdate.Server`, `gorelease.Local`).

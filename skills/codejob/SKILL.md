@@ -76,8 +76,7 @@ A long `codejob close`/`gopush` (its cascade) runs as the harness's background t
 
 - ≤ 15 plans `running` at once; one plan per repo (park the next as `docs/PLAN_<TOPIC>.md`).
 - Plans in `review`/`reviewing` do not count.
-- **After dispatching, set a recurring 15-minute timer** that runs `codejob` (read-only) and `codejob pull` in every repo with a plan in flight, and applies **plan-review** to each delivered PR. Remove the timer when no plan is in flight. Never poll in a tight loop.
-- **Skip the timer when another agent already owns the review** (e.g. a master plan says "Antigravity coordina la revisión"). Dispatch and move on; that agent's own session does the polling.
+- **After dispatching, ask the owner whether to set a review timer and how often** (never set or skip it on your own; a master saying another agent reviews is context for the question, not the answer). If yes, the timer runs `codejob` (read-only) and `codejob pull` in every repo with a plan in flight and applies **plan-review** to each delivered PR; remove it when no plan is in flight. Never poll in a tight loop.
 
 ## Source the executor cannot see — `_temp/`
 
