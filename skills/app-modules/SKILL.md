@@ -30,7 +30,7 @@ func Screens(caller router.Caller) []view.Screen
 
 - The whole view is built in `browser.go`; `module.go` holds only `ID`, `Label`.
 - **Lazy:** never fetch in `Init()`; load in `Activate()`, called by the chassis when the screen becomes active (`layout/app` wires it).
-- STATUS (remove this line when APP_COMPOSITION_MASTER_PLAN closes): a screen that is not a list (wizard, chat) gets `view.Screen.Component` (+ `Help`); until it ships such a module keeps its old screen — never flatten it into a list. Its component may be built with `layout/chatview`, `layout/crudview` or `layout/rightpanel`: that module then imports those pieces (the one accepted exception), never `layout/platformd`.
+- A screen that is not a list (wizard, chat) is a `view.Screen.Component` leaf (+ `Help`) — never flatten it into a list. Its component may be built with `layout/chatview`, `layout/crudview` or `layout/rightpanel`: that module then imports those pieces (the one accepted exception), never `layout/platformd`.
 - Flat: no subdirectories except `docs/` (`find modules -mindepth 2 -type d | grep -v /docs` → empty).
 - Forbidden names: `init.go`, `backend.go`, `view.go`, `frontend.go`, `client.go`, `*_wasm.go`.
 - Static check: `webtyp.com/router/layoutscan.VerifyLayout`.
