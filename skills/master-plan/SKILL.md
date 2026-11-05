@@ -79,6 +79,7 @@ the rows.
 - File: `webtyp/docs/<TOPIC>_MASTER_PLAN.md` — descriptive name, never a bare `MASTER_PLAN.md`.
 - Indexed as a row in `webtyp/docs/MASTER_PLANS.md`; read the index before starting a wave (it may exist or be blocked).
 - Every phase that **creates** a library or module says, in one line, what the **ecosystem search** found (**api-design** → «Step 0»): reuse, extend, or new.
+- **The proposal lives only in the master.** Every option, code example or correction of a proposal is written in the master first; the chat only points to it (`P40 updated in <file>`) and may refine it in conversation, then the master is updated again. The owner approves the master, never the chat: the same proposal in two places costs reading both and they drift.
 - Minimal chat reply: list of files touched or actions taken (closed version, new dispatch). NEVER duplicate or transcribe the status of phases, module tables, or progress summaries in the chat — all state lives strictly in the master plan file so the chat can be wiped clean and work resumed simply by reading the master.
 - One `docs/PLAN.md` per library, only once its decisions are closed.
 - **Nothing is left in the conversation.** The moment decisions close, write every plan of the wave on disk (or exact instructions as a phase row). A session can end at any time.

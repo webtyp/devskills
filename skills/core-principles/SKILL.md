@@ -5,6 +5,9 @@ description: Go development principles including SRP, dependency injection, fram
 
 # Core Principles
 
+> **Who webtyp is for:** someone who is just starting to program. Every API, error, notice, log line, README and
+> skill is written so a beginner understands it without asking — never for an expert. Messages: **api-harness** → «Messages».
+
 > **Designing or changing a public API, a CLI surface, or a file convention?**
 > Skill **api-design** is the gate that must pass first — prior art, the
 > novice-name test, the complexity ledger, the harness, and the zero-debt rules.

@@ -52,6 +52,15 @@ to be understood, it is the wrong name.
 - The word the ecosystem already uses: `Mount` is chi's word; `Attach` costs every Go developer a
   lookup for zero gain.
 - Intent, not mechanism: `Public()`, not `SetAuthFlag(false)`.
+- **Domain nouns, not abstract containers or geometry:** an interface is named for the domain concept it
+  represents (`OpeningHours`, `PatientDirectory`), never for a data structure, storage folder or math
+  implementation (`BoundsReader`, `DirectoryReader`). And a suffix must match every method inside: an
+  interface that writes (`RegisterPatient`) is not a `*Reader`.
+- **One method, one action (SRP):** a contract method never does two things (`FindOrCreatePatient`,
+  `LinkPatient`), and an interface never adds redundant existence methods when a lookup already answers it —
+  expose only the atomic operations (`FindPatient`, `RegisterPatient`) and let the caller compose them.
+- **General concept, not one country's subtype:** when a field or parameter can hold a RUT, passport or
+  foreign ID, name it `documentNumber` (`documentType`), never `rut` or bare `document`.
 - No abbreviation that is not universal in Go (`ctx`, `id` yes; `authz`, `hdlr` no).
 - No boolean parameters — `Test(args, false, 0, false, false)` says nothing. Typed options or
   separate methods.
@@ -95,3 +104,12 @@ is unreviewed.
 
 Name it. A change that deletes nothing is either genuinely new capability — say so — or a parallel path
 being accumulated.
+
+**Rename before you add.** To satisfy a contract (an interface another module declares), first look for an existing
+function that already does the job and **rename or reshape it** to the contract; never write a second function
+beside it. The framework only ever gets smaller: breaking its consumers, which then update, is preferred over
+keeping two names for one job.
+
+**A contract change is the owner's call.** Adding, renaming or reshaping a method of an interface — the consumer's
+or the provider's — is asked to the owner first, with the options and the code at the call sites
+(**master-plan** «A design question always carries code»). Never decide it inside a plan.

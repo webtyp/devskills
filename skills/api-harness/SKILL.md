@@ -49,6 +49,10 @@ it from keeping, it narrows the claim.
    ```
 2. **Explicit over implicit.** Reading the call must be enough to know what it does; runtime discovery
    by type assertion is not — prefer a written line.
+   **No `init()`** in webtyp code: it runs before `main` without being called, so reading `main` no longer
+   says what starts. Write it sequentially (`main` calls what it needs; a build tag picks an implementation
+   inside the library, as `auth/authority` `devlogin.go`/`devlogin_off.go`). An `init` needs a written
+   justification and the owner's approval first.
 3. **Illegal states unrepresentable.** One intent = one path, typed to demand what it needs.
 4. **Minimal surface.** Export exactly what the author uses; plumbing stays unexported. **Tests are
    not authors**: a symbol exported so a test can reach it is not surface, it is a defect (skill
@@ -94,3 +98,18 @@ An agent, or a junior, **with no context on the library** produces correct code 
 autocomplete and a few-line example. If they must read a manual to avoid a mistake, something is still
 untyped. If they must **ask a question** to proceed — "is it OK to declare this interface locally?" —
 the harness failed by its own definition.
+
+## Messages — every error, notice and log line is read by a beginner
+
+A message a library returns or prints says, in plain words and in this order: **what happened**, **whether it
+harms the user's data or work**, and **what to do** (the exact thing to install, change or run). No jargon,
+no internal names a beginner never wrote, no "unexpected error". A condition the library tolerates on purpose is
+never silent: it comes back as a notice with those three parts, and only that exact, named condition is tolerated.
+Every such message is built with `webtyp.com/fmt.Err` (or `lang.Text`), so **langc** extracts its words and the
+library's `lang.json` translates them: a beginner who does not read English reads it in their own language. A
+message assembled with `+` or stdlib `fmt` cannot be translated and is a defect.
+
+> `pg_restore 17 is newer than the database server 14, so the server did not understand one setting it sent
+> (transaction_timeout). It was skipped: your data was restored completely. To stop seeing this notice, install
+> the PostgreSQL 14 client tools.`
+
