@@ -22,6 +22,8 @@ Checkout: `codejob pull` (**codejob**). The spec is `docs/PLAN.md` on the PR bra
 11. **Domain tests** (**testing** «Domain tests»): every new or renamed `func Test…` is `Test<Area>_<Rule>` in `tests/<area>_test.go` and has its row in `docs/TESTS.md`; a test that belongs to another repo is rejected.
 12. **Build tags**: `git diff main | grep '^+//go:build'` — a non-test file with a tag other than `wasm`, `browser`, `dev` (or Go's OS names in OS code) is rejected (**project-layout** «No other tag»).
 
+13. **The consuming app**: with the PR branch checked out, the app that uses the library points at it with a local `replace` (**codejob** «gopush and local `replace`») and its `gotest` passes, before `codejob close`.
+
 A deviation from the plan is judged on its merits, not rejected by default.
 
 ## Outcome — at most 2 attempts by the agent

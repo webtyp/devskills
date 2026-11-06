@@ -94,6 +94,12 @@ model.ValidateFields(action, m)
 Runs identically in WASM (`form.Validate()`) and on the server (after decode,
 before persistence).
 
+**One validator per kind of value, in `webtyp/input`.** Code that checks a value outside a form (an importer, a
+login, a lookup) calls the input's exported function — `input.NormalizeRUT`, `input.RutCheckDigit` — never a copy,
+and never receives it injected (`Deps.ValidateRUT`): a copy or a fake drifts, and a lookup that normalizes
+differently from the save creates duplicates (Pa100T: 354 repeated patients). A validator that fails is fixed
+there, once.
+
 ## How to instruct an agent in a PLAN.md
 
 1. Write the `model.Definition` literal(s) — var name ending in `Model`,
