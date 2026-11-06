@@ -25,6 +25,27 @@ Ask before writing one: **"does it fail when the product is broken, and only the
 - **A fixture mirrors the real layout (skill project-layout)**: mains in `web/<binary>/main.go`, `browser`-tagged files where a package is shared, dependencies from another module, `!wasm` asset files. A fixture simpler than the layout it stands for (untagged `main.go`, everything in one module) passes with the bug present.
 - **Search before you write.** Before adding a test, grep the repo's tests for the behaviour, the symbol and the message it would assert. A test that already pins the scenario is **extended** (same fixture, one more assertion); a test that pins a behaviour you are deliberately changing is **updated or deleted** — never left failing, never shadowed by a second test. A new test is justified only by a scenario no existing one reaches; say which tests were extended, updated and new.
 
+## Domain tests — documented, named by area, owned by the right repo
+
+- **A repo tests only its own rules.** An app (`mjosefa-cms`) tests its business rules and one smoke test that it
+  starts with its modules. A test that would be identical in any other app (default deny, MCP closed, health, PWA,
+  layout, routing) belongs to the library that owns that behaviour: move it there (it may already exist), never copy.
+- **`docs/TESTS.md` in every repo**: one section per area of the domain, with its diagram (`docs/diagrams/<FLOW>.md`)
+  when it has a flow; each row is the rule protected and a link to the test:
+  ```markdown
+  ## Ingreso (LAN)
+  | Regla que protege | Prueba |
+  |---|---|
+  | 3 intentos fallidos bloquean la IP 15 min | [TestLogin_RateLimited](../tests/login_test.go) |
+  ```
+- **Name `Test<Area>_<Rule>`**: the area is the section (`TestLogin_RateLimited`, `TestImportStaff_RoleFor`);
+  `gotest -run TestLogin` runs one section and the list sorts by area.
+- **One file per area**: `tests/<area>_test.go` (`tests/login_test.go`); shared helpers in `tests/setup_test.go`.
+- **Kept in sync automatically**: every `func Test…` appears in `docs/TESTS.md` with a link to its file, and every
+  row points to a test that exists. A new test without its row, or a row without its test, is a defect.
+  STATUS (remove this line when TEST_DOMAIN_MASTER_PLAN closes): `gotest` does not check it yet (phase S2); until
+  then plan-review checks it by hand.
+
 ## Running and placing tests
 
 - **Testing Runner (`gotest`):** For Go tests, ALWAYS use the globally installed `gotest` CLI command. **DO NOT** use `go test` directly, and **DO NOT** invoke it via `go run webtyp.com/devflow/cmd/gotest`. Simply type `gotest` (no arguments) for the full suite, or `gotest -run TestName`. It automatically handles `-vet`, `-race`, `-cover`, WASM tests, and README badges.

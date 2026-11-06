@@ -19,7 +19,8 @@ Checkout: `codejob pull` (**codejob**). The spec is `docs/PLAN.md` on the PR bra
 8. Run `gotest` yourself, **once**: it already builds, vets, races and runs every destination (stdlib + wasm). Never add `go build`, `go vet` or a second `gotest` run — the plan's own delivery check asks for a repeat only when the repeat is the thing being proven. A PR that does not compile means the agent **guessed signatures**: fix it locally against the real source, and add the missing `## APIs used` rows to the plan's lesson (**plan-authoring**).
 9. **A change the user sees** (screen, menu, icon, text, form) is opened in the module's demo (`web/browser/main.go`, run with `webtyp` at the module root) and **looked at in a screenshot** before approving. Tests prove behaviour and never the look (**testing**), so this look is the only check that catches a wrong glyph or an empty screen.
 10. **Translations and text**: if the repo has `lang.json` or touches user-facing copy/errors, run `langc sync .` (**langc**) — must report 0 untranslated keys, 0 reuse warnings (`share ... — extract it as its own key and reuse it`), and 0 identical values (`ERROR ... ends with ... unchanged`). Reuse warnings are defects, never acceptable exceptions.
-11. **Build tags**: `git diff main | grep '^+//go:build'` — a non-test file with a tag other than `wasm`, `browser`, `dev` (or Go's OS names in OS code) is rejected (**project-layout** «No other tag»).
+11. **Domain tests** (**testing** «Domain tests»): every new or renamed `func Test…` is `Test<Area>_<Rule>` in `tests/<area>_test.go` and has its row in `docs/TESTS.md`; a test that belongs to another repo is rejected.
+12. **Build tags**: `git diff main | grep '^+//go:build'` — a non-test file with a tag other than `wasm`, `browser`, `dev` (or Go's OS names in OS code) is rejected (**project-layout** «No other tag»).
 
 A deviation from the plan is judged on its merits, not rejected by default.
 
@@ -27,8 +28,8 @@ A deviation from the plan is judged on its merits, not rejected by default.
 
 | Situation | Action |
 |---|---|
-| All correct | Tell the user to merge, or `codejob close 'msg'` |
-| Small fix (1 file, few lines), any round | Edit it on the PR branch and leave it **uncommitted**: `codejob close` commits it ("review: corrections before merge") and pushes. Never `git commit`/`git push` |
+| All correct | `codejob close 'msg'` yourself, same turn — «revisa» is the order to close; never stop to ask |
+| Small fix (1 file, few lines), any round | Edit it on the PR branch, leave it **uncommitted**, then `codejob close 'msg'` in the same turn (it commits "review: corrections before merge" and pushes). Never `git commit`/`git push` |
 | Attempt 1 or 2 fails (PR wrong, tests red) | Feedback to the agent: `codejob reply "<findings>"` while `running`, or one `gh pr comment <url> --body-file <f>` on its PR — each finding with file:line, what is wrong, what the plan required, how to verify; no code edits |
 | Attempt 2 still wrong, PR published | Fix it locally on the PR branch, `gotest`, `codejob close 'msg'` |
 | Attempt 2 still wrong, nothing published | Wait for the agent to publish; if it never does, execute the plan locally (**agents-workflow** → «Local execution») |

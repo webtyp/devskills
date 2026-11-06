@@ -41,6 +41,7 @@ STATUS (remove this line when MVP_DEPLOYMENT_ROADMAP closes): decided, not yet s
 | `tests/` | external package; `setup_test.go` holds the helpers (`newModule`, `new<Entity>`, `testTenant`, a test `IDGenerator`); one file per area; conformance suites in their own file; a constant used by untagged tests never lives in a `!wasm` file |
 
 Root files beside the code: `lang.json` (positional, no `default`), `AGENTS.md`, `README.md` (quick start, operations table generated from `MountOperations`, readers, key files), `docs/ARCHITECTURE.md`, `docs/diagrams/database.md` (Mermaid ERD).
+STATUS (remove this line when TUI_STAGES_MASTER_PLAN closes): removing a field that holds data does not drop its column; on save `webtyp dev` will compare the local database with the new model, ask in a DATABASE tab where the data went and whether to drop it, and write the answer to the app's generated `config/removed.go` (`[]ddl.Removed`), never into the module; the module's `Migrate` keeps calling `Sync` unchanged.
 STATUS (remove this line when DB_DIAGRAM_MASTER_PLAN closes): `database.md` is being replaced by `docs/diagrams/database.svg`, generated from `models.go` by the `erd` command (`webtyp.com/erd/cmd/erd`) and on save by `webtyp/app`; do not write a new hand-made ERD, keep the existing one until the module is migrated.
 
 ## Between modules
