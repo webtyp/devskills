@@ -42,7 +42,6 @@ STATUS (remove this line when MVP_DEPLOYMENT_ROADMAP closes): an app never commi
 **`appkit` is production only.** It is the piece an app ships: isomorphic (same declaration for server and browser)
 and agnostic of development. Development operations (running migrations on save, diagrams, introspection, demo
 tools) live in the piece responsible for them and are driven by `webtyp/app` (`webtyp dev`), never added to `appkit`.
-STATUS (remove this line when DATA_IMPORT_MASTER_PLAN closes): `appkit` still holds `Migrate`/`Steps` and mounts `erd` and introspection; see D54, D55 and P40 there.
 
 ## Build tags: two axes, one name per binary
 
