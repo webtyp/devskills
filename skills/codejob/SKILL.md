@@ -5,7 +5,7 @@ description: Running a docs/PLAN.md through codejob — the required frontmatter
 
 # codejob — the plan loop
 
-`gopush` publishes. `codejob` runs the loop (`dispatch → running → reviewing → review → close`), driven by `STATUS` in the plan's own frontmatter, and calls `gopush` when closing.
+`gopush` publishes. `codejob` runs the loop (only for work that pays a plan: **agents-workflow** «Cost rule»; a minor change is edited locally and published with `gopush`) (`dispatch → running → reviewing → review → close`), driven by `STATUS` in the plan's own frontmatter, and calls `gopush` when closing.
 
 ## Frontmatter — first line of `docs/PLAN.md` is `---`, or dispatch fails
 

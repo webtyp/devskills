@@ -53,10 +53,7 @@ it from keeping, it narrows the claim.
    says what starts. Write it sequentially (`main` calls what it needs; a build tag picks an implementation
    inside the library, as `auth/authority` `devlogin.go`/`devlogin_off.go`). An `init` needs a written
    justification and the owner's approval first.
-   **No generics and no `reflect`** in webtyp code: both make code harder to read for a developer who does not
-   know it (type parameters, runtime type inspection). Write concrete types and explicit type assertions.
-   The one approved exception is `appkit.Find[T]` (one line per dependency a module asks for); any other needs a
-   written justification and the owner's approval first.
+   **No generics and no `reflect`** in webtyp code: `webtyp` uses a simple, explicit, sequential subset of Go so any developer can read code top-to-bottom without mental gymnastics. Type parameters (especially composite constraints like `[T any, PT interface { *T; ... }]`) and runtime type inspection make code harder to read. Write concrete types, interfaces, and explicit type assertions (or `definitionc` codegen). Aside from `appkit.Find[T]`, generics are only accepted when a benchmark proves a substantial allocation/latency win on a hot path that concrete types cannot achieve, and require a written justification and the owner's approval first.
 3. **Illegal states unrepresentable.** One intent = one path, typed to demand what it needs.
 4. **Minimal surface.** Export exactly what the author uses; plumbing stays unexported. **Tests are
    not authors**: a symbol exported so a test can reach it is not surface, it is a defect (skill

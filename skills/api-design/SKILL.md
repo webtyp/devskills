@@ -16,6 +16,8 @@ SOLID is enforced where it is checked: **S**, **O** in gate 4; **L**, **I**, **D
 
 ## Step 0 — search the ecosystem first, before the five answers
 
+Before placing code in `model`, `router`, `crud` or `appkit`, or judging a package server-only: **isomorphic-libraries**. Answer 4 («where») points to the library's `docs/diagrams/PLACEMENT.md` (**documentation**).
+
 The same logic in two repos is a third repo (**zero-debt**), but nobody can obey that without looking. Before designing
 anything that adds a library, a module, an exported type or an exported function, **search what already exists** and write the
 result in the plan under `## Ecosystem search` (3–6 lines):
@@ -23,7 +25,7 @@ result in the plan under `## Ecosystem search` (3–6 lines):
 1. **List what exists:** `ls ~/Dev/Project/webtyp ~/Dev/Project/veltylabs ~/Dev/Project/veltylabs/modules`, and read the README of every repo whose name is near the idea.
 2. **Grep every noun and verb of the idea** over both trees: `grep -rli '<word>' --include=*.go --include=*.md ~/Dev/Project/webtyp ~/Dev/Project/veltylabs`. Search the names you are about to invent (`Fanout`, `Notify`, `Publisher`, `Urgency`, `Currency`, `Key`) and their synonyms (severity/level, queue/outbox, bus/broker/events).
 3. **Decide each concept:** **reuse** (import it; the plan names the package), **extend** (what is missing is a plan against *that* repo, never a local copy or a wrapper), or **new** (name the closest existing thing and the concrete reason it does not fit).
-4. **New repo → `gonew` only:** `gonew <name> "<description>"` (from `webtyp.com/devflow`) creates the local git, the GitHub remote, `go.mod`, README, LICENSE, `.gitignore`, the first commit and tag `v0.0.1`; an existing local dir gets `gonew add-remote <path>`. Never `git init`, `go mod init` or `gh repo create` by hand, and never tell the user to.
+4. **New repo → `gonew` only:** `gonew <name> "<description>" --owner <webtyp|veltylabs>` (from `webtyp.com/devflow`; `--owner` is required, never guessed) creates the local git, the GitHub remote, `go.mod`, README, LICENSE, `.gitignore`, the first commit and tag `v0.0.1`; an existing local dir gets `gonew add-remote <path> --owner <owner>`. Never `git init`, `go mod init` or `gh repo create` by hand, and never tell the user to.
 5. A plan that creates a library, module or exported name with no `## Ecosystem search` is incomplete: do not dispatch it. Re-run the search when the plan changes scope.
 
 Misses this step exists for: a notification library that re-invented the severity of `msgtype` and the pub/sub of `events`; a money library that planned its own `Fanout` while `events.Fanout` existed.
@@ -61,6 +63,12 @@ to be understood, it is the wrong name.
   expose only the atomic operations (`FindPatient`, `RegisterPatient`) and let the caller compose them.
 - **General concept, not one country's subtype:** when a field or parameter can hold a RUT, passport or
   foreign ID, name it `documentNumber` (`documentType`), never `rut` or bare `document`.
+- **Self-describing: 2 to 3 plain words, no jargon, no lookup.** The name says what it DOES or WHAT IT IS in the reader's own terms, literally:
+  `model.AddMyBusinessRule` (I write a rule for this action) vs `model.HaveNoBusinessRule` (crud's checks are enough), not `Domain`/`Standard`; `crud.ApplyAndPublish` vs
+  `crud.ApplyWithoutPublishing`, not `Announce`/`Silent`. What DOES something (a function, method, option constant, mode) carries a verb: `AddMyBusinessRule`,
+  `ApplyAndPublish`, `WaitForReply`. What IS something (type, field, variable) carries the concrete noun: `Entities`, `CurrentUser`, `RuleAnswer`. A single abstract word or a bare adjective
+  (`Domain`, `Handler`, `Notice`, `Standard`, `Detached`, `Expect`, `Rule`) fails the test when two readers could disagree on its meaning; a name that needs "what rule? whose?" is not literal yet. Applies to every
+  variable, constant, type, method, function, file and flag. If it needs a sentence of docs to be understood, rename it in this change.
 - No abbreviation that is not universal in Go (`ctx`, `id` yes; `authz`, `hdlr` no).
 - No boolean parameters — `Test(args, false, 0, false, false)` says nothing. Typed options or
   separate methods.
@@ -84,7 +92,7 @@ is unreviewed.
 
 ### 4. Where does it belong
 
-- **One concern per library (S).** A second concern is a new package or repo, not another file. The
+- **One concern per library (S).** A second concern moves to the repository that already owns it (search first), else a new repo — never another file or a subpackage of the same repo: a subpackage keeps the concern, and its dependencies, in the same repository. The
   unit is the **repository**: one that exposes a contract *and* ships an implementation has two
   responsibilities — a dependency most consumers never instantiate is the symptom, in the `go.mod`.
 - **New capability = new implementation (O).** The second backend or adapter must touch **zero lines**
@@ -99,6 +107,7 @@ is unreviewed.
   upstream.
 - **The glue is written once, in the library that owns it.** Wiring every application would repeat belongs
   to a piece, not to the applications.
+- **Breaking import cycles between layers:** When library A needs capability from library B, but B already depends on A (e.g. `externalcalls` imports `orm`, which imports `crud`), A MUST NOT import B. Instead, A declares a narrow consumer interface (e.g. `crud.CallQueue`), and the composition root (e.g. `appkit`) adapts B to A's contract.
 
 ### 5. What does this change delete?
 

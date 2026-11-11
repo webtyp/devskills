@@ -47,6 +47,10 @@ Defines WHAT & WHY (no implementation code blocks):
 3. **`## 3. Step-by-Step Flows` (`## 3. Flujos paso a paso`)**: One subsection per core flow, narrating the happy path and failure/rollback path in plain words and linking to its diagram in `docs/diagrams/`.
 4. **`## 4. Security Boundaries & Contracts` (`## 4. Contratos y límites de seguridad`)**: Why each invariant exists (least-privilege UIDs, digest pinning, network isolation) and what is forbidden.
 
+## Placement diagram — every library has one
+
+`docs/diagrams/PLACEMENT.md` shows where the library sits in the framework: what it imports, who imports it, and whether each piece runs in the browser, the server or both. It is drawn from `go.mod` and the imports (`grep -l 'webtyp.com/<name>' */go.mod`), never from memory, and the plan that changes who imports whom updates it in the same stage. A library without it is not reviewed: its owner cannot tell what a change reaches.
+
 ## Mandatory `docs/diagrams/*.md` Template (3 Parts in Exact Order)
 
 1. **Context header (above the diagram):** 2–3 plain sentences stating what scenario the diagram shows, what triggers it, and which test file verifies its branches.
@@ -54,7 +58,7 @@ Defines WHAT & WHY (no implementation code blocks):
    - STATUS (remove this line when DB_DIAGRAM_MASTER_PLAN closes): the database diagram becomes `docs/diagrams/database.svg`, generated from the models on save (never edited by hand); until `webtyp/erd` ships, keep the existing `database.md`.
 3. **Step-by-step walkthrough (below the diagram):** Numbered list explaining every step and error branch in plain words.
 
-## Other Standard Documents & Rules
+## Other HaveNoBusinessRule Documents & Rules
 
 - **`docs/PLAN.md`:** Ephemeral execution plan (`codejob close` deletes it). Permanent docs (`README.md`, `ARCHITECTURE.md`, `DESIGN.md`, `SPECS.md`, diagrams) must **NEVER** link to or cite `PLAN.md`/`CHECK_PLAN.md`. A doc written before implementation lands may carry `STATUS (remove this note when X lands): …`.
 - **`docs/DESIGN.md` / `docs/SPECS.md` / `docs/SKILL.md`:** Created on demand. `DESIGN.md` opens every decision with background before comparing candidates; `SPECS.md` holds strict I/O contracts; `SKILL.md` summarizes library usage for LLMs. Split large docs into `docs/<DOMAIN>_ARCHITECTURE.md`.

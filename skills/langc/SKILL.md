@@ -35,11 +35,12 @@ Writing the text itself: **translations**.
 ## `langc sync [dir]` (`-tool` for backend CLIs)
 
 1. Walks the AST (skips `*_test.go`, vendor, hidden dirs, `tests/`, `conformance/`).
-2. In a library adds new keys as `["", …]` and keeps unused ones (dynamic keys); a key a dependency already translates without contradiction is dropped (written once, lower in the graph: **translations**). In an app writes no keys: it moves the app's translations to their library and reports `N untranslated (es) in <its lang.json>`.
+2. In a library adds new keys as `["", …]` and keeps unused ones (dynamic keys); a key a dependency already translates without contradiction is dropped (written once, lower in the graph: **translations**). In an app writes no keys: it moves the app's translations to their library and reports `N untranslated in <languages> — <its lang.json>`.
 3. Scope: the app's packages and every package they import from the client **or** server build; a module reached only from a file in neither build (`config/deploy.go`, tag `deploy`) is a tool and is not scanned. Keys are read only from the browser build: `GOOS=js GOARCH=wasm -tags browser`, as `app` compiles it — a `!browser` file is server code.
-4. Sorts keys; reports each diagnostic once (again only when it changes), under the `LANG` label in the dev TUI.
+4. Sorts keys; reports each diagnostic once (again only when it changes), under the `LANG` label in the dev TUI. One log call per severity: its label prints once.
 5. Checks reuse: flags keys sharing a leading or trailing run of 2+ words, after dropping connectors (`and`, `for`, `of`…) on the edge where they diverge — `and column` or `required for` is never flagged. The warning names the call to write (`fmt.Err("<run>", rest)`) or the key that already exists. Reuse warnings are defects; the usual fix is not a smaller key but **data**: a statement, type, field or code name in the varying part is a variable, never a key (`fmt.Err(errNameMissing, stmtDropColumn)`).
 6. Checks identical values: flags non-prose keys whose values end unchanged in every language (`ERROR ... ends with ... unchanged`). Fix by passing codes, prefixes and type names as variables (data), never literals.
+7. Checks placeholders: a key whose same value sits in 3+ languages, one of them zh/hi/ar/ru (`fake` filler) is an `Error` — one line, count + value; `grep` the value in the dictionary. Latin-script cognates (es/pt/fr `canal`) are fine; a value equal to its key is exempt.
 
 Then fill the empty values and run `gotest`.
 
@@ -48,7 +49,7 @@ Then fill the empty values and run `gotest`.
 ## The 8 extraction rules
 
 1. `lang.Translate("…")`, `lang.Text("…")`
-2. `fmt.Err("…")`
+2. `fmt.Err("…")` and `model.{Invalid,NotFound,Conflict}` constants or conversions
 3. `model.Field` `Label` (or `Name` with `_` → space when no Label) — never inside a `model.Definition{Wire: true}` (a transport format)
 4. `fmt.KeyValue{Value: "…"}` passed to `webtyp.com/input`
 5. `input.SetPlaceholder("…")`, `input.SetTitle("…")`

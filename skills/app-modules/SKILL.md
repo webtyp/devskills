@@ -31,6 +31,7 @@ func Screens(caller router.Caller) []view.Screen
 - The whole view is built in `browser.go`; `module.go` holds only `ID`, `Label`.
 - **Lazy:** never fetch in `Init()`; load in `Activate()`, called by the chassis when the screen becomes active (`layout/app` wires it).
 - A screen that is not a list (wizard, chat) is a `view.Screen.Component` leaf (+ `Help`) — never flatten it into a list. Its component may be built with `layout/chatview`, `layout/crudview` or `layout/rightpanel`: that module then imports those pieces (the one accepted exception), never `layout/platformd`.
+  STATUS (remove this line when ARCHITECTURE_MASTER_PLAN closes): D16 deletes this exception — a module imports only `webtyp/view` contracts (+ `components` in a bespoke screen) and the chassis picks `crudview`/`chatview`/`rightpanel`; only the app (and the daemon, for the demo) imports `layout`.
 - Flat: no subdirectories except `docs/` (`find modules -mindepth 2 -type d | grep -v /docs` → empty).
 - Forbidden names: `init.go`, `backend.go`, `view.go`, `frontend.go`, `client.go`, `*_wasm.go`.
 - Static check: `webtyp.com/router/layoutscan.VerifyLayout`.
@@ -42,8 +43,25 @@ The app writes **no** `modules/<m>/`; it imports `<m>/ui` from its registry. The
 - `<m>/ui` — `ID`, `Label`, `Screens(caller) []view.Screen` with **no tag** (only the browser main imports `ui`), its asset producers (`css.go`, `svg.go`, `image.go`…) `!wasm`. Neither the root nor `ui` imports `layout` (exception: a `Component` screen built with `layout/chatview`/`crudview`/`rightpanel`, or implementing `layout.UsesNotifier`; never `platformd`), so a `layout` release does not force a module release. A `Component` screen tells the user «saved» or an error through the platform's notices (`UseNotifier(layout.Notifier)` + `Notify(msgtype.Success|Error, msg, layout.Auto())`), never a status line of its own.
 - `<m>/seed` — `Load(...) (Data, error)`, demo data through the module's own methods.
 - `<m>/web/browser/main.go` — runnable demo (`storage/mem` + `router/loopback` + seed). **A screen is built and tested there, never in the app.**
+  STATUS (remove this line when ARCHITECTURE_MASTER_PLAN closes): D15 replaces it with `seed.Demo() (view.Demo, error)`; the `webtyp/app` daemon generates the main in memory with `layout`, so the module's `go.mod` never lists `layout`.
+  STATUS (remove this line when ARCHITECTURE_MASTER_PLAN closes): D54 — the generated main lives in `os.UserCacheDir()/webtyp/demos/<hash>/`, never in the repo, and the CSS/icon scan (`sitec`) reads that same folder, so the demo carries the styles of `layout` and `components`.
 
 Modules never import each other (skill **module-layout**): a screen mixing modules lives in the app, which wires each module's narrow interfaces. When modules wire each other, `modules/server.go` returns a typed struct with `Operations() []router.OperationModule`.
+
+## Webhooks and provider returns — never trust the request
+
+A provider calling back (payment return, signed webhook) is a route of **that provider's adapter package**, mounted by the app
+(`AppServer.Routes` or an `Infra`), never a crud table: its format is the provider's and it carries no session.
+- The adapter passes the module **identification only** (payment id, provider token). The module's method never accepts an
+  outcome from the request: it obtains the truth itself with its secret — **fetch-back** to the provider API (`Gateway.Confirm`), or a
+  **signature** over the raw body (`webtyp.com/crypto/hmac`: `HMACSHA256` + constant-time `HMACEqual`, timestamp within 5 minutes) — and
+  settles only what the provider reports.
+- Idempotent: providers retry; a repeated event changes nothing (state machine or provider event id).
+- Answer 2xx fast; slow work runs after commit (outbox, D25 of ARCHITECTURE_MASTER_PLAN while it lives). Secrets: skill **secrets**.
+- **One verification core for every signed webhook** (WhatsApp, Facebook/Meta, Stripe-like): raw body, signature schemes (`X-Hub-Signature-256`
+  `sha256=` HMAC…), timestamp tolerance, provider handshakes (Meta's `hub.challenge`), body size limit and event-id dedup live in **one**
+  `webtyp` library; an adapter only declares its scheme and secret. It does not exist yet: the first signed-webhook consumer creates it
+  (**api-design**, reusing `webtyp/crypto/hmac` and `webtyp/idempotency`) — never a verifier written inside an adapter.
 
 ## Before a module enters an app — the review it must pass
 

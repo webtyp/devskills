@@ -42,8 +42,8 @@ grep -A5 mcpServers ~/.claude.json            # check the IDE entry
 
 ## Rebuild on save — the order is the contract
 
-A saved `.go` file runs the watcher handlers **one after another, in this order**: `go.mod` → `ormc` (regenerates
-`*_orm.go`) → the WASM client (front) → the server → browser reload (`app/section-build.go`, `devwatch`). Code shared
+A saved `.go` file runs the watcher handlers **one after another, in this order**: `go.mod` → `definitionc` (regenerates
+`*_gen.go`) → the WASM client (front) → the server → browser reload (`app/section-build.go`, `devwatch`). Code shared
 by front and server rebuilds **both, front first**; code of one side rebuilds only that side. Guarded by
 `devwatch/tests/build_gate_test.go` (`TestBuildGate_SequentialOrdering`): a change that breaks this order is a bug,
 never a new behaviour.

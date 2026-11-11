@@ -13,6 +13,7 @@ description: Go development principles including SRP, dependency injection, fram
 > novice-name test, the complexity ledger, the harness, and the zero-debt rules.
 > This document covers how code is organised; that one covers what may be added.
 
+- **Simple Subset of Go (Explicit & Sequential):** `webtyp` uses Go for simplicity and restricts itself to a small, explicit subset of the language so any developer can read code top-to-bottom in sequence. Avoid generics (`[T any]`) and `reflect`: write concrete types, interfaces, and explicit type assertions (or `definitionc` codegen). Generics are only accepted with owner approval when benchmarks prove a significant memory/performance gain that concrete types cannot achieve (**api-harness** rule 2).
 - **Single Responsibility Principle (SRP):** Every file (CSS, Go, JS) must have a single, well-defined purpose. This must be reflected in both the file's content and its naming convention.
 
 - **Mandatory Dependency Injection (DI):**

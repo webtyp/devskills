@@ -13,7 +13,9 @@ Per-library plans: **plan-authoring**; their loop: **codejob**.
 
 **A wave ends only when it works in the reference app** (`mjosefa-cms` with the fewest modules), not when its libraries publish: the last phase of every wave is that app running the change, a screenshot of each screen it touches reviewed, and a behaviour test in the app that walks it (for the menu: as an admin and as a user without permissions, every visible link opens a non-empty screen). Published libraries with no app using the change is a wave half done — MODULE_GUIDANCE closed with 2 of 18 modules described.
 
-**Hard limit: 150 lines.** Check with `wc -l` after every edit. Over the limit means something that belongs elsewhere is still in it: move it out before adding anything.
+**One domain per master.** A master holds only problems of its own topic (usability, deploy, architecture…). A finding of another domain met along the way — e.g. a library design defect found while doing usability — moves to the master of that domain (`ls webtyp/docs/*_MASTER_PLAN.md`; none → create it in the fixed format and add its row to `MASTER_PLANS.md`); the original keeps only one `Bloqueos` line linking it, if it blocks. Library design defects (mixed responsibilities, dependencies that should not be there) go to `ARCHITECTURE_MASTER_PLAN.md`.
+
+**Hard limit: 200 lines.** Check with `wc -l` after every edit. Over the limit means something that belongs elsewhere is still in it: move it out before adding anything.
 
 ## Fixed format (sections in this order, no others)
 
@@ -41,20 +43,18 @@ Per-library plans: **plan-authoring**; their loop: **codejob**.
 - Each question: ≥2 options, one recommendation with evidence (`file:line`, prior art), at most ~6 lines plus code. Written in plain words for a junior (**dev-protocols** «Plain words»): first what the user sees break, then the cause, never a label they must decode. Never ask what the code answers.
 - **A design question always carries code**: one fenced block with what the consumer writes today and under each option (real call sites from the repo, `// A` / `// B` comments), plus what the user sees change. Signatures or prose alone are not an example — the user cannot approve what they cannot picture.
 - **A design that touches a screen carries screenshots**: today's screen and the proposal (the reference HTML in `docs/ui-reference`, or a mockup), saved as PNG under the repo being changed (`docs/img/<topic>-<n>.png` of the app or of the module) and linked from the question or decision in the master (`![today](…)`). The user approves what they see, not a description. A design is not presented, and its plan not dispatched, without them.
-- A decision row is **one line** with where it gets built; it leaves when that repo ships it.
-- A phase row is one line; a closed phase stays as one line («cerrada vX.Y.Z») until the wave ends.
+- A decision row is **one line** with where it gets built (never strip decision details or context); it leaves only when that repo ships it.
+- **One row per repo that is NOT finished; the finished ones are one summary paragraph.** The focus of the master is what is pending. A wave of N repos is a row per repo while it runs (same columns; the mark is the state of THAT repo: 🔴 yours · 🟡 running, with who runs it and the session · 🟢 PR waiting for review), so a reader finds the ready ones without reading prose; never one row that lists several repos in different states. When a repo is published its row **leaves the table** and its name and version join the paragraph above the table, «Cerrado (publicado, sin pendientes)», grouped by layer, `name vX.Y.Z · name vX.Y.Z`. Its detail lives in git and in the repo's docs, never in the master. Rows of a wave stay in the same order (by name); the recipe common to the wave goes to the skill that owns it. The status line counts them (`N de M publicados`). (2026-11-10: 12 modules in one cell hid which was done; later 40 green rows buried the 12 pending: 148 → 111 lines.)
+- Finished detail leaves the master: a collateral fix that is 🟢 is deleted from its table, a blocker that is solved is deleted.
+- A phase row is one line without duplicating between columns: `Repo` lists the repos (never repeat `(cerrado vX.Y.Z)` in both `Repo` and `Estado`); `Estado` holds the owner mark and the published versions / pending repos. A closed phase stays as one line («cerrada vX.Y.Z») until the wave ends.
+- **Owner review mark.** A plan that changes architecture (a public contract, a file convention, several repos) is **always reviewed by the owner** before dispatch. The `Estado` of its row starts with 🔵 once the owner says «revisado» / «despacha»: 🔵 = reviewed, may be dispatched. Without 🔵 nobody dispatches, and the agent never sets it on its own. When asked which plan to review, the master states the review order and the agent shows the first plan without 🔵.
 - Written in **the language the user writes in**; dispatched `docs/PLAN.md` stay in English.
 - Status line first-class: it must say what the wave is waiting for.
 
 ## Varios agentes en el mismo master — no pisarse
 
-Con más de un agente orquestador leyendo el mismo master (Claude, Antigravity, …): toda fase **en
-curso, despachada o en revisión** lleva, al inicio de su celda `Estado`, `[<Agente> · <AAAA-MM-DD
-HH:MM>]` (hora local). Antes de `pull`/`reply`/`dispatch`/`close` sobre una fase: marca de **otro**
-agente con menos de 90 min → no la toques, elige otra fase o espera. Sin marca, marca propia, o más
-de 90 min sin commit nuevo visible en el repo → es libre: escribe tu marca, `commit`+`push` el
-master, y solo entonces actúa. Refresca la hora en cada pasada mientras sigas trabajándola; bórrala
-al cerrar la fase (una fase cerrada no necesita dueño).
+- **Propiedad de fase:** con más de un agente orquestador leyendo el mismo master (Claude, Antigravity, …), toda fase en curso, despachada o en revisión lleva al inicio de su celda `Estado` `[<Agente> · <AAAA-MM-DD HH:MM>]` (hora local). Marca de **otro** agente con menos de 90 min → no la toques. Sin marca, marca propia, o más de 90 min sin commit nuevo → escribe tu marca, `commit`+`push` el master, y actúa. Refresca la hora en cada pasada y bórrala al cerrar.
+- **Área de `Mensajes` breve y sobrescrita in situ:** cuando exista una sección de coordinación entre agentes, **nunca acumules un historial cronológico** de decenas de líneas. Mantén solo el último mensaje vigente de cada agente (más cualquier pregunta abierta para el par), sobrescribiendo el propio en cada pasada con lo único relevante para el otro agente (sin detalles internos como respuestas a `codejob reply`, porcentajes de cobertura o avisos de temporizador).
 
 ## Local execution across repos — the master is the roadmap
 
@@ -94,5 +94,5 @@ the rows.
 3. Closed `P` → a row in «Decisiones por implementar» (`D<n> (P<n>)`); remove the question and the raw answer.
 4. Re-read the code the decisions touch: an obvious implication goes inside the decision; a real trade-off becomes a new `P`.
 5. Propagate to «Fases», the status line and the `MASTER_PLANS.md` row.
-6. Move out everything finished, verified or historical (see «What never goes in a master»), then `wc -l` ≤ 150.
+6. Move out everything finished, verified or historical (see «What never goes in a master»), then `wc -l` ≤ 200.
 7. **Correct the skills the same turn** — they are the framework's only source of truth: every closed decision or published phase that changes how something is written updates its owning skill (**devskills**); what is decided but not shipped carries a `STATUS (remove this line when <TOPIC>_MASTER_PLAN closes): …` line. Report each skill touched.

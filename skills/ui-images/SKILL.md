@@ -65,4 +65,4 @@ image that does not span the full width. Other methods: `Srcset`, `Class`,
 
 Sibling packages, none imported directly by a view: `image/min` (backend WebP
 pipeline), `image/browser` (client-side compression before upload,
-`//go:build wasm`), `image/favicon` (logo → icon set).
+`//go:build wasm`), `image/favicon` (logo → icon set; `sitec` runs it on `docs/logo/logo.png`, see **project-layout**).

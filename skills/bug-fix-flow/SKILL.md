@@ -21,7 +21,7 @@ Fixing the one place it happened is half the work. The fix must **remove** code 
 | The hole | Closed by |
 |---|---|
 | The signature accepts the wrong state: a free `string` where a type exists, a `Close()`/`Init()` to remember, a `bool`, an optional field that must be set | change the type so the wrong code **does not compile** (**api-harness** rules 3, 5) |
-| The rule lives only in a comment, a doc or a skill | move it into a signature, or into a gate check (`gotest`, `langc`, `sitec`, `ormc`) that fails |
+| The rule lives only in a comment, a doc or a skill | move it into a signature, or into a gate check (`gotest`, `langc`, `sitec`, `definitionc`) that fails |
 | A test double hides the real transport or codec | a conformance test on the real one, run by every implementation |
 | A convention nobody checks (a file name, a wire shape) | the tool that reads it rejects the violation — only if the check needs no list of exceptions; otherwise the rule goes in its owning skill and in **plan-review** (build tags: **project-layout**) |
 

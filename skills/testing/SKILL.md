@@ -41,10 +41,12 @@ Ask before writing one: **"does it fail when the product is broken, and only the
 - **Name `Test<Area>_<Rule>`**: the area is the section (`TestLogin_RateLimited`, `TestImportStaff_RoleFor`);
   `gotest -run TestLogin` runs one section and the list sorts by area.
 - **One file per area**: `tests/<area>_test.go` (`tests/login_test.go`); shared helpers in `tests/setup_test.go`.
+- **Implementations pass the contract's suite; contracts import no implementation.** Concurrency, atomicity, duplicate-key and conditional-update guarantees live in the contract's `conformance` package and each implementation runs it (**isomorphic-libraries** «Contracts never depend on their implementations»). Never write such a test inside a contract with a driver imported.
+- **Benchmarks (performance is a test that stays in the repo).** A claim about speed or memory is proven by a `Benchmark…` in the repo that owns the code, never by a throwaway measurement outside it: `tests/bench_<area>_test.go` (`BenchmarkArea_Case`, `b.ReportAllocs()`, a baseline row when the claim is an overhead), run with `go test ./tests -run '^$' -bench . -benchmem -count=6`. Results live in `docs/PERFORMANCE.md` (the command, the machine, the version, one table per group, how to read it) and the raw `-count=6` output in `docs/bench/<version>.txt`; a change is better or worse only when `benchstat old.txt new.txt` says so. A plan that touches a hot path re-runs them and updates both in the same change. A benchmark that needs a heavy dependency (a database driver) goes in its own module under `tests/` (**isomorphic-libraries**); one that needs a server reads its DSN from an environment variable and skips when it is unset. A file benchmark runs on a real disk, not `tmpfs` (no `fsync`).
 - **Kept in sync automatically**: every `func Test…` appears in `docs/TESTS.md` with a link to its file, and every
   row points to a test that exists. A new test without its row, or a row without its test, is a defect.
-  STATUS (remove this line when TEST_DOMAIN_MASTER_PLAN closes): `gotest` does not check it yet (phase S2); until
-  then plan-review checks it by hand.
+  `gotest` checks it (step «tests index»). The exact format, which a plan for a new repo must spell out because there are no rows to copy:
+  `# Tests`, a blank line, `| Test | Rule |`, `|---|---|`, then one row per test, `| [TestArea_Rule](../tests/area_test.go) | Area Rule |` (Rule = the name without `Test`, underscore as one space).
 
 ## Running and placing tests
 
