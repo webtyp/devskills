@@ -49,7 +49,7 @@ Per-library plans: **plan-authoring**; their loop: **codejob**.
 - Finished detail leaves the master: a collateral fix that is 🟢 is deleted from its table, a blocker that is solved is deleted.
 - A phase row is one line without duplicating between columns: `Repo` lists the repos (never repeat `(cerrado vX.Y.Z)` in both `Repo` and `Estado`); `Estado` holds the owner mark and the published versions / pending repos. A closed phase stays as one line («cerrada vX.Y.Z») until the wave ends.
 - **Owner review mark.** A plan that changes architecture (a public contract, a file convention, several repos) is **always reviewed by the owner** before dispatch. The `Estado` of its row starts with 🔵 once the owner says «revisado» / «despacha»: 🔵 = reviewed, may be dispatched. Without 🔵 nobody dispatches, and the agent never sets it on its own. When asked which plan to review, the master states the review order and the agent shows the first plan without 🔵.
-- Written in **the language the user writes in**; dispatched `docs/PLAN.md` stay in English.
+- Written in **the language the user writes in**; so is every `docs/PLAN.md` and its stage files (owner rule, 2026-11-16: «los planes deben ir en español», the owner reviews them before execution). Code, identifiers and quoted error strings stay English.
 - Status line first-class: it must say what the wave is waiting for.
 
 ## Varios agentes en el mismo master — no pisarse
