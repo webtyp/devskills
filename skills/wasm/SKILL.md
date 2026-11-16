@@ -13,3 +13,5 @@ Dev daemon and MCP: **webtyp-app**.
 - **Local time only through a `time.Zone`:** `zone, err := time.LoadZone(deps.Timezone)` then `zone.Date(u)`, `zone.Clock(u)`, `zone.At(date, minutes)`, `zone.Day(date)`. There is no implicit local time; what is UTC says so in its name (`DateUTC`, `WeekdayUTC`, `MidnightUTC`). `time.MachineZone()` only for tools. Store an instant (`time.Unix`), never a local date or hour as text beside it.
 - **No `map` in WASM code** (binary bloat): use structs or slices.
 - **Goroutines and channels are safe:** TinyGo's wasm target uses the `asyncify` scheduler; `js.FuncOf` callbacks sending into a channel is the proven bridge (`webtyp/indexdb`).
+
+**Binary size never decides an architecture** (owner, 2026-11-16): the design is the correct one from the base — backend code (`!browser`), browser code (`browser`) and shared code (no tag) separated automatically by build tags — and never «put it together if the WASM grows less than N %». Too much weight is the symptom of a defect to fix (duplicated code, stdlib packages, backend code reachable from the browser), not an input to a design choice.
