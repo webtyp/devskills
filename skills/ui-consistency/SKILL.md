@@ -21,6 +21,7 @@ A screen must be usable by someone who was never told how it works: no external 
 
 - **Words of the person, not of the code.** A screen, field or list is named for what it means to its user ("Quién recibe", "Área"), never for the internal structure it maps (`channel`, `rule`, `scope`, `assignment`). Every label and help text is in `lang.json` — an English label on screen is a defect.
 - **No free-text codes.** A value the system defines (an alert type, an area, a unit) is chosen from a list with a human name, never typed.
+  - **Countries and phone prefixes** are chosen, never typed: `webtyp/country` (`Catalog`, flags from the code, names via `langc`), the app decides the default and the first ones (`App.Countries` → `Deps.Countries` / `view.BrowserDeps.Countries`), the module holds no country code and fails to start without the default; there is ONE phone, `input.Phone()` (always `+…` with the digits its country has: `country.Validate`; `form` draws the prefix select and the number; `country.Normalize` for plain strings). STATUS (remove this line when PATIENT_DIRECTORY_USABILITY_MASTER_PLAN closes): not published yet.
 - **One screen per task, not one per table.** Tables that belong to one task (a channel and its settings) are edited together.
 - **A field whose meaning is not obvious carries `Field.Help`** (`model/field.go`), shown under it; obvious fields ("Name", "Active") do not.
 - **Show where to start.** A module with prerequisites states its first steps; an empty list says what goes there and how to add the first one; a configuration problem is shown on the screen, never only through an operation.
@@ -41,8 +42,10 @@ The shared mechanism (module description, "?" button, welcome card, empty state 
 
 - **Primary** (gradient by default, solid if the theme clears it) = brand and **actions**.
 - **Amber accent** = **selected and focused**, one value in light and dark. Never a second colour in the same indicator.
+- **Picking a radio option with the pointer moves focus to the next visible field** — `form` does it by default, the module configures nothing; arrow keys still move **inside** the group (WAI-ARIA radio pattern) and never jump. So a model's field order is the reading order: declare it in the order the person fills it. STATUS (remove this line when PATIENT_DIRECTORY_USABILITY_MASTER_PLAN closes): decided (D23), not built yet.
 - **Focus** = the global 2 px amber inset ring. The label does not change colour on focus (amber text on the light card fails 1.4.3).
 - **Outline = passing state, fill = confirmed:** selected and pressed are an amber **fill**; hover is a **1 px** amber outline, focus **2 px**. A hover never paints the content.
+- **Icon buttons** (a bare glyph with no box, like the (i) help): hover and press **recolour the glyph** (muted → accent) — no ring, no box, no fill behind it; keyboard focus keeps the accent ring so it stays visible. The outline rule above is for boxes (fields, rows).
 - **Data** (codes, counts, tags) is **neutral** (outlined or tonal), never primary-filled. In a list row it rides the bottom-right edge out of the flow (`OnEdge`), so the label keeps the full width and the tag never wraps.
 - Recipes: `style.AccentOutline` for a hover/focus outline that repaints nothing; `style.Picker()` (on a part carrying `widget.PartSelect`) for a `<select>`'s native list, which only `appearance: base-select` can recolour — native elsewhere.
 - A colour the theme should own is never written in markup or `css.go`: use a recipe, and a missing recipe is a `widget/style` defect (**widget-styling**).

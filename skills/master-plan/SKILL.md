@@ -11,7 +11,7 @@ Per-library plans: **plan-authoring**; their loop: **codejob**.
 
 **Working state, not an archive.** It holds only what someone needs to keep the wave moving: the questions the user must answer, the decisions not yet built, and the work not yet done. It **shrinks** as the wave advances, because each finished thing leaves for the place that owns it. When the wave ends it is deleted (and its row in `MASTER_PLANS.md`).
 
-**A wave ends only when it works in the reference app** (`mjosefa-cms` with the fewest modules), not when its libraries publish: the last phase of every wave is that app running the change, a screenshot of each screen it touches reviewed, and a behaviour test in the app that walks it (for the menu: as an admin and as a user without permissions, every visible link opens a non-empty screen). Published libraries with no app using the change is a wave half done — MODULE_GUIDANCE closed with 2 of 18 modules described.
+**Work in one repo at a time, publish in cascade.** The owner focuses on the module or library at hand, verifies it standalone (its own demo, `replace` for the local copies of what it consumes), and publishes with `gopush`: the cascade gives every other consumer the fix. A wave does not need a pass through a reference app; a phase for it is added only when the owner asks. (2026-11-13: the owner removed the former «reference app» closing rule.)
 
 **One domain per master.** A master holds only problems of its own topic (usability, deploy, architecture…). A finding of another domain met along the way — e.g. a library design defect found while doing usability — moves to the master of that domain (`ls webtyp/docs/*_MASTER_PLAN.md`; none → create it in the fixed format and add its row to `MASTER_PLANS.md`); the original keeps only one `Bloqueos` line linking it, if it blocks. Library design defects (mixed responsibilities, dependencies that should not be there) go to `ARCHITECTURE_MASTER_PLAN.md`.
 
@@ -42,6 +42,7 @@ Per-library plans: **plan-authoring**; their loop: **codejob**.
 - **Questions first**, because they are what the user reads. No questions → write «Ninguna.»
 - Each question: ≥2 options, one recommendation with evidence (`file:line`, prior art), at most ~6 lines plus code. Written in plain words for a junior (**dev-protocols** «Plain words»): first what the user sees break, then the cause, never a label they must decode. Never ask what the code answers.
 - **A design question always carries code**: one fenced block with what the consumer writes today and under each option (real call sites from the repo, `// A` / `// B` comments), plus what the user sees change. Signatures or prose alone are not an example — the user cannot approve what they cannot picture.
+- **The example code obeys api-design's naming too** (owner rule, 2026-11-15): every proposed name passes the novice-name test before it is shown, with what the user sees for each value; no lone abstract word (`Scope`, `FindExact`), no hand-written ids or strings (`"staff1"`, `"user_id"`) — typed constants or ids the framework mints. The owner rejected two questions whose idea was right and whose names said nothing.
 - **A design that touches a screen carries screenshots**: today's screen and the proposal (the reference HTML in `docs/ui-reference`, or a mockup), saved as PNG under the repo being changed (`docs/img/<topic>-<n>.png` of the app or of the module) and linked from the question or decision in the master (`![today](…)`). The user approves what they see, not a description. A design is not presented, and its plan not dispatched, without them.
 - A decision row is **one line** with where it gets built (never strip decision details or context); it leaves only when that repo ships it.
 - **One row per repo that is NOT finished; the finished ones are one summary paragraph.** The focus of the master is what is pending. A wave of N repos is a row per repo while it runs (same columns; the mark is the state of THAT repo: 🔴 yours · 🟡 running, with who runs it and the session · 🟢 PR waiting for review), so a reader finds the ready ones without reading prose; never one row that lists several repos in different states. When a repo is published its row **leaves the table** and its name and version join the paragraph above the table, «Cerrado (publicado, sin pendientes)», grouped by layer, `name vX.Y.Z · name vX.Y.Z`. Its detail lives in git and in the repo's docs, never in the master. Rows of a wave stay in the same order (by name); the recipe common to the wave goes to the skill that owns it. The status line counts them (`N de M publicados`). (2026-11-10: 12 modules in one cell hid which was done; later 40 green rows buried the 12 pending: 148 → 111 lines.)
@@ -60,10 +61,12 @@ Per-library plans: **plan-authoring**; their loop: **codejob**.
 
 When the owner orders a wave **executed locally** (small changes spread over several repos) instead of
 dispatched: no `docs/PLAN.md` per repo; the master **is the execution roadmap**. Each `Fases` row says
-what landed locally and how it was verified (`gotest`, the reference app). Every consumer points at the
+what landed locally and how it was verified (`gotest`, the module's own demo). Every consumer points at the
 local copies with `replace` in its `go.mod`; **nothing is published** (`gopush`, tags) until the owner
 reviews the changes and says they are satisfied. Then publish bottom-up, drop each `replace`, and close
 the rows.
+
+**Several masters executed locally by a cheaper model (owner rule, 2026-11-16):** one `webtyp/docs/EXECUTION_ORDER_MASTER_PLAN.md` (fixed format) orders them: an executor protocol at the top, then numbered steps grouped in blocks, each step = repos + the `D<n>` of its domain master it executes (never a new decision) + its dependencies; design or plan writing is a 🧠 step for the planning model, each block ends in an owner gate 🔵 that lists the publish order. The executor is handed only that file, marks the step it takes and closes it in both masters. A step never depends on an external agent or session (**agents-workflow** «No remote executor»): every dependency is another step of the file or an owner gate.
 
 ## What never goes in a master
 
@@ -84,8 +87,17 @@ the rows.
 - One `docs/PLAN.md` per library, only once its decisions are closed.
 - **Nothing is left in the conversation.** The moment decisions close, write every plan of the wave on disk (or exact instructions as a phase row). A session can end at any time.
 - A new working rule from the user goes into the skill that owns it, same turn.
+- **The master is the progress log**: every state change (a plan dispatched, a version published, a session replaced, a decision answered) updates its row in the SAME turn, before the next action, and is saved (`gopush --no-cascade`). A master that lags the work is the first thing the owner finds wrong.
 - Numbering never restarts: new questions continue after the highest `P` (and `D`) ever used in the file.
 - Permanent docs and skills never link a master; while it lives, a reference carries `STATUS (remove this line when <TOPIC>_MASTER_PLAN closes): …`.
+
+## A chat that drifted out of the master's domain (owner rule, 2026-11-15)
+
+Corrections of another domain pile up in a chat while a wave runs (a publish gate, a tool bug, a library's history) and the conversation stops being about the wave. When that happens, **at the next pause, without being asked**:
+
+1. Move every off-domain finding to the master of its domain (create it in the fixed format if none exists: `ls webtyp/docs/*_MASTER_PLAN.md`, then its row in `MASTER_PLANS.md`); the wave's master keeps only a `Bloqueos` line if it blocks.
+2. Make the wave's master **resumable alone**: state of what is published (versions), every open question with options and a recommendation, decisions not yet built with `file:line`, how to run and test it, and the skills to read. A new chat must need nothing else.
+3. Say it plainly: «this chat drifted; open a new one and start from `<master>`», and name the other master that holds what moved. Never keep working the wave in the contaminated chat.
 
 ## «Consolida el master»
 

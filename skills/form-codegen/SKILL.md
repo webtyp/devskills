@@ -10,6 +10,9 @@ description: Model authoring and form generation across webtyp/model, webtyp/def
 > gate that must pass first, and its five answers belong in the `docs/PLAN.md`
 > before code.
 
+- **What one field declares about another lives on the field** (`model.Field`): `AlsoSetsField: "birthdate_estimated"` (its input also sets that field when committed; the input implements `input.AlsoSetter`, the form binds the setter) and `ShownWhen: model.When{Field: "document_type", In: []string{kinds.DocumentPassport}}` (shown only while the other holds a listed value; hidden = emptied, not validated, travels empty). `form.New` fails on a wrong name or an input that cannot do it. Never a function in a definition: `definitionc` reads definitions by AST.
+- **Validation sees one field.** `crud` (`crud/validate.go:64,152`) and the form (on blur) call `Field.Validate(value)` with that field's value only; the input is the single place of a field's rule. A rule that needs two fields is not an `Input`: declare the dependency on the field (the input fills the other field) or write a module rule.
+
 ## The ONE pattern (source of truth)
 
 A model is authored as a **typed `model.Definition` literal**. The var name

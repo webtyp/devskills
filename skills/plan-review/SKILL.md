@@ -7,6 +7,8 @@ description: Reviewing the PR of a dispatched docs/PLAN.md — evidence checks c
 
 Checkout: `codejob pull` (**codejob**). The spec is `docs/PLAN.md` on the PR branch.
 
+No agent answers feedback today (**agents-workflow** «No remote executor»): skip the feedback attempts and fix locally on the PR branch, then `codejob close`.
+
 ## Checks — the PR is its commits, not the agent's claim
 
 1. Commit by commit: `gh pr view <url> --json commits --jq '.commits[]|.oid[0:7]+" "+.messageHeadline'`, then `git show --stat <sha>`. A later commit can revert an earlier one.

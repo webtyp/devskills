@@ -5,6 +5,8 @@ description: Running a docs/PLAN.md through codejob — the required frontmatter
 
 # codejob — the plan loop
 
+> **No agent configured (2026-11-16):** `dispatch`/`reply`/`approve` have nobody to talk to; plans run locally (**agents-workflow** «No remote executor»). `pull` and `close` still work for a PR left by a dead session.
+
 `gopush` publishes. `codejob` runs the loop (only for work that pays a plan: **agents-workflow** «Cost rule»; a minor change is edited locally and published with `gopush`) (`dispatch → running → reviewing → review → close`), driven by `STATUS` in the plan's own frontmatter, and calls `gopush` when closing.
 
 ## Frontmatter — first line of `docs/PLAN.md` is `---`, or dispatch fails
@@ -88,5 +90,6 @@ Copy only the files the plan needs to `<repo>/_temp/<source-repo>/<same path>` (
 
 - `gopush` on the dependency runs a cascade over every dependent in the workspace: it **removes the `replace` of the module just published**, `go get <dep>@<tag>`, `go mod tidy`, runs the `gotest` gate (reverting `go.mod`/`go.sum` on failure).
 - Then: **clean tree and no other `replace` left** → publishes the dependent too (commit + tag + push). **Uncommitted work or `replace`s for other modules** → *deps-only*: commits just `go.mod`/`go.sum`, pushes **without a tag**, stops there; replaces of unrelated modules are left in place (so that commit can carry them until their module is published). **That commit also takes whatever is staged** (`git rm`, `git add`): leave work in progress unstaged in every dependent while a cascade runs, or a half change lands on `main` (a `git rm` of a file still called elsewhere pushed a `main` that did not compile). A deps-only commit is first compiled alone (last commit + new `go.mod`/`go.sum`, `go vet`); if it needs the dependent's uncommitted work, `gopush` refuses it with «deps only would not compile without the uncommitted changes» — then publish that dependent's whole tree (ask the owner when the work is not yours).
+- **The module being published carries no local replaces either.** Before it creates a tag, `gopush` reconciles its own `go.mod` (`devflow/go_replaces.go`): a replaced ecosystem module that is published (clean tree, HEAD tagged, tag pushed) is required at that tag and its replace dropped; one that is not published **refuses the tag**, naming it, unless `--keep-replaces`. A push with no tag (deps-only commits) may carry replaces. Never publish a repo whose `go.mod` still names local paths: it would pin the versions from before the change that needs them (2026-11-15: `layout` v0.3.124 required `form` v0.4.52 and the demo stopped compiling).
 - So the order is leaf-most dependency first; the last `gopush` of the chain leaves no `replace`. `--no-cascade` publishes only the module itself.
 

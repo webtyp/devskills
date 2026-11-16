@@ -54,6 +54,7 @@ to be understood, it is the wrong name.
 - The word the ecosystem already uses: `Mount` is chi's word; `Attach` costs every Go developer a
   lookup for zero gain.
 - Intent, not mechanism: `Public()`, not `SetAuthFlag(false)`.
+- **A declaration that causes an effect says it in 2–3 words** (owner rule, 2026-11-13): verb + object (+ what kind of value), never a lone word — `AlsoSetsField: "birthdate_estimated"`, not `Sets` or `Marks`. A lone word leaves the reader guessing the intent. English words a Spanish reader recognises (`Sets`, `Field`, `Also`), no jargon or abbreviations.
 - **Domain nouns, not abstract containers or geometry:** an interface is named for the domain concept it
   represents (`OpeningHours`, `PatientDirectory`), never for a data structure, storage folder or math
   implementation (`BoundsReader`, `DirectoryReader`). And a suffix must match every method inside: an

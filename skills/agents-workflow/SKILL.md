@@ -7,6 +7,15 @@ description: The planning agent's process around docs/PLAN.md — role, when to 
 
 Plan content: **plan-authoring**. Dispatch, frontmatter, publish: **codejob**. Reviewing a PR: **plan-review**. Multi-repo waves: **master-plan**.
 
+## No remote executor — every plan runs locally (owner, 2026-11-16)
+
+Jules closed its service and `codejob` has no agent configured: **nothing is dispatched**. Until the owner says otherwise:
+
+- Every plan executes **locally** (**Local execution** below; a multi-repo wave through the master's execution order: **master-plan**), by the planning agent or the cheaper local model. Slicing into exact stages still applies (**Cheap executors**).
+- A plan whose frontmatter says `STATUS: dispatch|running|reviewing` and has **no open PR** is not running: delete its `STATUS`, `SESSION` and `ROUND` lines the moment you see it; it is a pending local plan.
+- A plan with an **open PR** left by a dead session: review it locally (**plan-review**), finish on the PR branch, `codejob close` (pull and close need no agent).
+- **Never make a step wait for an external agent** («when the session closes», «after the PR arrives»): that wait never ends. Two local plans on one repo just run one after the other.
+
 ## Role of the planning agent
 
 - Edits `.md` files, and code only when **Plan or direct edit** (cost rule) says it is cheaper than a plan.
