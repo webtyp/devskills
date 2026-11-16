@@ -93,6 +93,7 @@ is unreviewed.
 
 ### 4. Where does it belong
 
+- **Always answer «which option avoids coupling and keeps the framework maintainable?»** (owner rule, 2026-11-16), for every option, before recommending: what each piece would have to know about another, and what a change in one forces on the others. The option that couples a lower piece to a higher one (e.g. `model` copying the shape of `orm`) loses.
 - **One concern per library (S).** A second concern moves to the repository that already owns it (search first), else a new repo — never another file or a subpackage of the same repo: a subpackage keeps the concern, and its dependencies, in the same repository. The
   unit is the **repository**: one that exposes a contract *and* ships an implementation has two
   responsibilities — a dependency most consumers never instantiate is the symptom, in the `go.mod`.
