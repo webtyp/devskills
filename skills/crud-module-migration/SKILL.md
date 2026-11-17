@@ -5,7 +5,7 @@ description: The answers an executor needs to migrate a veltylabs module to the 
 
 # Migrating a module to crud-by-declaration — the answers, so the plan carries them
 
-Process around a plan: **plan-authoring**, **agents-workflow**. Reference module (copy its shape): `veltylabs/patient_directory` — `definition.go`, `rule_patient_*.go`, `store.go`, `import.go`, `seed/demo.go`, `tests/setup_test.go`, `tests/crud_test.go`, `tests/demo_test.go`.
+Process around a plan: **plan-authoring**, **agents-workflow**. Reference module (copy its shape): `veltylabs/client_directory` — `definition.go`, `rule_client_*.go`, `store.go`, `import.go`, `seed/demo.go`, `tests/setup_test.go`, `tests/crud_test.go`, `tests/demo_test.go`.
 
 A plan for a module migration pastes the blocks below **inside the stage that needs each one**, never as an appendix: an executor reads a stage, not a list of notes. Each block was a question that stalled a session on 2026-11-10.
 
