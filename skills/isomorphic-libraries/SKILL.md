@@ -25,8 +25,7 @@ Each implementation (`sqlite`, `postgres`, `indexdb`, …) runs that suite in it
 
 ## Kit packages (`appkit`)
 
-- A kit unites the contracts of **both sides in one place** for a full-stack app, with the sides separated by build tags: untagged = isomorphic (`App`, `Browser`, `BrowserModule`, module contracts); server composition `!browser`; browser composition `browser`.
-- A file named `*_server.go` that compiles into the browser binary is a defect: tag it `!browser`.
-- A kit never builds an HTTP server: the server `main` creates it (`httpd.New`) between `appkit.Build` and `Built.Mount`, because `httpd.Config` needs the `Authn`/`Authorize`/`Policy` that `Build` returns.
+- A kit separates its sides **by package**, never by build tags inside one package: root (`App` and shared errors), `<kit>/backend` (server/Worker composition) and `<kit>/browser` (browser composition). The import graph decides what enters each binary.
+- A kit never builds an HTTP server: the server `main` creates it (`httpd.New`) between `backend.Build` and `Built.Mount`, because `httpd.Config` needs the `Authn`/`Authorize`/`Policy` that `Build` returns.
 
 **Only the app imports `appkit`, and `appkit` never picks a concrete** (owner, 2026-11-16): the database driver, HTTP server, transport, id generator, event broker and MCP server are chosen by the app in `config/` and passed in (`Backend.Events`, `Backend.API` = `rpc.JSON{}`, `Backend.Agents` = `mcp.Tools{…}`, `Server.Database`, `Server.NewIDs`); `appkit` asks for them by contract. Modules and libraries (`access` included) never import `appkit`.

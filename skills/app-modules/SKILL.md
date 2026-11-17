@@ -1,34 +1,26 @@
 ---
 name: app-modules
-description: How a module is built inside a webtyp app or a veltylabs module repo — the typed server.go/browser.go pair and its build tags (!browser / browser), the two registries, lazy Activate(), flat files, forbidden names, and reusable modules that ship their own ui/ and seed/ (the demo is seed.Demo, never a web/ folder). Use when adding or reviewing a module.
+description: How a module is built inside a webtyp app or a veltylabs module repo — typed backend/screens functions, lazy Activate(), flat files, forbidden names, and reusable modules that ship their own ui/ and seed/ (the demo is seed.Demo, never a web/ folder). Use when adding or reviewing a module.
 ---
 
 # App modules
 
-Directory around them and the two tag axes: **project-layout**.
+Directory around them and the package split: **project-layout**.
 
-## A module is `server.go` + `browser.go`, typed — never `[]any`
+## A module is typed — never `[]any`
 
-```go
-// modules/<m>/server.go — //go:build !browser
-func Server(db *orm.DB, ids model.IDGenerator, pub events.Publisher, tenantID string) (router.OperationModule, error)
+In an app using `appkit`, each module's backend is built in `config/services/backend.go` (`backend.Module`) and its screens are wired in `config/screens/browser.go` (`browser.Module`). There is no `modules/server.go`/`modules/browser.go` registry and no `server.go`/`browser.go` pair with `browser`/`!browser` tags.
 
-// modules/<m>/browser.go — //go:build browser
-func Screens(d view.BrowserDeps) []view.Screen
-```
-
-`modules/server.go` and `modules/browser.go` are the typed registries (one append per module). A screen is **data** (`view.Screen`): a leaf has `Presenter` + `Permission`, a group has `Children` + `Help` and no permission. The app draws them with `layout/app.BuildMenu`, which runs `Screen.Validate` and returns its `error` — never a silently missing screen.
+A screen is **data** (`view.Screen`): a leaf has `Presenter` + `Permission`, a group has `Children` + `Help` and no permission. The app draws them with `layout/app.BuildMenu`, which runs `Screen.Validate` and returns its `error` — never a silently missing screen.
 
 | File | Tag | Why |
 |---|---|---|
-| `server.go` | `//go:build !browser` | in the native server **and** the Worker; stripped from the browser binary |
-| `browser.go` | `//go:build browser` | only in `browser.wasm`; its view test runs with `-tags browser` in headless Chrome (`gotest`) |
-| `module.go` | none | `ID`, `Label`, shared by both sides |
+| `<m>.go`, `ui/*.go` | none | imported only by `config/services` (backend) or `config/screens` (ui) |
 | `svg.go`, `css.go` | `//go:build !wasm` | read by `sitec` at build time; never in the browser nor the Worker |
 
 ## Rules
 
-- The whole view is built in `browser.go`; `module.go` holds only `ID`, `Label`.
+- The whole view is built in `ui/` (never in the module root).
 - **Lazy:** never fetch in `Init()`; load in `Activate()`, called by the chassis when the screen becomes active (`layout/app` wires it).
 - A screen that is not a list (wizard, chat) is a `view.Screen.Component` leaf (+ `Help`) — never flatten it into a list. Its component may be built with `layout/chatview`, `layout/crudview` or `layout/rightpanel`: that module then imports those pieces (the one accepted exception), never `layout/platformd`.
   STATUS (remove this line when ARCHITECTURE_MASTER_PLAN closes): D16 deletes this exception — a module imports only `webtyp/view` contracts (+ `components` in a bespoke screen) and the chassis picks `crudview`/`chatview`/`rightpanel`; only the app (and the daemon, for the demo) imports `layout`.
