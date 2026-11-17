@@ -5,7 +5,7 @@ description: The answers an executor needs to migrate a veltylabs module to the 
 
 # Migrating a module to crud-by-declaration — the answers, so the plan carries them
 
-Process around a plan: **plan-authoring**, **agents-workflow**. Reference module (copy its shape): `veltylabs/patient_directory` — `definition.go`, `rule_patient_*.go`, `store.go`, `import.go`, `module/server.go`, `seed/demo.go`, `tests/setup_test.go`, `tests/crud_test.go`, `tests/demo_test.go`.
+Process around a plan: **plan-authoring**, **agents-workflow**. Reference module (copy its shape): `veltylabs/patient_directory` — `definition.go`, `rule_patient_*.go`, `store.go`, `import.go`, `seed/demo.go`, `tests/setup_test.go`, `tests/crud_test.go`, `tests/demo_test.go`.
 
 A plan for a module migration pastes the blocks below **inside the stage that needs each one**, never as an appendix: an executor reads a stage, not a list of notes. Each block was a question that stalled a session on 2026-11-10.
 
@@ -31,7 +31,7 @@ A plan for a module migration pastes the blocks below **inside the stage that ne
 - `definitionc` rewrites `go.mod` to older versions: after EVERY run repeat the plan's `go get` line and `go mod tidy`. Install tools and `export PATH="$PATH:$(go env GOPATH)/bin"`.
 - Never edit `definition_gen.go`; never write `go.sum` lines; never script edits over the source (sed/regex/python broke imports in four repos): one file at a time, `gotest` after each.
 - `gotest` must end green on EVERY destination (`wasm`, `browser`); `docs/TESTS.md` rows are `| [TestName](../tests/file_test.go) | rule |` under `| Test | Rule |` (no File column).
-- Keep `module/` (an app imports it): only `appkit.ModuleBrowser` → `view.ModuleBrowser`. A table without `tenant_id` (a link table) uses `orm.GlobalStore`, not `TenantStore`. `webtyp.com/auth` is not needed for RUT: `input.NormalizeRUT`. Seeds load through an `Import<Entity>` method (`import.go`: set the id, `model.ValidateFields`, then `m.store.Atomic` create-or-update), never the router.
+- Delete `module/` (D65): the app builds the module from `Definition`, `New`, `Deps` and `ui.Screens(d view.BrowserDeps)`; no import of `appkit`. A table without `tenant_id` (a link table) uses `orm.GlobalStore`, not `TenantStore`. `webtyp.com/auth` is not needed for RUT: `input.NormalizeRUT`. Seeds load through an `Import<Entity>` method (`import.go`: set the id, `model.ValidateFields`, then `m.store.Atomic` create-or-update), never the router.
 - `docs/PLAN.md` rule for the executor: open the PR after the third stage (Jules publishes only by submitting; a `git push` does not reach GitHub) and keep committing to it; never ask a yes/no about progress.
 
 ## 5. Splitting the plan (the 3-hour rule, applied)

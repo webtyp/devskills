@@ -1,6 +1,6 @@
 ---
 name: app-modules
-description: How a module is built inside a webtyp app or a veltylabs module repo — the typed server.go/browser.go pair and its build tags (!browser / browser), the two registries, lazy Activate(), flat files, forbidden names, and reusable modules that ship their own ui/, seed/ and web/browser/main.go demo. Use when adding or reviewing a module.
+description: How a module is built inside a webtyp app or a veltylabs module repo — the typed server.go/browser.go pair and its build tags (!browser / browser), the two registries, lazy Activate(), flat files, forbidden names, and reusable modules that ship their own ui/ and seed/ (the demo is seed.Demo, never a web/ folder). Use when adding or reviewing a module.
 ---
 
 # App modules
@@ -14,7 +14,7 @@ Directory around them and the two tag axes: **project-layout**.
 func Server(db *orm.DB, ids model.IDGenerator, pub events.Publisher, tenantID string) (router.OperationModule, error)
 
 // modules/<m>/browser.go — //go:build browser
-func Screens(caller router.Caller) []view.Screen
+func Screens(d view.BrowserDeps) []view.Screen
 ```
 
 `modules/server.go` and `modules/browser.go` are the typed registries (one append per module). A screen is **data** (`view.Screen`): a leaf has `Presenter` + `Permission`, a group has `Children` + `Help` and no permission. The app draws them with `layout/app.BuildMenu`, which runs `Screen.Validate` and returns its `error` — never a silently missing screen.
@@ -40,18 +40,15 @@ func Screens(caller router.Caller) []view.Screen
 
 The app writes **no** `modules/<m>/`; it imports `<m>/ui` from its registry. The module repo carries:
 
-- `<m>/ui` — `ID`, `Label`, `Screens(caller) []view.Screen` with **no tag** (only the browser main imports `ui`), its asset producers (`css.go`, `svg.go`, `image.go`…) `!wasm`. Neither the root nor `ui` imports `layout` (exception: a `Component` screen built with `layout/chatview`/`crudview`/`rightpanel`, or implementing `layout.UsesNotifier`; never `platformd`), so a `layout` release does not force a module release. A `Component` screen tells the user «saved» or an error through the platform's notices (`UseNotifier(layout.Notifier)` + `Notify(msgtype.Success|Error, msg, layout.Auto())`), never a status line of its own.
-- `<m>/seed` — `Load(...) (Data, error)`, demo data through the module's own methods.
-- `<m>/web/browser/main.go` — runnable demo (`storage/mem` + `router/loopback` + seed). **A screen is built and tested there, never in the app.**
-  STATUS (remove this line when ARCHITECTURE_MASTER_PLAN closes): D15 replaces it with `seed.Demo() (view.Demo, error)`; the `webtyp/app` daemon generates the main in memory with `layout`, so the module's `go.mod` never lists `layout`.
-  STATUS (remove this line when ARCHITECTURE_MASTER_PLAN closes): D54 — the generated main lives in `os.UserCacheDir()/webtyp/demos/<hash>/`, never in the repo, and the CSS/icon scan (`sitec`) reads that same folder, so the demo carries the styles of `layout` and `components`.
+- `<m>/ui` — `ID`, `Label`, `Screens(d view.BrowserDeps) []view.Screen` with **no tag** (only the browser main imports `ui`), its asset producers (`css.go`, `svg.go`, `image.go`…) `!wasm`. Neither the root nor `ui` imports `layout` (exception: a `Component` screen built with `layout/chatview`/`crudview`/`rightpanel`, or implementing `layout.UsesNotifier`; never `platformd`), so a `layout` release does not force a module release. A `Component` screen tells the user «saved» or an error through the platform's notices (`UseNotifier(layout.Notifier)` + `Notify(msgtype.Success|Error, msg, layout.Auto())`), never a status line of its own.
+- `<m>/seed` — `Load(...) (Data, error)`, demo data through the module's own methods, and `demo.go` (`//go:build wasm`) with `func Demo() (view.Demo, error)`: the runnable demo (`storage/mem` + seed + `ui.Screens`). **A screen is built and tested there, never in the app.** A module has **no `web/` folder**: `webtyp` at the module root finds `seed.Demo`, generates the browser main outside the repo (`os.UserCacheDir()/webtyp/demos/<hash>/`, `app/demo_module.go`) and draws it with `layout`, so the module's `go.mod` never lists `layout`.
 
 Modules never import each other (skill **module-layout**): a screen mixing modules lives in the app, which wires each module's narrow interfaces. When modules wire each other, `modules/server.go` returns a typed struct with `Operations() []router.OperationModule`.
 
 ## Webhooks and provider returns — never trust the request
 
 A provider calling back (payment return, signed webhook) is a route of **that provider's adapter package**, mounted by the app
-(`AppServer.Routes` or an `Infra`), never a crud table: its format is the provider's and it carries no session.
+(`Backend.Routes`), never a crud table: its format is the provider's and it carries no session.
 - The adapter passes the module **identification only** (payment id, provider token). The module's method never accepts an
   outcome from the request: it obtains the truth itself with its secret — **fetch-back** to the provider API (`Gateway.Confirm`), or a
   **signature** over the raw body (`webtyp.com/crypto/hmac`: `HMACSHA256` + constant-time `HMACEqual`, timestamp within 5 minutes) — and

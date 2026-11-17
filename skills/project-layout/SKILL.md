@@ -11,27 +11,28 @@ Module files: **app-modules**. Generated server main: **app-server-main**. REST 
 ```text
 /
 ├── config/            // the single composition root: it only configures
-│   ├── app.go         // no tag: var App = appkit.App{TenantID, Timezone, Brand, Modules, Server, Log}
-│   ├── server.go      // !browser: var server = appkit.AppServer{Database, MCPTools, Routes}
-│   ├── browser.go     // browser: var server appkit.AppServer (the wasm links no server)
-│   ├── brand.go       // no tag: var Brand = appkit.Brand{Name, LogoMark}; sitec renders the access page from it
+│   ├── app.go         // no tag: var App = appkit.App{Name, TenantID, Timezone, Countries, SignIn, Modules, Log} — the modules once, in build order
+│   ├── backend.go     // !browser: var Backend = appkit.Backend{Events, API, Agents, Public, Routes, Modules} — the same on the server and in a Worker
+│   ├── server.go      // !wasm: var Server = appkit.Server{Database, NewIDs} — what only the native server decides (a Worker adds edge.go: wasm && !browser)
+│   ├── browser.go     // browser: var Browser = appkit.Browser{Caller, NewIDs, Modules} — each module's screens
 │   ├── mcp.go         // !browser: MCPTools() — operations an agent may call
 │   ├── css.go         // !wasm: RootCSS() global theme (read by sitec)
 │   ├── deploy.go      // deploy: deploy.Plan, read by AST, linked by no binary
 │   ├── lang.json      // the app dictionary (skill langc)
 │   └── migrations.go  // !wasm: GENERATED: var Migrations = []ddl.Step{...} in App.Modules order (read by migrate & devtools)
 ├── docs/logo/logo.png // the app's icon: square, ≥512 px (optional logo.svg beside it); sitec derives the whole icon set in memory — nothing to declare, nothing generated
-├── migrate/main.go    // GENERATED: migrate.App(config.App.Server.Database, log.Println, config.Migrations...) (runs with go run ./migrate)
+├── migrate/main.go    // GENERATED: migrate.App(config.Server.Database, log.Println, config.Schema) (runs with go run ./migrate)
 ├── tests/             // EVERY test of the repo
 ├── web/               // the only output folder: no .build/, no edge/ at the root
-│   ├── browser/main.go // GENERATED: appkit.Browser(config.App, devtools.Menu()) → web/public/browser.wasm
-│   ├── server/main.go  // GENERATED (skill app-server-main): appkit.Server(config.App, devtools.Server(config.Migrations...)...) → web/server/server
+│   ├── browser/main.go // GENERATED: appkit.RunBrowser(config.App, config.Browser, layoutapp.New(devtools.Menu())) → web/public/browser.wasm
+│   ├── server/main.go  // GENERATED (skill app-server-main): appkit.Build + httpd.New + built.Mount (skill app-server-main) → web/server/server
 │   ├── edge/main.go    // optional Worker → web/edge/edge.wasm + web/edge/edge.js
 │   └── public/         // the only thing served, to anyone: never a binary
 ```
 
-Each module is named once in `App.Modules` (its `module.Module`, skill **module-layout**): appkit builds the server
-part and draws the menu from its screens (entry is `webtyp.com/access/module`). No `config/auth.go`,
+Each module is named once in `App.Modules` (its `Definition`, skill **module-layout**) and given its two parts by the
+app: how it is built (`Backend.Modules`) and its screens (`Browser.Modules`), both found by `Definition.Name`; appkit fails at
+start naming a module that lacks one. How people enter is one line, `App.SignIn` — appkit builds the sign-in itself. No `config/auth.go`,
 `config/html.go`, `config/routes.go`, `modules/` registry or hand-written migrate command. A tagless file references
 only what exists under every tag: what belongs to one binary goes in a tagged file and its pair. Server-only
 migrations list lives in `config/migrations.go` (`!wasm`).
@@ -45,7 +46,7 @@ tools) live in the piece responsible for them and are driven by `webtyp/app` (`w
 
 ## Build tags: two axes, one name per binary
 
-The **folder** under `web/` says which binary a main builds; a main carries no destination tag (at most `wasm`/`!wasm`), because a tag of our own (`browser`) hides the file from gopls. Relative paths (`web/public`) resolve against the process's working directory, never the binary's folder: every launcher starts it at the project (or package) root. **Platform** `wasm`/`!wasm` is set by the compiler (`GOARCH=wasm`, browser **and** Worker). **Destination** `browser`/`!browser` is passed only by the client compiler (`-tags browser`, `browser,dev` in development); `goflare` refuses it and the native server passes none.
+The **folder** under `web/` says which binary a main builds; a main carries no destination tag (at most `wasm`/`!wasm`), because a tag of our own (`browser`) hides the file from gopls. Relative paths (`web/public`) resolve against the process's working directory, never the binary's folder: every launcher starts it at the project (or package) root. **Backend and front are separated by PACKAGE, never by a tag inside one package** (owner rule, 2026-11-17, recurrent): the import graph decides what enters the wasm; `wasm`/`!wasm` stays for platform APIs. STATUS (remove this line when BUILD_DESTINATIONS_MASTER_PLAN closes): decided, not built (D21, D23, D24) — the kit becomes `appkit` (only `App`), `appkit/backend` and `appkit/browser`; the app's `config` becomes `config` (only `App`), `config/services` (`Backend`, `Server`, `Schema`, `MCPTools`) and `config/screens` (`Browser`); `gotest` fails when a browser or Worker main imports a server-only package; and the `browser` tag is deleted from the ecosystem (one axis, `wasm`/`!wasm`, plus `dev`). Until then `appkit/browser.go` and `config/browser.go` still carry `browser` and the table below still applies: write no new file with it. **Platform** `wasm`/`!wasm` is set by the compiler (`GOARCH=wasm`, browser **and** Worker). **Destination** `browser`/`!browser` is passed only by the client compiler (`-tags browser`, `browser,dev` in development); `goflare` refuses it and the native server passes none.
 
 | Runs in | Tag |
 |---|---|
