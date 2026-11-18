@@ -11,22 +11,37 @@ because it never goes stale; a README that contradicts the code is a defect of t
 
 ```mermaid
 flowchart TD
-    App[app: config/ + appkit wires what the app chose] --> UI[screens]
-    App --> Session[session: sign in, who am I, permissions]
-    App --> Mods[domain modules]
-    Mods --> Ops
-    UI --> Transport[transport: browser ↔ server]
-    Session --> Transport
-    Transport --> Ops[operations: crud by declaration]
-    Ops --> DB[database]
-    Ops --> Events[events and external calls]
-    Transport --> Codec[codec]
-    DB --> Codec
-    Codec --> Base[base: fmt, time… replacing the stdlib]
+    subgraph Build[build time: tools, never inside the binary]
+        definitionc[definitionc: definition.go to definition_gen.go]
+        appkitc[appkitc: config/ to web/*/main.go and migrate]
+        sitec[sitec: HTML shell, CSS, icons] ~~~ langc[langc: lang.json]
+    end
+    subgraph AppRepo[app repo]
+        config[config/: App, Backend, Server, screens] ~~~ modules[domain modules: definition.go, rules, ui/]
+    end
+    subgraph Browser[browser: web/browser, WASM]
+        run[appkit/browser.Run] --> layout[layout: chassis, view.Session] --> screens[view, form, components, dom]
+        screens --> caller[router.Caller: rpc over fetch, json]
+        caller -.offline.-> local[dbsync: same modules over orm and indexdb]
+    end
+    subgraph Server[server: web/server httpd, or web/edge cloudflare]
+        kit[appkit/backend.Build] --> httpd[server/httpd]
+        httpd --> authn[auth: who is calling] --> gate[rbac: may they do it]
+        gate --> api[rpc.JSON for screens, mcp.Tools for agents]
+        api --> crud[crud: validate, module rule, store]
+        crud --> orm[orm] --> storage[storage.Conn: postgres, sqlite with sqlt, cloudflare D1]
+        crud --> events[events: externalcalls, sse]
+        migrate[migrate, ddl: each module syncs its tables] --> storage
+    end
+    caller -->|HTTP POST /api/module/entity| httpd
+    AppRepo --> Build
+    Build --> Browser
+    Build --> Server
 ```
-Side components (files, documents, browser platform, AI, domain values) are imported by the pieces that need them;
-build, dev and deploy are tools around the app, never imported by it — except `devtools`, the development screens
-an app's browser main hands to its layout.
+The app declares (`config/`, modules); the build tools turn that into code; at run time the same `crud` operation
+travels from a screen through `rpc` to `crud` and `orm`. Libraries are isomorphic: the browser runs `orm` too, over
+`indexdb` (**isomorphic-libraries**). `codec` (`json`) and `base` (`fmt`, `time`…) sit under every box; side components (files, documents, AI…)
+are imported where needed; build, dev and deploy never enter the app, except `devtools` (development screens).
 
 | Component | Repos | Skill |
 |---|---|---|
