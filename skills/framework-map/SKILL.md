@@ -56,7 +56,7 @@ framework (`webtyp`); apps that consume it and their modules are not part of the
 | operations | 🟢 `crud` | [crud-module-migration](../crud-module-migration/SKILL.md) |
 | database | 🟢 `storage`, 🟢 `orm`, 🟢 `ddl`, 🟢 `migrate`, 🟢 `sqlt`, 🟢 `sqlite`, 🟢 `postgres`, 🟢 `indexdb`, 🟢 `changelog`, 🟢 `dataimport` | [isomorphic-libraries](../isomorphic-libraries/SKILL.md) |
 | offline sync | 🔴 `dbsync`, 🟢 `outbox` | none yet |
-| events | 🟢 `events`, 🟢 `externalcalls`, 🟢 `backoff`, 🟢 `notify`, 🔴 `securityevent` | none yet |
+| events, queues and alerts | 🟢 `events`, 🟢 `externalcalls`, 🟢 `backoff`, 🟢 `notify`, 🔴 `securityevent` | [events-queues-and-alerts](../events-queues-and-alerts/SKILL.md) |
 | transport | 🟢 `router`, 🟢 `rpc`, 🟢 `mcp`, 🟢 `fetch`, 🟢 `sse`, 🟢 `idempotency`, 🔴 `server`, 🔴 `broker` | [api-harness](../api-harness/SKILL.md) rules 10–11 |
 | sign-in and permissions | 🔴 `auth`, 🟢 `rbac`, 🟢 `access`, 🟢 `user`, 🟢 `webauthn`, 🟢 `jwt` | [sign-in-and-permissions](../sign-in-and-permissions/SKILL.md) |
 | screens | 🟢 `view`, 🟢 `form`, 🟢 `components`, 🟢 `widget`, 🟢 `dom`, 🟢 `html`, 🟢 `css`, 🟢 `svg`, 🟢 `icons`, 🟢 `avatar`, 🔴 `layout` | [dom-elements](../dom-elements/SKILL.md), [components](../components/SKILL.md), [widget-styling](../widget-styling/SKILL.md), [ui-consistency](../ui-consistency/SKILL.md), [ui-icons](../ui-icons/SKILL.md) |
@@ -84,7 +84,7 @@ framework (`webtyp`); apps that consume it and their modules are not part of the
 - `broker`: nobody imports it; it overlaps `router` and `server`.
 - `binary`: nobody imports it; a second codec beside `json`.
 - `retrieval`: a README with no code.
-- `securityevent`: created empty (2026-11-18); the security event contract every layer will publish through.
+- `securityevent`: the security event contract, written but not published; no layer reports through it yet.
 
 ## Rules
 
@@ -96,4 +96,7 @@ framework (`webtyp`); apps that consume it and their modules are not part of the
   `crud.Store`, so `orm` imports `crud`); the import graph of a domain is drawn in that domain's skill.
 - **A skill holds what changes rarely** (pieces, responsibilities, dependency order); signatures, fields and errors live
   only in the code. A component without a skill is read from its code, and its skill is written when it is next touched.
-- A new, split or removed repo updates this table and its component's skill in the same turn ([devskills](../devskills/SKILL.md)).
+- **Every change to a `webtyp` package keeps the map true, in the same change** (create, edit, delete): check its row
+  here (domain, 🟢/🔴 and why) and its domain skill (table and diagram: a new import, repo or job, a fixed 🔴). A
+  domain without a skill gets one in that change, with every repo of the domain and the diagram of who imports whom.
+  Unsure which domain a repo belongs to: ask the owner, never guess.

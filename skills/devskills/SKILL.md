@@ -13,6 +13,7 @@ description: How skills are written (one domain, link never repeat, ≤50 lines 
 - Imperative rules, one line each; rationale only when it prevents a misuse. The reader is an agent.
 - Format: `skills/<name>/SKILL.md` with frontmatter `name` + `description` (what it covers + "Use when …" triggers).
 - **Name: at least two words** in kebab-case that say the domain without a lookup (`sign-in-and-permissions`, `module-layout`); a lone word (`session`, `testing`) is vague and refused (**api-design** novice-name test); an existing one-word skill is renamed the next time it is edited.
+- **A change to a `webtyp` package updates [framework-map](../framework-map/SKILL.md) and its domain skill in the same change** (rule there); a stale map is how skills went out of date.
 - **A domain skill is reachable from [framework-map](../framework-map/SKILL.md)**: its row links it (`[name](../name/SKILL.md)`) and the skill links back; a domain without a skill says «none yet» until its gaps are closed and the skill is written.
 - English (master plans are the exception: **master-plan**).
 
