@@ -13,28 +13,43 @@ because it never goes stale; a README that contradicts the code is a defect of t
 flowchart TD
     App[app: config/ + appkit wires what the app chose] --> UI[screens]
     App --> Session[session: sign in, who am I, permissions]
+    App --> Mods[domain modules]
+    Mods --> Ops
     UI --> Transport[transport: browser ↔ server]
     Session --> Transport
     Transport --> Ops[operations: crud by declaration]
     Ops --> DB[database]
+    Ops --> Events[events and external calls]
     Transport --> Codec[codec]
     DB --> Codec
-    Ops --> Events[events and external calls]
+    Codec --> Base[base: fmt, time… replacing the stdlib]
 ```
+Side components (files, documents, browser platform, AI, domain values) are imported by the pieces that need them;
+build, dev and deploy are tools around the app, never imported by it — except `devtools`, the development screens
+an app's browser main hands to its layout.
 
 | Component | Repos | Skill |
 |---|---|---|
-| app | `appkit`, each app's `config/` | **project-layout**, **app-modules**, **module-layout**, **app-server-main** |
-| screens | `view`, `layout`, `form`, `components`, `dom`, `widget` | **dom-elements**, **components**, **form-codegen**, **widget-styling**, **ui-consistency** |
-| session | `auth`, `rbac`, `access`, `user` | none yet: read the code |
-| transport | `router`, `rpc`, `mcp`, `server`, `fetch`, `sse` | **api-harness** rules 10–11; component skill none yet |
-| operations | `crud`, `model`, `definitionc` | **form-codegen** (definitions), **crud-module-migration** |
-| database | `orm`, `ddl`, `storage`, `sqlt`, `sqlite`, `postgres`, `indexdb`, `dbsync` | **isomorphic-libraries**; component skill none yet |
-| codec | `json` | **wasm** (stdlib replacement); component skill none yet |
-| events | `events`, `outbox`, `externalcalls` | none yet: read the code |
+| app | `appkit`, each app's `config/` | **project-layout**, **app-server-main** |
+| domain modules | `veltylabs/modules/*` | **app-modules**, **module-layout** |
+| screens | `view`, `layout`, `form`, `input`, `components`, `widget`, `dom`, `html`, `css`, `svg`, `icons`, `avatar`, `erd` | **dom-elements**, **components**, **form-codegen**, **widget-styling**, **ui-consistency**, **ui-icons** |
+| session | `auth`, `rbac`, `access`, `user`, `webauthn`, `jwt` | none yet: read the code |
+| transport | `router`, `rpc`, `mcp`, `server`, `fetch`, `sse`, `broker`, `idempotency` | **api-harness** rules 10–11; component skill none yet |
+| operations | `crud`, `model`, `definitionc`, `definitioncheck` | **form-codegen**, **crud-module-migration** |
+| database | `storage`, `orm`, `ddl`, `migrate`, `sqlt`, `sqlite`, `postgres`, `indexdb`, `dbsync`, `changelog`, `sqlmcp`, `dataimport` | **isomorphic-libraries**; component skill none yet |
+| events | `events`, `outbox`, `externalcalls`, `backoff`, `notify` | none yet: read the code |
+| codec | `json`, `binary`, `base64`, `escape` | **wasm**; component skill none yet |
+| base | `fmt`, `time`, `calendar`, `context`, `filepath`, `crypto`, `unixid`, `msgtype`, `color`, `font`, `country` | **wasm** |
+| configuration | `env` (reads `keyring` outside the browser), `keyring`, `dbus` | **secrets** |
 | texts | `lang` | **translations**, **langc** |
-| build and dev | `sitec`, `app`, `devflow` | **wasm**, **webtyp-app** |
-| deploy | `goflare`, `cloudflare`, `server` | **app-rest-edge**, **secrets** |
+| files | `files`, `disk`, `opfs`, `filetype`, `image`, `imagemin`, `artifacts` | **ui-images** |
+| documents | `pdf`, `chart`, `qr` | none yet: read the code |
+| browser platform | `await`, `jsvalue`, `js`, `device`, `media`, `pwa` | **wasm** |
+| domain values | `money`, `stock`, `network` | **module-layout** |
+| AI and voice | `agent`, `agentcontext`, `agentmemory`, `agentworker`, `agenteval`, `llm`, `qwen`, `lfm`, `decoder`, `encoder`, `tokenizer`, `nn`, `weights`, `weightsc`, `embed`, `bekko`, `vector`, `vectordb`, `retrieval`, `audio`, `phoneme`, `stt`, `tts` | none yet: read the code |
+| build and dev | `app`, `appkitc`, `sitec`, `gobuild`, `devflow`, `devtui`, `tui`, `devwatch`, `devbrowser`, `devharness`, `devtools`, `devskills`, `gocheck`, `gorun`, `command`, `modfind`, `depfind`, `git`, `wizard`, `markdown`, `kvdb`, `installer`, `goinstall`, `tinygo`, `wasmbrowsertest`, `screenshot` | **webtyp-app**, **codejob**, **testing** |
+| deploy | `deploy`, `goflare`, `cloudflare`, `github`, `ghaction`, `gorelease`, `sitepub`, `selfupdate`, `update` | **app-rest-edge**, **secrets** |
+| examples | `goflare-demo`, `website` | — |
 
 ## Rules
 
