@@ -43,4 +43,4 @@ flowchart TD
 ## Open defects (each leaves when fixed)
 
 - `notify`: nobody imports it yet; security alerts will reach it through the `appkit` subscriber (SECURITY_OBSERVABILITY D2).
-- `securityevent`: written locally, not published; nobody reports through it yet (`auth` still uses its own `SecurityEventType`).
+- `securityevent` (v0.0.2): nobody reports through it yet; `auth` still uses its own `SecurityEventType` (SECURITY_OBSERVABILITY O2).

@@ -56,7 +56,7 @@ framework (`webtyp`); apps that consume it and their modules are not part of the
 | operations | 🟢 `crud` | [crud-module-migration](../crud-module-migration/SKILL.md) |
 | database | 🟢 `storage`, 🟢 `orm`, 🟢 `ddl`, 🟢 `migrate`, 🟢 `sqlt`, 🟢 `sqlite`, 🟢 `postgres`, 🟢 `indexdb`, 🟢 `changelog`, 🟢 `dataimport` | [isomorphic-libraries](../isomorphic-libraries/SKILL.md) |
 | offline sync | 🔴 `dbsync`, 🟢 `outbox` | none yet |
-| events, queues and alerts | 🟢 `events`, 🟢 `externalcalls`, 🟢 `backoff`, 🟢 `notify`, 🔴 `securityevent` | [events-queues-and-alerts](../events-queues-and-alerts/SKILL.md) |
+| events, queues and alerts | 🟢 `events`, 🟢 `externalcalls`, 🟢 `backoff`, 🟢 `notify`, 🟢 `securityevent` | [events-queues-and-alerts](../events-queues-and-alerts/SKILL.md) |
 | transport | 🟢 `router`, 🟢 `rpc`, 🟢 `mcp`, 🟢 `fetch`, 🟢 `sse`, 🟢 `idempotency`, 🔴 `server`, 🔴 `broker` | [api-harness](../api-harness/SKILL.md) rules 10–11 |
 | sign-in and permissions | 🔴 `auth`, 🟢 `rbac`, 🟢 `access`, 🟢 `user`, 🟢 `webauthn`, 🟢 `jwt` | [sign-in-and-permissions](../sign-in-and-permissions/SKILL.md) |
 | screens | 🟢 `view`, 🟢 `form`, 🟢 `components`, 🟢 `widget`, 🟢 `dom`, 🟢 `html`, 🟢 `css`, 🟢 `svg`, 🟢 `icons`, 🟢 `avatar`, 🔴 `layout` | [dom-elements](../dom-elements/SKILL.md), [components](../components/SKILL.md), [widget-styling](../widget-styling/SKILL.md), [ui-consistency](../ui-consistency/SKILL.md), [ui-icons](../ui-icons/SKILL.md) |
@@ -84,7 +84,6 @@ framework (`webtyp`); apps that consume it and their modules are not part of the
 - `broker`: nobody imports it; it overlaps `router` and `server`.
 - `binary`: nobody imports it; a second codec beside `json`.
 - `retrieval`: a README with no code.
-- `securityevent`: the security event contract, written but not published; no layer reports through it yet.
 
 ## Rules
 
