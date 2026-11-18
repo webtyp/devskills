@@ -32,6 +32,7 @@ an app's browser main hands to its layout.
 |---|---|---|
 | app | `appkit`, each app's `config/` | **project-layout**, **app-server-main** |
 | domain modules | `veltylabs/modules/*` | **app-modules**, **module-layout** |
+| provider adapters | `veltylabs/packages/*`: `transbank`, `tuu` (payments), `mikrotik` (network), `lme` (electronic medical leave) | **module-layout** |
 | screens | `view`, `layout`, `form`, `input`, `components`, `widget`, `dom`, `html`, `css`, `svg`, `icons`, `avatar`, `erd` | **dom-elements**, **components**, **form-codegen**, **widget-styling**, **ui-consistency**, **ui-icons** |
 | session | `auth`, `rbac`, `access`, `user`, `webauthn`, `jwt` | none yet: read the code |
 | transport | `router`, `rpc`, `mcp`, `server`, `fetch`, `sse`, `broker`, `idempotency` | **api-harness** rules 10–11; component skill none yet |
