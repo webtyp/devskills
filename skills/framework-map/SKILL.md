@@ -30,7 +30,7 @@ flowchart TD
         gate --> api[rpc.JSON for screens, mcp.Tools for agents]
         api --> crud[crud: validate, module rule, store]
         crud --> orm[orm] --> storage[storage.Conn: postgres, sqlite with sqlt, cloudflare D1]
-        crud --> events[events: externalcalls, sse]
+        crud --> events[events: externalcalls; sse carries them to the browser]
         migrate[migrate, ddl: each module syncs its tables] --> storage
     end
     caller -->|HTTP POST /api/module/entity| httpd
@@ -43,29 +43,49 @@ travels from a screen through `rpc` to `crud` and `orm`. Libraries are isomorphi
 `indexdb` (**isomorphic-libraries**). `codec` (`json`) and `base` (`fmt`, `time`…) sit under every box; side components (files, documents, AI…)
 are imported where needed; build, dev and deploy never enter the app, except `devtools` (development screens).
 
+Repos grouped by domain. 🟢 one clear job, in the right domain · 🔴 a defect listed below · repos of `veltylabs` are
+not reviewed here. Who imports whom inside and between domains is drawn in each domain's skill, not here.
+
 | Component | Repos | Skill |
 |---|---|---|
-| app | `appkit`, each app's `config/` | **project-layout**, **app-server-main** |
+| base | 🟢 `fmt`, 🟢 `time`, 🟢 `calendar`, 🟢 `context`, 🟢 `filepath`, 🟢 `crypto`, 🟢 `unixid`, 🟢 `msgtype`, 🟢 `color`, 🟢 `font` | **wasm** |
+| codec | 🟢 `json`, 🟢 `escape`, 🟢 `base64`, 🔴 `binary` | **wasm** |
+| texts | 🔴 `lang` | **translations**, **langc** |
+| configuration | 🟢 `env`, 🟢 `keyring`, 🟢 `dbus` | **secrets** |
+| model and definitions | 🟢 `model`, 🟢 `input`, 🟢 `definitioncheck`, 🟢 `definitionc` (`input` holds the field kinds of a definition, not screens; `definitionc` is the generator) | **form-codegen** |
+| operations | 🟢 `crud` | **crud-module-migration** |
+| database | 🟢 `storage`, 🟢 `orm`, 🟢 `ddl`, 🟢 `migrate`, 🟢 `sqlt`, 🟢 `sqlite`, 🟢 `postgres`, 🟢 `indexdb`, 🟢 `changelog`, 🟢 `dataimport` | **isomorphic-libraries** |
+| offline sync | 🔴 `dbsync`, 🟢 `outbox` | none yet |
+| events | 🟢 `events`, 🟢 `externalcalls`, 🟢 `backoff`, 🟢 `notify` | none yet |
+| transport | 🟢 `router`, 🟢 `rpc`, 🟢 `mcp`, 🟢 `fetch`, 🟢 `sse`, 🟢 `idempotency`, 🔴 `server`, 🔴 `broker` | **api-harness** rules 10–11 |
+| session | 🔴 `auth`, 🟢 `rbac`, 🟢 `access`, 🟢 `user`, 🟢 `webauthn`, 🟢 `jwt` | none yet |
+| screens | 🟢 `view`, 🟢 `form`, 🟢 `components`, 🟢 `widget`, 🟢 `dom`, 🟢 `html`, 🟢 `css`, 🟢 `svg`, 🟢 `icons`, 🟢 `avatar`, 🔴 `layout` | **dom-elements**, **components**, **widget-styling**, **ui-consistency**, **ui-icons** |
+| app | 🔴 `appkit`, each app's `config/` | **project-layout**, **app-server-main** |
 | domain modules | `veltylabs/modules/*` | **app-modules**, **module-layout** |
 | provider adapters | `veltylabs/packages/*`: `transbank`, `tuu` (payments), `mikrotik` (network), `lme` (electronic medical leave) | **module-layout** |
-| screens | `view`, `layout`, `form`, `input`, `components`, `widget`, `dom`, `html`, `css`, `svg`, `icons`, `avatar`, `erd` | **dom-elements**, **components**, **form-codegen**, **widget-styling**, **ui-consistency**, **ui-icons** |
-| session | `auth`, `rbac`, `access`, `user`, `webauthn`, `jwt` | none yet: read the code |
-| transport | `router`, `rpc`, `mcp`, `server`, `fetch`, `sse`, `broker`, `idempotency` | **api-harness** rules 10–11; component skill none yet |
-| operations | `crud`, `model`, `definitionc`, `definitioncheck` | **form-codegen**, **crud-module-migration** |
-| database | `storage`, `orm`, `ddl`, `migrate`, `sqlt`, `sqlite`, `postgres`, `indexdb`, `dbsync`, `changelog`, `sqlmcp`, `dataimport` | **isomorphic-libraries**; component skill none yet |
-| events | `events`, `outbox`, `externalcalls`, `backoff`, `notify` | none yet: read the code |
-| codec | `json`, `binary`, `base64`, `escape` | **wasm**; component skill none yet |
-| base | `fmt`, `time`, `calendar`, `context`, `filepath`, `crypto`, `unixid`, `msgtype`, `color`, `font`, `country` | **wasm** |
-| configuration | `env` (reads `keyring` outside the browser), `keyring`, `dbus` | **secrets** |
-| texts | `lang` | **translations**, **langc** |
-| files | `files`, `disk`, `opfs`, `filetype`, `image`, `imagemin`, `artifacts` | **ui-images** |
-| documents | `pdf`, `chart`, `qr` | none yet: read the code |
-| browser platform | `await`, `jsvalue`, `js`, `device`, `media`, `pwa` | **wasm** |
-| domain values | `money`, `stock`, `network` | **module-layout** |
-| AI and voice | `agent`, `agentcontext`, `agentmemory`, `agentworker`, `agenteval`, `llm`, `qwen`, `lfm`, `decoder`, `encoder`, `tokenizer`, `nn`, `weights`, `weightsc`, `embed`, `bekko`, `vector`, `vectordb`, `retrieval`, `audio`, `phoneme`, `stt`, `tts` | none yet: read the code |
-| build and dev | `app`, `appkitc`, `sitec`, `gobuild`, `devflow`, `devtui`, `tui`, `devwatch`, `devbrowser`, `devharness`, `devtools`, `devskills`, `gocheck`, `gorun`, `command`, `modfind`, `depfind`, `git`, `wizard`, `markdown`, `kvdb`, `installer`, `goinstall`, `tinygo`, `wasmbrowsertest`, `screenshot` | **webtyp-app**, **codejob**, **testing** |
-| deploy | `deploy`, `goflare`, `cloudflare`, `github`, `ghaction`, `gorelease`, `sitepub`, `selfupdate`, `update` | **app-rest-edge**, **secrets** |
-| examples | `goflare-demo`, `website` | — |
+| domain values | 🟢 `money`, 🟢 `stock`, 🟢 `network`, 🟢 `country` | **module-layout** |
+| files and images | 🟢 `files`, 🟢 `disk`, 🟢 `opfs`, 🟢 `filetype`, 🟢 `artifacts`, 🔴 `image`, 🔴 `imagemin` | **ui-images** |
+| documents | 🔴 `pdf`, 🟢 `chart`, 🟢 `qr` | none yet |
+| browser platform | 🟢 `await`, 🟢 `jsvalue`, 🟢 `js`, 🟢 `device`, 🟢 `media`, 🔴 `pwa` | **wasm** |
+| AI and voice | 🟢 `agent`, 🟢 `agentcontext`, 🟢 `agentmemory`, 🟢 `agentworker`, 🟢 `agenteval`, 🟢 `llm`, 🟢 `qwen`, 🟢 `lfm`, 🟢 `decoder`, 🟢 `encoder`, 🟢 `tokenizer`, 🟢 `nn`, 🟢 `weights`, 🟢 `weightsc`, 🟢 `embed`, 🟢 `bekko`, 🟢 `vector`, 🟢 `vectordb`, 🟢 `audio`, 🟢 `phoneme`, 🟢 `stt`, 🟢 `tts`, 🔴 `retrieval` | none yet |
+| build and dev | 🟢 `app`, 🟢 `appkitc`, 🟢 `sitec`, 🟢 `gobuild`, 🟢 `devflow`, 🟢 `devtui`, 🟢 `tui`, 🟢 `devwatch`, 🟢 `devbrowser`, 🟢 `devharness`, 🟢 `devtools`, 🟢 `erd`, 🟢 `sqlmcp`, 🟢 `devskills`, 🟢 `gocheck`, 🟢 `gorun`, 🟢 `command`, 🟢 `modfind`, 🟢 `depfind`, 🟢 `git`, 🟢 `wizard`, 🟢 `markdown`, 🟢 `kvdb`, 🟢 `installer`, 🟢 `goinstall`, 🟢 `tinygo`, 🟢 `wasmbrowsertest`, 🟢 `screenshot` | **webtyp-app**, **testing** |
+| deploy | 🟢 `deploy`, 🟢 `goflare`, 🟢 `cloudflare`, 🟢 `github`, 🟢 `ghaction`, 🟢 `gorelease`, 🟢 `sitepub`, 🟢 `selfupdate`, 🟢 `update` | **app-rest-edge**, **secrets** |
+| examples | 🟢 `goflare-demo`, 🟢 `website` | — |
+
+**Why each 🔴** (found in the imports of non-test code; a mark leaves when its repo is fixed):
+- `appkit`: implements the `trusted_ip` sign-in mode (staff devices, first administrator by RUT, RUT screens) behind an enum of modes; it should only wire `auth.Authenticator` values the app chose.
+- `auth`: the contract (root package), the server module (`authority`), seven modes and their browser halves in one repo: a contract and its implementations together (**api-design** gate 4).
+- `layout`: carries development screens (`schemaview`, `apiexplorer`; `app/menu.go` imports `ddl`, `erd`, `rpc`) that belong to `devtools`, and writes the sign-in paths by hand (`app/browser.go`).
+- `server`: two jobs, the HTTP server (`httpd`) and the dev-time build-and-run strategies (`strategies.go` imports `gobuild`, `gorun`).
+- `lang`: the run-time dictionary and the `langc` extraction tool (imports `modfind`, `input`) in one repo.
+- `dbsync`: the sync engine and its on-screen indicator (`ui/` imports `components`).
+- `pwa`: the build-time manifest and service-worker generator and a run-time update prompt (`ui/prompt.go`).
+- `image`: HTML builders (run time) and a WebP pipeline (`min/`, a tool) in one repo; `imagemin` does the same conversion again.
+- `imagemin`: duplicates `image/min`.
+- `pdf`: picks its own storage (`env.back.go` → `disk`, `env.front.go` → `fetch`) instead of receiving a `files` contract (**api-harness** rule 9).
+- `broker`: nobody imports it; it overlaps `router` and `server`.
+- `binary`: nobody imports it; a second codec beside `json`.
+- `retrieval`: a README with no code.
 
 ## Rules
 
@@ -73,8 +93,8 @@ are imported where needed; build, dev and deploy never enter the app, except `de
   that owns the concern in its skill (or its code). Code that belongs to another component goes to that repo.
 - **`appkit` wires, it implements nothing.** It is the one place an app configures; each choice is a value of the
   owning piece's interface (a sign-in mode is an `auth.Authenticator`), never an enum or a switch inside `appkit`.
-- **Arrows point to what a piece may import.** A lower piece never imports a higher one; a missing contract at a
-  boundary is a defect upstream (**api-design** gate 4).
+- **The diagram is the run-time path, not the imports.** A contract never imports its implementation (`orm` implements
+  `crud.Store`, so `orm` imports `crud`); the import graph of a domain is drawn in that domain's skill.
 - **A skill holds what changes rarely** (pieces, responsibilities, dependency order); signatures, fields and errors live
   only in the code. A component without a skill is read from its code, and its skill is written when it is next touched.
 - A new, split or removed repo updates this table and its component's skill in the same turn (**devskills**).
