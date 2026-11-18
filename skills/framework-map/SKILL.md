@@ -58,7 +58,7 @@ framework (`webtyp`); apps that consume it and their modules are not part of the
 | offline sync | 🔴 `dbsync`, 🟢 `outbox` | none yet |
 | events | 🟢 `events`, 🟢 `externalcalls`, 🟢 `backoff`, 🟢 `notify` | none yet |
 | transport | 🟢 `router`, 🟢 `rpc`, 🟢 `mcp`, 🟢 `fetch`, 🟢 `sse`, 🟢 `idempotency`, 🔴 `server`, 🔴 `broker` | **api-harness** rules 10–11 |
-| session | 🔴 `auth`, 🟢 `rbac`, 🟢 `access`, 🟢 `user`, 🟢 `webauthn`, 🟢 `jwt` | none yet |
+| session | 🔴 `auth`, 🟢 `rbac`, 🟢 `access`, 🟢 `user`, 🟢 `webauthn`, 🟢 `jwt` | **session** |
 | screens | 🟢 `view`, 🟢 `form`, 🟢 `components`, 🟢 `widget`, 🟢 `dom`, 🟢 `html`, 🟢 `css`, 🟢 `svg`, 🟢 `icons`, 🟢 `avatar`, 🔴 `layout` | **dom-elements**, **components**, **widget-styling**, **ui-consistency**, **ui-icons** |
 | app | 🔴 `appkit`, each app's `config/` | **project-layout**, **app-server-main** |
 | domain values | 🟢 `money`, 🟢 `stock`, 🟢 `network`, 🟢 `country` | **module-layout** |
