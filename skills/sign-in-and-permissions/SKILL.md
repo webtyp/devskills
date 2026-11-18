@@ -5,7 +5,7 @@ description: The sign-in and permissions domain of webtyp — signing in (the mo
 
 # Sign-in and permissions — signing in, who the caller is, what they may do
 
-Map of the whole framework: **framework-map**. Last link: the code (`go doc webtyp.com/auth/authority`).
+Map of the whole framework: [framework-map](../framework-map/SKILL.md). Last link: the code (`go doc webtyp.com/auth/authority`).
 
 ```mermaid
 flowchart TD
