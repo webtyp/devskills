@@ -37,6 +37,7 @@ browser is only competitive if **nothing is written twice anywhere in the ecosys
   pointing at the document that decides it.
 - A test that only exercises doubles, with no consumer-shaped case; an exported symbol nothing
   outside the package calls — including one whose only callers are tests.
+- An error or notice **langc** cannot extract (a custom string type, `+`, stdlib `fmt`), or a `lang.json` with an empty value.
 - A `webtyp` package changed while [framework-map](../framework-map/SKILL.md) or its domain skill still describe the old shape.
 - A promise the code cannot keep because a contract is missing downstream (an ARIA role whose keyboard
   behaviour is unimplementable, a documented option with no effect): narrow it or fix the contract.

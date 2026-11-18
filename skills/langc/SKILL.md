@@ -44,6 +44,8 @@ Writing the text itself: **translations**.
 
 Then fill the empty values and run `gotest`.
 
+**A constant is not data to langc:** it resolves the value of a named constant passed to `fmt.Err` and makes it a key, so a code name in a constant (`const callNew = "pkg.New"`) lands in the dictionary untranslatable. Keep code names out of messages.
+
 **Don't translate a key into itself to satisfy the sync.** `fmt.Err("int", "invalid")` word-by-word has no good Spanish reading (`"int"` isn't prose — it has no natural translation, so the lazy fix is `"int": ["int"]`, a no-op entry that looks done but says nothing). Reword the *source* call into one phrase instead — `fmt.Err("not a valid integer")` → `"no es un número entero válido"` — so every language gets a real sentence. A dictionary entry whose value equals its key is a sign the extraction is scooping up a non-prose token (a type name, a literal code); fix the call site, not the dictionary.
 
 ## The 8 extraction rules

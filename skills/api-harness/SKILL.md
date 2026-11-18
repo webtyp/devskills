@@ -112,6 +112,11 @@ Every such message is built with `webtyp.com/fmt.Err` (or `lang.Text`), so **lan
 library's `lang.json` translates them: a beginner who does not read English reads it in their own language. A
 message assembled with `+` or stdlib `fmt` cannot be translated and is a defect.
 
+- **Short:** one plain line. Say what happened and what to do; say the harm only when data or work is really at risk.
+- **Translatable from the first commit:** an error is `var ErrX = fmt.Err("…")` (or `model.Invalid`/`NotFound`/`Conflict`), compared with `==`. A custom string type (`type xError string`) is never extracted by **langc**, so it is never translated: a defect.
+- **No code names as words:** `langc` reads the value of a constant passed to `fmt.Err`, so `fmt.Err(callNew, …)` with `const callNew = "pkg.New"` becomes an untranslatable key. Write prose; a code name may appear inside a sentence, never as its own part.
+- **Before closing:** `langc sync .` in the library reports nothing untranslated and no reuse warning (**langc**).
+
 > `pg_restore 17 is newer than the database server 14, so the server did not understand one setting it sent
 > (transaction_timeout). It was skipped: your data was restored completely. To stop seeing this notice, install
 > the PostgreSQL 14 client tools.`
