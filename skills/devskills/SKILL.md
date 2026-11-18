@@ -12,6 +12,7 @@ description: How skills are written (one domain, link never repeat, ≤50 lines 
 - **Size:** good ≤ 50 lines; > 50 warns; > 150 makes `devskills` refuse to sync (`CheckSkills`, `SkillLinesGood`/`SkillLinesMax`).
 - Imperative rules, one line each; rationale only when it prevents a misuse. The reader is an agent.
 - Format: `skills/<name>/SKILL.md` with frontmatter `name` + `description` (what it covers + "Use when …" triggers).
+- **Name: at least two words** in kebab-case that say the domain without a lookup (`sign-in-and-permissions`, `module-layout`); a lone word (`session`, `testing`) is vague and refused (**api-design** novice-name test).
 - English (master plans are the exception: **master-plan**).
 
 ## Sync — after every SKILL.md change

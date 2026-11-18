@@ -1,9 +1,9 @@
 ---
-name: session
-description: The session domain of webtyp — signing in (the modes an app chooses, each an auth.Authenticator), who the caller is (the crud entity me), sessions and sign-out (auth/authority), permissions (rbac), role administration (access) — its packages, who imports whom, each one's single job and the defects still open. Use before touching auth, rbac, access, user, webauthn or jwt, or any sign-in, permission or "who am I" code in appkit or layout.
+name: sign-in-and-permissions
+description: The sign-in and permissions domain of webtyp — signing in (the modes an app chooses, each an auth.Authenticator), who the caller is (the crud entity me), sessions and sign-out (auth/authority), permissions (rbac), role administration (access) — its packages, who imports whom, each one's single job and the defects still open. Use before touching auth, rbac, access, user, webauthn or jwt, or any sign-in, permission or "who am I" code in appkit or layout.
 ---
 
-# Session — signing in, who the caller is, what they may do
+# Sign-in and permissions — signing in, who the caller is, what they may do
 
 Map of the whole framework: **framework-map**. Last link: the code (`go doc webtyp.com/auth/authority`).
 

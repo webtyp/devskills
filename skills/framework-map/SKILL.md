@@ -1,6 +1,6 @@
 ---
 name: framework-map
-description: The index of the webtyp framework — the components every app is made of (app, screens, sign-in session, transport, operations, database, codec, events, texts, build, deploy), how they depend on each other, which repos form each one and which skill explains it. Use before placing code in any repo, before crossing from one repo to another, or when you do not know which piece does something.
+description: The index of the webtyp framework — the components every app is made of (app, screens, sign-in and permissions, transport, operations, database, codec, events, texts, build, deploy), how they depend on each other, which repos form each one and which skill explains it. Use before placing code in any repo, before crossing from one repo to another, or when you do not know which piece does something.
 ---
 
 # Framework map — zoom from the app down to the code
@@ -58,7 +58,7 @@ framework (`webtyp`); apps that consume it and their modules are not part of the
 | offline sync | 🔴 `dbsync`, 🟢 `outbox` | none yet |
 | events | 🟢 `events`, 🟢 `externalcalls`, 🟢 `backoff`, 🟢 `notify` | none yet |
 | transport | 🟢 `router`, 🟢 `rpc`, 🟢 `mcp`, 🟢 `fetch`, 🟢 `sse`, 🟢 `idempotency`, 🔴 `server`, 🔴 `broker` | **api-harness** rules 10–11 |
-| session | 🔴 `auth`, 🟢 `rbac`, 🟢 `access`, 🟢 `user`, 🟢 `webauthn`, 🟢 `jwt` | **session** |
+| sign-in and permissions | 🔴 `auth`, 🟢 `rbac`, 🟢 `access`, 🟢 `user`, 🟢 `webauthn`, 🟢 `jwt` | **sign-in-and-permissions** |
 | screens | 🟢 `view`, 🟢 `form`, 🟢 `components`, 🟢 `widget`, 🟢 `dom`, 🟢 `html`, 🟢 `css`, 🟢 `svg`, 🟢 `icons`, 🟢 `avatar`, 🔴 `layout` | **dom-elements**, **components**, **widget-styling**, **ui-consistency**, **ui-icons** |
 | app | 🔴 `appkit`, each app's `config/` | **project-layout**, **app-server-main** |
 | domain values | 🟢 `money`, 🟢 `stock`, 🟢 `network`, 🟢 `country` | **module-layout** |
