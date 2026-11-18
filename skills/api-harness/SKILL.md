@@ -69,6 +69,7 @@ it from keeping, it narrows the claim.
 9. **The composition root wires, nothing else (D).** Logic depends on contracts; one place — the
    constructor — knows a concrete type. If the library defining the abstraction requires in its `go.mod`
    the concrete thing it hides, the inversion is prose, not build graph.
+10. **Every API a client calls is a `webtyp/crud` operation** (owner rule, 2026-11-18). The browser reaches the server only through `router.Operation{Module, Entity, Action}` → `/api/<module>/<entity>`, served by a `crud.Module` (`MountOperations`) from a `model.Definition`. A raw `r.Get("/me")`, `r.Post(...)` or a `MountAPI` for data or actions is a defect: the browser caller cannot reach it, and the permission, the audit and the typed contract are skipped. Only transport plumbing a browser never calls as an operation (health, static files, OAuth redirects, the logout cookie) may be a raw route, and it says why in a comment. «Who am I» is the Read of a `me` entity, not a route.
 
 ### Publication
 
