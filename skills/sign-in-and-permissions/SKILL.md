@@ -46,8 +46,8 @@ flowchart TD
 ## Rules
 
 - **An app chooses its modes in its appkit configuration**, as values of `auth.Authenticator`; `appkit` never names a mode
-  (no enum, no switch). The framework keeps the fewest, safest modes: `passkey` by default and from outside,
-  `trusted_ip` for devices inside a closed network such as a clinic.
+  (no enum, no switch). The framework keeps the fewest, safest modes: `passkey` is the recommended mode from
+  outside, `trusted_ip` for devices inside a closed network such as a clinic. No mode is implied by default.
 - **`authority` knows no mode.** A mode's data (the RUT and LAN devices of `trusted_ip`, the password hash of
   `email_password`) and its first-run steps live in the mode's package.
 - **A mode ships both halves**: its routes and the browser screen that calls them (**api-harness** rule 11).
