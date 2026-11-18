@@ -43,8 +43,8 @@ travels from a screen through `rpc` to `crud` and `orm`. Libraries are isomorphi
 `indexdb` (**isomorphic-libraries**). `codec` (`json`) and `base` (`fmt`, `time`…) sit under every box; side components (files, documents, AI…)
 are imported where needed; build, dev and deploy never enter the app, except `devtools` (development screens).
 
-Repos grouped by domain. 🟢 one clear job, in the right domain · 🔴 a defect listed below · repos of `veltylabs` are
-not reviewed here. Who imports whom inside and between domains is drawn in each domain's skill, not here.
+Repos grouped by domain. 🟢 one clear job, in the right domain · 🔴 a defect listed below. Only the
+framework (`webtyp`); apps that consume it and their modules are not part of the map. Who imports whom inside and between domains is drawn in each domain's skill, not here.
 
 | Component | Repos | Skill |
 |---|---|---|
@@ -61,8 +61,6 @@ not reviewed here. Who imports whom inside and between domains is drawn in each 
 | session | 🔴 `auth`, 🟢 `rbac`, 🟢 `access`, 🟢 `user`, 🟢 `webauthn`, 🟢 `jwt` | none yet |
 | screens | 🟢 `view`, 🟢 `form`, 🟢 `components`, 🟢 `widget`, 🟢 `dom`, 🟢 `html`, 🟢 `css`, 🟢 `svg`, 🟢 `icons`, 🟢 `avatar`, 🔴 `layout` | **dom-elements**, **components**, **widget-styling**, **ui-consistency**, **ui-icons** |
 | app | 🔴 `appkit`, each app's `config/` | **project-layout**, **app-server-main** |
-| domain modules | `veltylabs/modules/*` | **app-modules**, **module-layout** |
-| provider adapters | `veltylabs/packages/*`: `transbank`, `tuu` (payments), `mikrotik` (network), `lme` (electronic medical leave) | **module-layout** |
 | domain values | 🟢 `money`, 🟢 `stock`, 🟢 `network`, 🟢 `country` | **module-layout** |
 | files and images | 🟢 `files`, 🟢 `disk`, 🟢 `opfs`, 🟢 `filetype`, 🟢 `artifacts`, 🔴 `image`, 🔴 `imagemin` | **ui-images** |
 | documents | 🔴 `pdf`, 🟢 `chart`, 🟢 `qr` | none yet |
