@@ -17,6 +17,18 @@ Per-library plans: **plan-authoring**; their loop: **codejob**.
 
 **Hard limit: 200 lines.** Check with `wc -l` after every edit. Over the limit means something that belongs elsewhere is still in it: move it out before adding anything.
 
+## Always resumable in a new chat (owner rule, 2026-11-19)
+
+Long chats grow until the agent loses focus; the owner prefers to **start a new chat from the master**. So every master is resumable alone **at the end of every turn that changed state** — not only when the chat drifts. A new agent reading only the master (and the skills it names) must be able to continue without asking. Checklist:
+
+- **Status line** says what is done and what it waits for, once (no repeated text).
+- **Para retomar:** the skills to read, the project to test in.
+- **What works now**, verified how (tests, live check and its result) — not the history of how it was found.
+- **Local work not committed:** per repo, the exact files changed or created; every `replace` in a `go.mod`; installed binaries built from local code; changes in the same repos that belong to **another** agent or wave (so nobody commits or reverts them by mistake).
+- **How to verify:** the commands (`gotest` per repo) and the live steps.
+- **What is left:** open questions, or the next phase with its exact steps (publish order, `replace` to drop, skill STATUS lines to delete).
+- **No stale lines:** a row or cause that described the old state («today it does X», «falta reiniciar») is rewritten or removed in the same turn.
+
 ## Fixed format (sections in this order, no others)
 
 ```markdown
@@ -96,7 +108,7 @@ the rows.
 Corrections of another domain pile up in a chat while a wave runs (a publish gate, a tool bug, a library's history) and the conversation stops being about the wave. When that happens, **at the next pause, without being asked**:
 
 1. Move every off-domain finding to the master of its domain (create it in the fixed format if none exists: `ls webtyp/docs/*_MASTER_PLAN.md`, then its row in `MASTER_PLANS.md`); the wave's master keeps only a `Bloqueos` line if it blocks.
-2. Make the wave's master **resumable alone**: state of what is published (versions), every open question with options and a recommendation, decisions not yet built with `file:line`, how to run and test it, and the skills to read. A new chat must need nothing else.
+2. Check the wave's master against «Always resumable in a new chat» (above); it must already pass.
 3. Say it plainly: «this chat drifted; open a new one and start from `<master>`», and name the other master that holds what moved. Never keep working the wave in the contaminated chat.
 
 ## «Consolida el master»

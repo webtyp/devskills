@@ -263,7 +263,7 @@ func (l *LLM) linkSkills(llmDir, skillsSource string) (bool, error) {
 			// output from an older devskills version (e.g. its pre-symlink
 			// copy fallback, or the old whole-directory copy approach) —
 			// never a third-party vendor skill, since our skill names
-			// (dev-protocols, tinywasm-app, form-codegen, ...) don't
+			// (dev-protocols, webtyp-app, form-codegen, ...) don't
 			// collide with any vendor's own. Replace it so the agent picks
 			// up the current skill. Names that aren't one of ours are
 			// never visited by this loop, so genuine vendor skills living

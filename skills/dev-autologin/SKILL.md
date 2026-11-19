@@ -69,11 +69,28 @@ Used when authentication requires username/email and password:
    auth: DEV_AUTOLOGIN opened a session for user <user_id>
    ```
 5. **Rejection Handling:**
-   If credentials fail or the client IP is not authorized, the server logs:
+   If credentials fail or the client IP is not authorized, the authenticator reports the reason as a SECURITY line and the server adds one short line:
    ```text
-   auth: DEV_AUTOLOGIN was rejected by every enabled authenticator — showing the normal login.
+   auth: DEV_AUTOLOGIN rejected, login form shown on localhost
    ```
-   and serves the normal login form without retrying until the next server restart.
+   That host serves the normal login form without retrying until the next server restart.
+
+---
+
+## Several users — one tab each
+
+To test how the app behaves for different users, list their credentials; each one gets its own browser tab, already signed in:
+
+```json
+[{"code":"12345678-5"},{"code":"9876543-2"}]
+```
+
+- Credential 1 signs in on `localhost:PORT`, credential N on `userN.localhost:PORT` (Chrome resolves `*.localhost` to 127.0.0.1, so `trusted_ip` sees the same IP, and each host keeps its own session cookie). A single object still works as before, on any host.
+- When it opens the browser (and when you switch project or show it again), webtyp asks the app's server `auth.PathDevAutologinTabs` (only in `-tags dev`, only from loopback) and opens one tab per host (`devbrowser.OpenTab`). MCP browser tools follow the tab you have in front (each tab keeps its own console, network and errors; request interception, the selected element and device emulation stay on the first tab); every tab reloads on rebuild.
+- **Both factors:** autologin issues the main session and the second-factor one (so screens with `Definition.MFA`, e.g. `access`, open in dev), and upgrades a one-factor session on a host whose credential is live. Production never has this path (`devlogin_off.go`).
+- **Sign-out** on a tab pauses autologin for that host only: it shows the normal login (sign in by hand with any code; that session keeps one factor) until the server restarts.
+- A credential rejected once stops only its own host: one short line names the host (`rejected, login form shown on user2.localhost`); the reason is in the SECURITY line the authenticator reports. Invalid JSON disables autologin entirely, with one warning on the first request.
+- With `trusted_ip`, every listed user must be active staff assigned to the device of the IP you test from (`staff_manager` `IsTrustedIP`).
 
 ---
 
