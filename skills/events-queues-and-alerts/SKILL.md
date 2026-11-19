@@ -46,4 +46,4 @@ flowchart TD
 
 ## Open defects (each leaves when fixed)
 
-- `notify`: `appkit` raises the security alerts on it; delivering them is the job of whatever the app has listening on `notify.TopicAlert`.
+- `notify`: `appkit` raises security alerts on it and persists `Warning`/`Error` alerts to `logs.log` (`!wasm`, 7d / 1 MiB via `notify.NewCriticalFileLog`); external delivery (email/WhatsApp) is wired by the app on `notify.TopicAlert`.

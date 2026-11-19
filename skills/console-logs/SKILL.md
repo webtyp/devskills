@@ -15,8 +15,9 @@ Every log line consumes terminal space and LLM context. Keep output compact, non
 ## Batching & Accumulation
 
 - **One line per batch:** collect added/removed/processed items in a slice and emit one summary log after the loop, never one log per item.
-- **Collapse bursts with `OperationID`:** handlers that may fire multiple times for one logical operation (e.g. file-watcher bursts within the same second) must implement `GetLastOperationID() string` / `SetLastOperationID(id string)` so `devtui` (local and remote SSE via `HeadlessTUI`) updates the existing line in place instead of appending duplicates.
-- **Start a new line explicitly** by changing the ID via `SetLastOperationID(newID)`.
+- **Collapse bursts with `OperationID`:** handlers in `BUILD` (except `SECURITY`, where each incident is discrete) keep one live TUI line via `GetLastOperationID() string` / `SetLastOperationID(id string)` + `tui.LogOpen`/`tui.LogClose` so intermediate hot-reload steps animate in place and resolved errors clear when the next cycle closes OK.
+- **No duplicate `WATCH` echo:** handlers that already logged an error under their own badge return an error implementing `AlreadyLogged() bool` (`devwatch.AlreadyLoggedError`) so `devwatch` skips browser reload without reprinting the message.
+- **Compact compiler diagnostics:** format raw `go build` / SSR errors with `gobuild.CompactErrors` (groups repeated `file:line: msg` into one line with `~`).
 - **Identical consecutive messages** from the same handler are deduplicated automatically; never add manual repeat-suppression wrappers at call sites.
 
 ## Message Text
