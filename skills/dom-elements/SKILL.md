@@ -105,7 +105,13 @@ A state written as a class drifts from the stylesheet silently.
 
 Binding helpers: `Bind`, `BindText`, `BindTextFunc`, `BindAttr`,
 `BindAttrFunc`, `BindAttrBool`, `BindAttrBoolFunc`, `BindClass`,
-`BindClassFunc`, `BindChildren`, `BindState`, `BindStateFunc`.
+`BindClassFunc`, `BindChildren`, `BindState`, `BindStateFunc`,
+`BindStyleProp`, `BindStylePropFunc`.
+
+**Never pass `"style"` to `Attr`, `BindAttr`, or `BindAttrFunc`:** `dom` panics
+because inline `style="..."` violates strict CSP (`style-src 'self'`). Use CSS
+classes (`widget/style`) or `StyleProp` / `BindStyleProp` / `BindStylePropFunc`
+(CSSOM `element.style.setProperty`, allowed by CSP).
 
 ## Serializing
 

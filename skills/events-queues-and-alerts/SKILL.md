@@ -11,8 +11,12 @@ Map of the whole framework: [framework-map](../framework-map/SKILL.md). Last lin
 flowchart TD
     appkit[appkit: wires the broker, listens to security events] --> events
     appkit --> externalcalls
-    appkit -.🔴 not yet: D2 of SECURITY_OBSERVABILITY.-> securityevent
+    appkit -->|logs every event, counts failures, raises alerts| securityevent
+    appkit --> notify
+    gate[server/httpd: 401/403 & /_csp-report, router/security: 413, crud: rejected write] --> securityevent
+    app[app: BUILD/SECURITY view in webtyp dev & MCP] -.reads.-> appkit
     auth[auth, crud, rpc, mcp, sse, money] --> events
+    authmodes[auth and its modes] --> securityevent
     securityevent[securityevent: what a security event is called and carries] --> events
     securityevent --> msgtype[msgtype: Info, Warning, Error]
     notify[notify: alerts, recipients, delivery channels] --> events
@@ -42,5 +46,4 @@ flowchart TD
 
 ## Open defects (each leaves when fixed)
 
-- `notify`: nobody imports it yet; security alerts will reach it through the `appkit` subscriber (SECURITY_OBSERVABILITY D2).
-- `securityevent` (v0.0.2): nobody reports through it yet; `auth` still uses its own `SecurityEventType` (SECURITY_OBSERVABILITY O2).
+- `notify`: `appkit` raises the security alerts on it; delivering them is the job of whatever the app has listening on `notify.TopicAlert`.

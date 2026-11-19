@@ -9,25 +9,24 @@ Map of the whole framework: [framework-map](../framework-map/SKILL.md). Last lin
 
 ```mermaid
 flowchart TD
-    appkit[appkit: wires what the app chose] --> authority
-    appkit -->|🔴 builds a mode by name| trusted
+    appkit[appkit: builds each chosen auth.Mode with Ports; names none] --> authority
     appkit --> access
-    appkitui[appkit/browser] -->|🔴 RUT screens by hand| auth
-    layout -.🔴 writes /setup, /logout, profile by hand.-> authority
+    appkitui[appkit/browser: fills view.Session] --> authority
+    appkitui -.view.EntryScreen of each mode.-> trusted
+    layout[layout: draws view.Session] --> view[view: User, Entries, SignOut]
     access[access: roles and who holds them] --> rbac[rbac: may this user do this]
     access --> authority
-    authority[auth/authority: users, identities, sessions, me, sign-out] --> auth[auth: contracts and ports]
+    authority[auth/authority: users, identities, sessions, me, sign-out, Ports] --> auth[auth: Mode, Ports, contracts]
     authority --> cookie[auth/session/cookie]
-    authority -->|🔴 RUT, LAN devices| trusted
-    authority -->|🔴 password hashing| password
-    trusted[auth/trusted_ip] --> auth
-    passkey[auth/passkey + passkey/browser] --> auth
+    trusted[auth/trusted_ip: RUT, its screen, first setup on the LAN] --> auth
+    passkey[auth/passkey: keys, its screen, first setup by one-time code] --> auth
     passkey --> webauthn[webauthn: passkey ceremonies]
-    password[auth/email_password] --> auth
+    password[auth/email_password: the password hash] --> auth
     oauth[auth/oauth2 + providers] --> auth
     cf[auth/cfaccess] --> jwt[jwt]
     ca[auth/clientassertion] --> jwt
     local[auth/local: dev scenarios] --> auth
+    auth --> securityevent[securityevent]
     auth --> user[user: stable identity value]
     rbac --> user
 ```
@@ -35,10 +34,10 @@ flowchart TD
 | Package | Its one job |
 |---|---|
 | `user` | the stable identity value every piece shares |
-| `auth` | the contracts: `Authenticator` (one sign-in mode), `SessionStrategy`, the ports a mode receives (`IdentityStore`, `SessionIssuer`, `SecurityNotifier`…) |
-| `auth/authority` | what every mode shares: users, identities, sessions, the crud read `me`, sign-out; mounts the modes it is given |
+| `auth` | the contracts: `Mode` (a sign-in mode as the app chooses it), `Ports` (what every mode receives), `ModeWithTables`, `Authenticator`, `SessionStrategy`, the identity and session ports |
+| `auth/authority` | what every mode shares: users, identities, sessions, the crud read `me` (and `ReadMe` for the browser), sign-out; knows no mode |
 | `auth/session/cookie` | the session cookie strategy |
-| `auth/trusted_ip`, `auth/passkey`, `auth/email_password`, `auth/oauth2`, `auth/cfaccess`, `auth/clientassertion`, `auth/local` | one sign-in mode each: its routes and, when it has one, its browser screen (`passkey/browser`) |
+| `auth/trusted_ip`, `auth/passkey`, `auth/email_password`, `auth/oauth2`, `auth/cfaccess`, `auth/clientassertion`, `auth/local` | one sign-in mode each: its routes, its data and its browser screen (`view.EntryScreen`) |
 | `webauthn`, `jwt` | passkey ceremonies; token signing — used by modes, not by apps |
 | `rbac` | whether a user may do an action on a resource; roles, grants, the implicit `RoleAuthenticated` |
 | `access` | administration of roles and who holds them, with its screens (`access/ui`) |
@@ -55,10 +54,7 @@ flowchart TD
   an operation or `auth`. Flow: `auth/docs/diagrams/SIGN_IN.md`.
 - «Anyone signed in may…» is a grant to `rbac.RoleAuthenticated` declared by the module that owns the resource.
 
-## Open defects (🔴 in the diagram; each leaves when fixed)
+## Open defects (each leaves when fixed)
 
-- `authority` imports `trusted_ip` (`credentials_lan.go`, `lan_store.go`) and `email_password` (`credentials_password.go`).
-- `appkit/backend/signin.go` builds `trusted_ip` and its first administrator; `appkit/browser/signin.go` draws RUT forms.
-- `layout/app/browser.go` writes `/setup`, `/logout`, `Module: "authority"` and its own profile type.
-- `oauth2/provider/microsoft` imports helpers from `oauth2/provider/google` instead of a shared `oauth2` helper.
+- One repo holds the contract, `authority` and seven modes (**api-design** gate 4); splitting it is ARCHITECTURE M3.
 - Modes no framework consumer uses: `email_password`, `cfaccess` (none); `oauth2`, `local`, `clientassertion` (only an app).

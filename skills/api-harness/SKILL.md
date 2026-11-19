@@ -115,6 +115,7 @@ message assembled with `+` or stdlib `fmt` cannot be translated and is a defect.
 - **Short:** one plain line. Say what happened and what to do; say the harm only when data or work is really at risk.
 - **Translatable from the first commit:** an error is built with `fmt.Err("…")` (or `model.Invalid`/`NotFound`/`Conflict`).
   STATUS (remove this line when STDLIB_MIGRATION_MASTER_PLAN closes): how it is checked moves to a typed error read with `errors.AsType` (its D2/D3), never `==` between interfaces. A custom string type (`type xError string`) is never extracted by **langc**, so it is never translated: a defect.
+- **Only what production uses rides in production:** a package-level `var ErrX = fmt.Err(…)` runs at start, so its text lands in every binary that imports the package even if nothing uses it. An error only development or a demo uses is a constant, `const ErrX model.Invalid = "…"`: unused, it costs nothing, and **langc** still extracts it.
 - **No code names as words:** `langc` reads the value of a constant passed to `fmt.Err`, so `fmt.Err(callNew, …)` with `const callNew = "pkg.New"` becomes an untranslatable key. Write prose; a code name may appear inside a sentence, never as its own part.
 - **Before closing:** `langc sync .` in the library reports nothing untranslated and no reuse warning (**langc**).
 

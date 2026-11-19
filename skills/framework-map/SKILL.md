@@ -60,7 +60,7 @@ framework (`webtyp`); apps that consume it and their modules are not part of the
 | transport | 🟢 `router`, 🟢 `rpc`, 🟢 `mcp`, 🟢 `fetch`, 🟢 `sse`, 🟢 `idempotency`, 🔴 `server`, 🔴 `broker` | [api-harness](../api-harness/SKILL.md) rules 10–11 |
 | sign-in and permissions | 🔴 `auth`, 🟢 `rbac`, 🟢 `access`, 🟢 `user`, 🟢 `webauthn`, 🟢 `jwt` | [sign-in-and-permissions](../sign-in-and-permissions/SKILL.md) |
 | screens | 🟢 `view`, 🟢 `form`, 🟢 `components`, 🟢 `widget`, 🟢 `dom`, 🟢 `html`, 🟢 `css`, 🟢 `svg`, 🟢 `icons`, 🟢 `avatar`, 🔴 `layout` | [dom-elements](../dom-elements/SKILL.md), [components](../components/SKILL.md), [widget-styling](../widget-styling/SKILL.md), [ui-consistency](../ui-consistency/SKILL.md), [ui-icons](../ui-icons/SKILL.md) |
-| app | 🔴 `appkit`, each app's `config/` | [project-layout](../project-layout/SKILL.md), [app-server-main](../app-server-main/SKILL.md) |
+| app | 🟢 `appkit`, each app's `config/` | [project-layout](../project-layout/SKILL.md), [app-server-main](../app-server-main/SKILL.md) |
 | domain values | 🟢 `money`, 🟢 `stock`, 🟢 `network`, 🟢 `country` | [module-layout](../module-layout/SKILL.md) |
 | files and images | 🟢 `files`, 🟢 `disk`, 🟢 `opfs`, 🟢 `filetype`, 🟢 `artifacts`, 🔴 `image`, 🔴 `imagemin` | [ui-images](../ui-images/SKILL.md) |
 | documents | 🔴 `pdf`, 🟢 `chart`, 🟢 `qr` | none yet |
@@ -71,9 +71,8 @@ framework (`webtyp`); apps that consume it and their modules are not part of the
 | examples | 🟢 `goflare-demo`, 🟢 `website` | — |
 
 **Why each 🔴** (found in the imports of non-test code; a mark leaves when its repo is fixed):
-- `appkit`: implements the `trusted_ip` sign-in mode (staff devices, first administrator by RUT, RUT screens) behind an enum of modes; it should only wire `auth.Authenticator` values the app chose.
 - `auth`: the contract (root package), the server module (`authority`), seven modes and their browser halves in one repo: a contract and its implementations together ([api-design](../api-design/SKILL.md) gate 4).
-- `layout`: carries development screens (`schemaview`, `apiexplorer`; `app/menu.go` imports `ddl`, `erd`, `rpc`) that belong to `devtools`, and writes the sign-in paths by hand (`app/browser.go`).
+- `layout`: carries development screens (`schemaview`, `apiexplorer`; `app/menu.go` imports `ddl`, `erd`, `rpc`) that belong to `devtools`.
 - `server`: two jobs, the HTTP server (`httpd`) and the dev-time build-and-run strategies (`strategies.go` imports `gobuild`, `gorun`).
 - `lang`: the run-time dictionary and the `langc` extraction tool (imports `modfind`, `input`) in one repo.
 - `dbsync`: the sync engine and its on-screen indicator (`ui/` imports `components`).
